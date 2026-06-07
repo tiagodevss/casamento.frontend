@@ -1,0 +1,238 @@
+import { useState } from "react";
+
+import { Icon, MiniLantern, fireConfetti } from "./effects";
+
+const emptyForm = {
+  name: "",
+  phone: "",
+  attending: "",
+  companions: 0,
+  companionNames: "",
+  diet: "",
+  message: "",
+};
+
+export function RSVPForm() {
+  const [form, setForm] = useState(emptyForm);
+  const [errors, setErrors] = useState({});
+  const [sent, setSent] = useState(false);
+
+  const updateField = (key, value) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    if (errors[key]) setErrors((current) => ({ ...current, [key]: null }));
+  };
+
+  const validate = () => {
+    const nextErrors = {};
+    if (!form.name.trim()) nextErrors.name = "Conte-nos seu nome";
+    if (!form.phone.trim()) nextErrors.phone = "Precisamos de um contato";
+    else if (form.phone.replace(/\D/g, "").length < 10) nextErrors.phone = "Telefone incompleto";
+    if (!form.attending) nextErrors.attending = "Escolha uma opção";
+    return nextErrors;
+  };
+
+  const submit = (event) => {
+    event.preventDefault();
+    const nextErrors = validate();
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length) {
+      document.querySelector(".field.error input, .field.error select")?.focus();
+      return;
+    }
+    setSent(true);
+    setTimeout(() => fireConfetti(), 250);
+  };
+
+  if (sent) {
+    return (
+      <section className="section" id="rsvp">
+        <div className="glass rsvp-success" style={{ maxWidth: 620, margin: "0 auto", padding: "3rem 2rem" }}>
+          <div className="rising-lantern">
+            <MiniLantern size={70} />
+          </div>
+          <span className="eyebrow">Recebido com carinho</span>
+          <h2 className="section-title" style={{ fontSize: "clamp(1.6rem, 4vw, 2.6rem)", marginTop: ".6rem" }}>
+            {form.attending === "yes" ? "Que alegria ter você conosco!" : "Vamos sentir sua falta"}
+          </h2>
+          <p
+            style={{
+              color: "var(--lilac-soft)",
+              fontFamily: "var(--font-script)",
+              fontStyle: "italic",
+              fontSize: "1.4rem",
+              margin: "1rem auto 0",
+              maxWidth: "34ch",
+            }}
+          >
+            Sua presença foi enviada para o nosso céu de lanternas.
+          </p>
+          {form.attending === "yes" && (
+            <p style={{ color: "var(--text-dim)", marginTop: "1rem" }}>
+              {form.companions > 0
+                ? `Você e mais ${form.companions} ${
+                    form.companions === 1 ? "acompanhante" : "acompanhantes"
+                  } estão confirmados.`
+                : "Você está confirmado(a)."}
+            </p>
+          )}
+          <button
+            className="btn btn-ghost"
+            style={{ marginTop: "1.8rem" }}
+            onClick={() => {
+              setSent(false);
+              setForm(emptyForm);
+            }}
+          >
+            <Icon name="RotateCcw" size={16} /> Enviar outra confirmação
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="section" id="rsvp">
+      <div className="section-head">
+        <span className="eyebrow reveal">Solte uma lanterna por nós</span>
+        <h2 className="section-title reveal d1">Confirme seu lugar nessa história</h2>
+        <p
+          className="reveal d2"
+          style={{ color: "var(--text-dim)", maxWidth: "44ch", margin: "1rem auto 0", lineHeight: 1.7 }}
+        >
+          Preencha com carinho e faça parte do nosso céu de luzes.
+        </p>
+        <div className="divider-flourish reveal d2">
+          <span className="line" />
+          <span className="dot" />
+          <span className="line right" />
+        </div>
+      </div>
+
+      <form
+        className="glass reveal d1"
+        style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
+        onSubmit={submit}
+        noValidate
+      >
+        <div className="form-grid">
+          <div className={`field ${errors.name ? "error" : ""}`}>
+            <label>
+              <Icon name="User" size={14} /> Nome completo
+            </label>
+            <input
+              value={form.name}
+              onChange={(event) => updateField("name", event.target.value)}
+              placeholder="Como devemos chamar você"
+            />
+            <span className="err-msg">{errors.name}</span>
+          </div>
+          <div className={`field ${errors.phone ? "error" : ""}`}>
+            <label>
+              <Icon name="Phone" size={14} /> Telefone / WhatsApp
+            </label>
+            <input
+              value={form.phone}
+              onChange={(event) => updateField("phone", event.target.value)}
+              placeholder="(00) 00000-0000"
+              inputMode="tel"
+            />
+            <span className="err-msg">{errors.phone}</span>
+          </div>
+
+          <div className={`field full ${errors.attending ? "error" : ""}`}>
+            <label>
+              <Icon name="Heart" size={14} /> Você poderá vir?
+            </label>
+            <div className="choice-row">
+              <label className="choice yes">
+                <input
+                  type="radio"
+                  name="attending"
+                  checked={form.attending === "yes"}
+                  onChange={() => updateField("attending", "yes")}
+                />
+                <span className="radio" /> <span>Sim, eu vou! ✨</span>
+              </label>
+              <label className="choice no">
+                <input
+                  type="radio"
+                  name="attending"
+                  checked={form.attending === "no"}
+                  onChange={() => updateField("attending", "no")}
+                />
+                <span className="radio" /> <span>Não poderei ir</span>
+              </label>
+            </div>
+            <span className="err-msg">{errors.attending}</span>
+          </div>
+
+          {form.attending === "yes" && (
+            <>
+              <div className="field">
+                <label>
+                  <Icon name="Users" size={14} /> Acompanhantes
+                </label>
+                <div className="stepper">
+                  <button
+                    type="button"
+                    onClick={() => updateField("companions", Math.max(0, form.companions - 1))}
+                    aria-label="Menos"
+                  >
+                    −
+                  </button>
+                  <span className="count">{form.companions}</span>
+                  <button
+                    type="button"
+                    onClick={() => updateField("companions", Math.min(10, form.companions + 1))}
+                    aria-label="Mais"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="field">
+                <label>
+                  <Icon name="Utensils" size={14} /> Restrições alimentares
+                </label>
+                <input
+                  value={form.diet}
+                  onChange={(event) => updateField("diet", event.target.value)}
+                  placeholder="Vegetariano, alergias..."
+                />
+              </div>
+              {form.companions > 0 && (
+                <div className="field full">
+                  <label>
+                    <Icon name="PenLine" size={14} /> Nomes dos acompanhantes
+                  </label>
+                  <input
+                    value={form.companionNames}
+                    onChange={(event) => updateField("companionNames", event.target.value)}
+                    placeholder="Separe os nomes por vírgula"
+                  />
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="field full">
+            <label>
+              <Icon name="MessageCircleHeart" size={14} /> Mensagem para os noivos
+            </label>
+            <textarea
+              value={form.message}
+              onChange={(event) => updateField("message", event.target.value)}
+              placeholder="Deixe um recado cheio de luz (opcional)"
+            />
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
+          <button type="submit" className="btn btn-gold" style={{ padding: "1rem 2.6rem" }}>
+            <Icon name="Send" size={18} /> Enviar para o céu de lanternas
+          </button>
+        </div>
+      </form>
+    </section>
+  );
+}
