@@ -883,7 +883,7 @@ h3 {
   font-size: clamp(1.3rem, 3.2vw, 2rem);
   color: var(--lilac-soft);
   margin: 1.4rem 0 0.4rem;
-  max-width: 32ch;
+  text-align: center;
 }
 
 .hero-meta {
