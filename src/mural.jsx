@@ -1,22 +1,16 @@
 import { useEffect, useState } from "react";
 
+import { Link, useLocation } from "react-router-dom";
+
 import { WEDDING } from "./data";
-import { Icon, MiniLantern, fireConfetti } from "./effects";
+import { FloatingLanterns, Icon, MiniLantern, fireConfetti } from "./effects";
 import { api } from "./api";
+import { ContactHelp } from "./ContactHelp";
+import { SectionHead } from "./SectionHead";
+import { NAV_ITEMS, goToSection, homeSectionPath } from "./navigation";
 
 const NAME_MAX = 60;
 const TEXT_MAX = 400;
-
-function goToSection(event, href) {
-  event.preventDefault();
-  const element = document.querySelector(href);
-  if (element) {
-    window.scrollTo({
-      top: element.getBoundingClientRect().top + window.scrollY - 70,
-      behavior: "smooth",
-    });
-  }
-}
 
 // Purely decorative tilt, derived from the message id so it stays stable across
 // re-renders instead of reshuffling every time React repaints the wall.
@@ -30,6 +24,7 @@ export function GuestMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
   const [website, setWebsite] = useState("");
@@ -38,6 +33,8 @@ export function GuestMessages() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
 
     api
       .listMessages()
@@ -55,7 +52,7 @@ export function GuestMessages() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadKey]);
 
   const add = async (event) => {
     event.preventDefault();
@@ -83,54 +80,51 @@ export function GuestMessages() {
     }
   };
 
-  return (
-    <section className="section" id="mural">
-      <div className="section-head">
-        <span className="eyebrow reveal">Deixe uma mensagem no nosso céu</span>
-        <h2 className="section-title reveal d1">Mural dos Convidados</h2>
-        <p
-          className="reveal d2"
-          style={{ color: "var(--text-dim)", maxWidth: "46ch", margin: "1rem auto 0", lineHeight: 1.7 }}
-        >
-          Escreva um desejo, uma lembrança ou um carinho. Cada mensagem vira uma lanterna no nosso
-          céu.
-        </p>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
-        </div>
-      </div>
+  const textRemaining = TEXT_MAX - text.length;
 
-      <form
-        className="glass reveal d1"
-        style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(1.4rem, 3.5vw, 2.2rem)" }}
-        onSubmit={add}
-      >
-        <div className="mural-form">
-          <div className="field">
-            <label>
-              <Icon name="User" size={14} /> Seu nome
-            </label>
-            <input
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              placeholder="Quem está escrevendo"
-              maxLength={NAME_MAX}
-              disabled={submitting}
-            />
-          </div>
-          <div className="field">
-            <label>
-              <Icon name="Feather" size={14} /> Mensagem
-            </label>
-            <input
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              placeholder="Um desejo de luz para os noivos"
-              maxLength={TEXT_MAX}
-              disabled={submitting}
-            />
+  return (
+    <section className="section-band section-band--light" id="mural">
+      <div className="section-band__inner">
+        <SectionHead
+          variant="action"
+          title="Mural dos Convidados"
+          description="Escreva um desejo, uma lembrança ou um carinho. Cada mensagem vira uma lanterna no nosso céu."
+        />
+
+        <form className="panel mural-compose reveal d1" onSubmit={add}>
+          <div className="mural-compose__grid">
+            <div className="field">
+              <label htmlFor="mural-name">
+                <Icon name="User" size={14} /> Seu nome
+              </label>
+              <input
+                id="mural-name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                placeholder="Quem está escrevendo"
+                maxLength={NAME_MAX}
+                disabled={submitting}
+                autoComplete="name"
+              />
+            </div>
+            <div className="field mural-compose__message">
+              <label htmlFor="mural-text">
+                <Icon name="Feather" size={14} /> Mensagem
+              </label>
+              <textarea
+                id="mural-text"
+                value={text}
+                onChange={(event) => setText(event.target.value)}
+                placeholder="Um desejo de luz para os noivos"
+                maxLength={TEXT_MAX}
+                rows={4}
+                disabled={submitting}
+                aria-describedby="mural-text-hint"
+              />
+              <span id="mural-text-hint" className="field-hint mural-compose__hint">
+                {textRemaining} {textRemaining === 1 ? "caractere restante" : "caracteres restantes"}
+              </span>
+            </div>
           </div>
           {/* Honeypot: hidden from real guests, only a bot filling every field finds this one. */}
           <input
@@ -143,43 +137,110 @@ export function GuestMessages() {
             autoComplete="off"
             aria-hidden="true"
           />
-          <button type="submit" className="btn btn-gold" style={{ height: 48 }} disabled={submitting}>
-            <Icon name="Send" size={16} /> {submitting ? "Enviando..." : "Acender"}
-          </button>
-        </div>
-        {err && <p style={{ color: "var(--rose-soft)", fontSize: ".82rem", marginTop: ".7rem", marginBottom: 0 }}>{err}</p>}
-      </form>
-
-      {loadError && (
-        <p style={{ color: "var(--text-dim)", textAlign: "center", marginTop: "2rem" }}>
-          Não foi possível carregar as mensagens agora. Sua mensagem ainda pode ser enviada.
-        </p>
-      )}
-
-      {!loading && !loadError && messages.length === 0 && (
-        <p style={{ color: "var(--text-dim)", textAlign: "center", marginTop: "2rem" }}>
-          Seja o primeiro a acender uma lanterna de carinho para os noivos.
-        </p>
-      )}
-
-      <div className="mural">
-        {messages.map((message) => (
-          <div className="mural-note" key={message.id} style={{ "--rot": `${message.rot}deg` }}>
-            <span className="glow-dot" />
-            <p className="mn-text">“{message.text}”</p>
-            <div className="mn-name">
-              <Icon name="Sparkle" size={13} /> {message.name}
-            </div>
+          <div className="mural-compose__actions">
+            <button type="submit" className="btn btn-gold" disabled={submitting}>
+              <Icon name="Send" size={16} /> {submitting ? "Enviando..." : "Acender lanterna"}
+            </button>
           </div>
-        ))}
+          {err && (
+            <p className="form-error-banner" role="alert">
+              {err}
+            </p>
+          )}
+        </form>
+
+        {loading && (
+          <p className="status-line" aria-live="polite">
+            Carregando mensagens...
+          </p>
+        )}
+
+        {loadError && (
+          <div className="status-panel" role="alert">
+            <p>Não foi possível carregar as mensagens agora.</p>
+            <button type="button" className="btn btn-ghost" onClick={() => setReloadKey((key) => key + 1)}>
+              Tentar novamente
+            </button>
+            <p className="status-line">Você ainda pode enviar a sua mensagem acima.</p>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="mural-sky reveal d2" aria-live="polite">
+            <FloatingLanterns scoped count={5} interactive={false} />
+
+            {!loadError && messages.length === 0 && (
+              <div className="mural-empty">
+                <MiniLantern size={52} />
+                <p className="mural-empty__title">O céu ainda está quieto</p>
+                <p className="mural-empty__lead">
+                  Seja o primeiro a acender uma lanterna de carinho para os noivos.
+                </p>
+              </div>
+            )}
+
+            {!loadError && messages.length > 0 && (
+              <>
+                <p className="mural-sky__count">
+                  {messages.length}{" "}
+                  {messages.length === 1 ? "lanterna acesa" : "lanternas acesas"} no céu
+                </p>
+                <div className="mural">
+                  {messages.map((message, index) => (
+                    <article
+                      className={`mural-lantern${message.isNew ? " mural-lantern--new" : ""}`}
+                      key={message.id}
+                      style={{
+                        "--rot": `${message.rot}deg`,
+                        "--delay": `${Math.min(index * 0.06, 0.48)}s`,
+                      }}
+                    >
+                      <div className="mural-lantern__beacon" aria-hidden="true">
+                        <span className="mural-lantern__glow" />
+                        <span className="mural-lantern__shape" />
+                        <span className="mural-lantern__flame" />
+                      </div>
+                      <blockquote className="mural-lantern__text">“{message.text}”</blockquote>
+                      <footer className="mural-lantern__author">
+                        <Icon name="Sparkle" size={13} aria-hidden="true" /> {message.name}
+                      </footer>
+                    </article>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        <ContactHelp context="mural" compact />
       </div>
     </section>
   );
 }
 
+function FooterLink({ item }) {
+  const location = useLocation();
+  const onHome = location.pathname === "/";
+
+  if (item.type === "route") {
+    return <Link to={item.to}>{item.label}</Link>;
+  }
+
+  if (onHome) {
+    return (
+      <a href={item.href} onClick={(event) => goToSection(event, item.href)}>
+        {item.label}
+      </a>
+    );
+  }
+
+  return <Link to={homeSectionPath(item.href)}>{item.label}</Link>;
+}
+
 export function Footer() {
   return (
-    <footer className="footer">
+    <footer className="footer lantern-zone">
+      <FloatingLanterns scoped count={4} interactive={false} />
       <div className="reveal">
         <MiniLantern size={56} />
       </div>
@@ -190,15 +251,12 @@ export function Footer() {
         “E assim, entre lanternas e estrelas, a nossa história ganha o seu para sempre.”
       </p>
       <div className="f-links reveal d2">
-        <a href="#inicio" onClick={(event) => goToSection(event, "#inicio")}>Início</a>
-        <a href="#historia" onClick={(event) => goToSection(event, "#historia")}>Nossa História</a>
-        <a href="#galeria" onClick={(event) => goToSection(event, "#galeria")}>Fotos</a>
-        <a href="#detalhes" onClick={(event) => goToSection(event, "#detalhes")}>O Grande Dia</a>
-        <a href="#rsvp" onClick={(event) => goToSection(event, "#rsvp")}>Confirmar Presença</a>
-        <a href="#presentes" onClick={(event) => goToSection(event, "#presentes")}>Presentes</a>
-        <a href="#mural" onClick={(event) => goToSection(event, "#mural")}>Mensagens</a>
+        {NAV_ITEMS.map((item) => (
+          <FooterLink key={item.href ?? item.to} item={item} />
+        ))}
       </div>
       <div className="f-date reveal d2">{WEDDING.dateLabel} · Paulínia / SP</div>
+      <ContactHelp context="geral" compact />
       <div className="f-credit reveal d3">
         Feito com muito amor e luz de lanternas · {WEDDING.namesDisplay} {new Date().getFullYear()}
       </div>

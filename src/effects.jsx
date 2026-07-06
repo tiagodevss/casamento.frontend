@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Bed,
   BookHeart,
   Calendar,
+  Candy,
   Castle,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -11,74 +14,121 @@ import {
   Clock,
   Coffee,
   Compass,
+  CookingPot,
   Copy,
+  Dice5,
+  Drill,
+  Droplet,
   Feather,
   Flame,
+  Flower2,
   Gift,
   HandHeart,
   Heart,
+  Home,
   Image,
+  Lamp,
   Map,
   MapPin,
   Menu,
   MessageCircleHeart,
+  Microwave,
   MousePointerClick,
+  Music,
   Navigation,
   Pause,
   PenLine,
   Phone,
+  PiggyBank,
   Play,
+  Popcorn,
+  Refrigerator,
   RotateCcw,
+  Sandwich,
+  Search,
   Send,
+  ShowerHead,
   Shirt,
+  Snowflake,
+  Sofa,
+  Soup,
   Sparkle,
   Sparkles,
+  Tv,
   User,
   Users,
   Utensils,
   UtensilsCrossed,
+  WashingMachine,
+  Wine,
+  Wrench,
   X,
 } from "lucide-react";
 
 import { LANTERN_MESSAGES } from "./data";
 
 const icons = {
+  Bed,
   BookHeart,
   Calendar,
+  Candy,
   Castle,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   Clock,
   Coffee,
   Compass,
+  CookingPot,
   Copy,
+  Dice5,
+  Drill,
+  Droplet,
   Feather,
   Flame,
+  Flower2,
   Gift,
   HandHeart,
   Heart,
+  Home,
   Image,
+  Lamp,
   Map,
   MapPin,
   Menu,
   MessageCircleHeart,
+  Microwave,
   MousePointerClick,
+  Music,
   Navigation,
   Pause,
   PenLine,
   Phone,
+  PiggyBank,
   Play,
+  Popcorn,
+  Refrigerator,
   RotateCcw,
+  Sandwich,
+  Search,
   Send,
+  ShowerHead,
   Shirt,
+  Snowflake,
+  Sofa,
+  Soup,
   Sparkle,
   Sparkles,
+  Tv,
   User,
   Users,
   Utensils,
   UtensilsCrossed,
+  WashingMachine,
+  Wine,
+  Wrench,
   X,
 };
 
@@ -141,89 +191,59 @@ export function PhotoFrame({ src, label, ornate = true, className = "", caption 
 
 export function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll(".reveal:not(.in)");
+    const observed = new WeakSet();
+
+    const reveal = (el) => {
+      if (observed.has(el)) return;
+      observed.add(el);
+      el.classList.add("in");
+    };
+
     if (!("IntersectionObserver" in window)) {
-      els.forEach((el) => el.classList.add("in"));
+      document.querySelectorAll(".reveal").forEach(reveal);
       return undefined;
     }
+
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("in");
+            reveal(entry.target);
             obs.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.14, rootMargin: "0px 0px -8% 0px" },
+      { threshold: 0.08, rootMargin: "0px 0px -4% 0px" },
     );
 
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  });
-}
-
-export function ScrollThread() {
-  const fill = useRef(null);
-
-  useEffect(() => {
-    let raf = null;
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        const height = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = height > 0 ? (window.scrollY / height) * 100 : 0;
-        if (fill.current) fill.current.style.width = `${progress}%`;
-        raf = null;
+    const scan = () => {
+      document.querySelectorAll(".reveal:not(.in)").forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        const inView = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
+        if (inView) {
+          reveal(el);
+        } else {
+          obs.observe(el);
+        }
       });
     };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    scan();
 
-  return (
-    <div className="scroll-thread">
-      <div className="fill" ref={fill} />
-    </div>
-  );
-}
+    const mo = new MutationObserver(scan);
+    mo.observe(document.getElementById("root") ?? document.body, {
+      childList: true,
+      subtree: true,
+    });
 
-export function CursorTrail() {
-  const layer = useRef(null);
-
-  useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const coarse = window.matchMedia("(pointer: coarse)").matches;
-    if (reduce || coarse) return undefined;
-
-    let last = 0;
-    const onMove = (event) => {
-      const now = performance.now();
-      if (now - last < 28) return;
-      last = now;
-
-      const spark = document.createElement("span");
-      spark.className = "spark";
-      spark.style.left = `${event.clientX + (Math.random() - 0.5) * 10}px`;
-      spark.style.top = `${event.clientY + (Math.random() - 0.5) * 10}px`;
-
-      const scale = 0.5 + Math.random();
-      spark.style.width = `${8 * scale}px`;
-      spark.style.height = `${8 * scale}px`;
-      layer.current?.appendChild(spark);
-      setTimeout(() => spark.remove(), 820);
+    return () => {
+      obs.disconnect();
+      mo.disconnect();
     };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    return () => window.removeEventListener("pointermove", onMove);
   }, []);
-
-  return <div ref={layer} aria-hidden="true" />;
 }
 
-export function FloatingLanterns() {
+export function FloatingLanterns({ scoped = false, count: countOverride, interactive = true }) {
   const lanternRefs = useRef([]);
   const hideTimer = useRef(null);
   const [msg, setMsg] = useState(null);
@@ -232,12 +252,14 @@ export function FloatingLanterns() {
   if (lanterns.current === null) {
     const isMobile = window.matchMedia("(max-width: 760px)").matches;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const count = reduce ? 6 : isMobile ? 9 : 18;
+    const defaultCount = scoped ? (isMobile ? 4 : 6) : isMobile ? 6 : 10;
+    const count = countOverride ?? (reduce ? 3 : defaultCount);
     let messageIndex = 0;
 
     lanterns.current = Array.from({ length: count }, (_, index) => {
       const depth = Math.random();
-      const interactive =
+      const canInteract =
+        interactive &&
         !reduce &&
         index % Math.max(2, Math.round(count / LANTERN_MESSAGES.length)) === 0 &&
         messageIndex < LANTERN_MESSAGES.length;
@@ -248,13 +270,13 @@ export function FloatingLanterns() {
         bottom: -10 - Math.random() * 30,
         size: 22 + depth * 46,
         depth,
-        opacity: 0.35 + depth * 0.6,
+        opacity: scoped ? 0.18 + depth * 0.32 : 0.28 + depth * 0.45,
         riseDur: 35 - depth * 13 + Math.random() * 11,
         swayDur: 3 + Math.random() * 3,
         delay: -Math.random() * 30,
         blur: (1 - depth) * 2.4,
-        interactive,
-        message: interactive ? LANTERN_MESSAGES[messageIndex++] : null,
+        interactive: canInteract,
+        message: canInteract ? LANTERN_MESSAGES[messageIndex++] : null,
       };
 
       return lantern;
@@ -279,7 +301,7 @@ export function FloatingLanterns() {
         lanternRefs.current.forEach((el) => {
           if (!el) return;
           const depth = Number(el.dataset.depth);
-          el.style.transform = `translate(${-tx * depth * 46}px, ${-ty * depth * 28}px)`;
+          el.style.transform = `translate(${-tx * depth * 24}px, ${-ty * depth * 14}px)`;
         });
         raf = null;
       });
@@ -299,7 +321,10 @@ export function FloatingLanterns() {
 
   return (
     <>
-      <div className="lantern-field" aria-hidden="true">
+      <div
+        className={`lantern-field ${scoped ? "lantern-field--scoped" : ""}`}
+        aria-hidden="true"
+      >
         {lanterns.current.map((lantern) => (
           <div
             key={lantern.id}
@@ -349,9 +374,9 @@ export function Confetti() {
 
   useEffect(() => {
     const onBurst = () => {
-      const colors = ["#f0d49a", "#e6c178", "#d8a94a", "#ffcf86", "#c4b3ec", "#d49a9b"];
+      const colors = ["#f2e090", "#eed060", "#e8c038", "#ffe070", "#c4b3ec", "#d49a9b"];
       const id = Date.now();
-      const pieces = Array.from({ length: 90 }, (_, index) => ({
+      const pieces = Array.from({ length: 48 }, (_, index) => ({
         id: `${id}-${index}`,
         left: Math.random() * 100,
         delay: Math.random() * 0.4,
@@ -409,7 +434,7 @@ export function MiniLantern({ size = 70 }) {
           width: "240%",
           height: "240%",
           transform: "translate(-50%,-50%)",
-          background: "radial-gradient(circle, rgba(255,207,134,.5), transparent 65%)",
+          background: "radial-gradient(circle, rgba(255,224,112,.5), transparent 65%)",
           borderRadius: "50%",
         }}
       />
@@ -420,9 +445,9 @@ export function MiniLantern({ size = 70 }) {
           inset: 0,
           borderRadius: "18% 18% 22% 22% / 12% 12% 16% 16%",
           background:
-            "var(--tangled-sun) center/100% 100% no-repeat, linear-gradient(180deg,#f3982f 0%,#f8af45 30%,#fcc861 55%,#ffe6a0 82%,#fff4cf 100%)",
+            "var(--tangled-sun) center/100% 100% no-repeat, linear-gradient(180deg,#f0c840 0%,#f5d850 30%,#fde068 55%,#fff0a8 82%,#fff8d8 100%)",
           boxShadow:
-            "inset 0 -12px 20px rgba(255,240,180,.7), inset 0 8px 14px rgba(200,100,25,.35), 0 0 22px rgba(255,180,90,.6)",
+            "inset 0 -12px 20px rgba(255,245,180,.7), inset 0 8px 14px rgba(220,170,40,.35), 0 0 22px rgba(255,210,80,.6)",
         }}
       />
       <span
@@ -434,7 +459,7 @@ export function MiniLantern({ size = 70 }) {
           transform: "translateX(-50%)",
           width: "54%",
           height: "20%",
-          background: "radial-gradient(ellipse at 50% 90%, #fff8e2 0%, #ffe08a 45%, transparent 72%)",
+          background: "radial-gradient(ellipse at 50% 90%, #fffce8 0%, #ffe870 45%, transparent 72%)",
           borderRadius: "50%",
         }}
       />

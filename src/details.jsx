@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { WEDDING } from "./data";
 import { Icon } from "./effects";
+import { SectionHead } from "./SectionHead";
 
 export function EventDetails() {
   const items = [
@@ -12,16 +13,9 @@ export function EventDetails() {
   ];
 
   return (
-    <section className="section" id="detalhes">
-      <div className="section-head">
-        <span className="eyebrow reveal">O convite</span>
-        <h2 className="section-title reveal d1">O Grande Dia</h2>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
-        </div>
-      </div>
+    <section className="section-band section-band--light" id="detalhes">
+      <div className="section-band__inner">
+      <SectionHead variant="logistics" title="O Grande Dia" />
 
       <div className="parchment reveal d1" style={{ maxWidth: 880, margin: "0 auto" }}>
         <span className="deco-seal">
@@ -85,6 +79,7 @@ export function EventDetails() {
           Cada presença acende uma luz nesse dia. Será uma alegria imensa ter você conosco.
         </p>
       </div>
+      </div>
     </section>
   );
 }
@@ -118,33 +113,45 @@ export function Countdown() {
 
   return (
     <section className="section countdown" id="contagem" style={{ paddingTop: "2rem" }}>
-      <div className="section-head" style={{ marginBottom: "1.5rem" }}>
-        <span className="eyebrow reveal">A contagem mágica</span>
-        <h2 className="section-title reveal d1" style={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}>
-          {time.done ? "Hoje é o nosso dia!" : "Faltam poucos dias para o nosso felizes para sempre"}
-        </h2>
-      </div>
-      <div className="count-grid reveal d2">
-        {cells.map((cell) => (
-          <div className="count-cell" key={cell.l}>
-            <span className="corner tl" />
-            <span className="corner br" />
-            <div className="num">{String(cell.n).padStart(2, "0")}</div>
-            <div className="lbl">{cell.l}</div>
-          </div>
-        ))}
-      </div>
+      <SectionHead
+        variant="logistics"
+        title={
+          time.done
+            ? "Foi um dia inesquecível"
+            : "Faltam poucos dias para o nosso felizes para sempre"
+        }
+        titleStyle={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}
+        headStyle={{ marginBottom: "1.5rem" }}
+      />
+      {!time.done && (
+        <div className="count-grid reveal d2">
+          {cells.map((cell) => (
+            <div className="count-cell" key={cell.l}>
+              <span className="corner tl" />
+              <span className="corner br" />
+              <div className="num">{String(cell.n).padStart(2, "0")}</div>
+              <div className="lbl">{cell.l}</div>
+            </div>
+          ))}
+        </div>
+      )}
       <p
         className="reveal d3"
         style={{
           color: "var(--text-dim)",
-          marginTop: "2rem",
+          marginTop: time.done ? "0.5rem" : "2rem",
           fontFamily: "var(--font-script)",
           fontStyle: "italic",
           fontSize: "1.2rem",
+          maxWidth: "42ch",
+          marginInline: "auto",
+          textAlign: "center",
+          lineHeight: 1.65,
         }}
       >
-        Cada segundo nos aproxima do momento em que diremos “sim”.
+        {time.done
+          ? "Obrigado por ter feito parte do nosso céu de luzes. Guardamos cada momento com carinho."
+          : "Cada segundo nos aproxima do momento em que diremos “sim”."}
       </p>
     </section>
   );

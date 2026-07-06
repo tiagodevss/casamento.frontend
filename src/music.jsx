@@ -40,7 +40,7 @@ export function MusicPlayer() {
     audio.addEventListener("loadedmetadata", onMeta);
     audio.addEventListener("timeupdate", onTime);
 
-    const wantsOn = localStorage.getItem(KEY_ON) !== "0";
+    const wantsOn = localStorage.getItem(KEY_ON) === "1";
     let kick = null;
 
     if (wantsOn) {
@@ -122,7 +122,7 @@ export function MusicPlayer() {
       </button>
       <div className="music-meta">
         <span className="m-eyebrow">{needsTap ? "Toque para ouvir" : "Tocando"}</span>
-        <span className="m-title">I See the Light</span>
+        <span className="m-title">Música ambiente</span>
       </div>
     </div>
   );

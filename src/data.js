@@ -14,7 +14,7 @@ export const WEDDING = {
 
 export const LANTERN_MESSAGES = [
   { label: "Nosso voto", text: "“Escolho você, hoje e em cada amanhã.”" },
-  { label: "Uma data", text: "21.11.2026 — o dia do nosso sim." },
+  { label: "Uma data", text: "14.11.2026 — o dia do nosso sim." },
   { label: "Um sonho", text: "“Que a nossa luz nunca se apague.”" },
   { label: "Promessa", text: "“Contigo, todo caminho vira aventura.”" },
   { label: "Para sempre", text: "“O nosso felizes para sempre começa agora.”" },

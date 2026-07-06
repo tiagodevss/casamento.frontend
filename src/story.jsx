@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { GALLERY } from "./data";
 import { Icon, PhotoFrame } from "./effects";
+import { SectionHead } from "./SectionHead";
 
 export function GallerySection() {
   const [active, setActive] = useState(null);
@@ -28,21 +29,11 @@ export function GallerySection() {
 
   return (
     <section className="section" id="galeria">
-      <div className="section-head">
-        <span className="eyebrow reveal">Um mural encantado</span>
-        <h2 className="section-title reveal d1">Galeria do Ensaio</h2>
-        <p
-          className="reveal d2"
-          style={{ color: "var(--text-dim)", maxWidth: "46ch", margin: "1rem auto 0", lineHeight: 1.7 }}
-        >
-          Páginas soltas do nosso livro de luz. Toque numa imagem para vê-la de perto.
-        </p>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
-        </div>
-      </div>
+      <SectionHead
+        variant="narrative"
+        title="Galeria do Ensaio"
+        description="Páginas soltas do nosso livro de luz. Toque numa imagem para vê-la de perto."
+      />
 
       <div className="gallery-grid">
         {GALLERY.map((item, index) => (

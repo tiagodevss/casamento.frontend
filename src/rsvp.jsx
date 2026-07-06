@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { Icon, MiniLantern, fireConfetti } from "./effects";
 import { api } from "./api";
+import { ContactHelp } from "./ContactHelp";
+import { SectionHead } from "./SectionHead";
 
 const emptyForm = {
   attending: "",
@@ -28,7 +30,9 @@ function GuestSearch({ onSelect }) {
     try {
       const results = await api.searchGuests(query.trim());
       setCandidates(results);
-      if (results.length === 0) setError("Não encontramos seu convite. Confira o nome digitado.");
+      if (results.length === 0) {
+        setError("Não encontramos seu convite. Tente o sobrenome da família ou peça ajuda abaixo.");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -38,7 +42,7 @@ function GuestSearch({ onSelect }) {
 
   return (
     <form
-      className="glass reveal d1"
+      className="panel reveal d1"
       style={{ maxWidth: 620, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
       onSubmit={search}
       noValidate
@@ -51,12 +55,20 @@ function GuestSearch({ onSelect }) {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Digite seu nome ou o nome da sua família"
+          maxLength={80}
+          autoComplete="name"
+          aria-describedby="rsvp-search-hint rsvp-search-error"
         />
-        <span className="err-msg">{error}</span>
+        <span id="rsvp-search-hint" className="field-hint">
+          Use pelo menos 3 letras. Se não aparecer, tente outro sobrenome da família.
+        </span>
+        <span id="rsvp-search-error" className="err-msg" role="alert">
+          {error}
+        </span>
       </div>
 
       <div style={{ textAlign: "center", marginTop: "1.2rem" }}>
-        <button type="submit" className="btn btn-gold" disabled={loading}>
+        <button type="submit" className="btn btn-ink" disabled={loading}>
           <Icon name="Search" size={16} /> {loading ? "Buscando..." : "Buscar convite"}
         </button>
       </div>
@@ -73,17 +85,19 @@ function GuestSearch({ onSelect }) {
             >
               <span>{candidate.displayName}</span>
               {candidate.hasResponded && (
-                <span style={{ fontSize: ".75rem", color: "var(--text-dim)" }}>já confirmado</span>
+                <span style={{ fontSize: ".75rem", color: "var(--ink-soft)" }}>já confirmado</span>
               )}
             </button>
           ))}
         </div>
       )}
+
+      <ContactHelp context="rsvp" compact />
     </form>
   );
 }
 
-export function RSVPForm() {
+export function RSVPForm({ standalone = false }) {
   const [group, setGroup] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
@@ -98,6 +112,9 @@ export function RSVPForm() {
   const validate = () => {
     const nextErrors = {};
     if (!form.attending) nextErrors.attending = "Escolha uma opção";
+    if (form.attending === "yes" && form.companions > 0 && !form.companionNames.trim()) {
+      nextErrors.companionNames = "Informe os nomes dos acompanhantes";
+    }
     return nextErrors;
   };
 
@@ -106,7 +123,7 @@ export function RSVPForm() {
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      document.querySelector(".field.error input, .field.error select")?.focus();
+      document.querySelector(".field.error input, .field.error select, .field.error textarea")?.focus();
       return;
     }
 
@@ -122,16 +139,19 @@ export function RSVPForm() {
       setSent(true);
       setTimeout(() => fireConfetti(), 250);
     } catch (err) {
-      setErrors({ attending: err.message });
+      setErrors({ submit: err.message });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const sectionClass = `section-band section-band--light${standalone ? " action-page-form" : ""}`;
+
   if (sent) {
     return (
-      <section className="section" id="rsvp">
-        <div className="glass rsvp-success" style={{ maxWidth: 620, margin: "0 auto", padding: "3rem 2rem" }}>
+      <section className={sectionClass} id={standalone ? undefined : "rsvp"}>
+        <div className="section-band__inner">
+        <div className="panel rsvp-success" style={{ maxWidth: 620, margin: "0 auto", padding: "3rem 2rem" }}>
           <div className="rising-lantern">
             <MiniLantern size={70} />
           </div>
@@ -141,9 +161,8 @@ export function RSVPForm() {
           </h2>
           <p
             style={{
-              color: "var(--lilac-soft)",
+              color: "var(--ink-soft)",
               fontFamily: "var(--font-script)",
-              fontStyle: "italic",
               fontSize: "1.4rem",
               margin: "1rem auto 0",
               maxWidth: "34ch",
@@ -152,7 +171,7 @@ export function RSVPForm() {
             Sua presença foi enviada para o nosso céu de lanternas.
           </p>
           {form.attending === "yes" && (
-            <p style={{ color: "var(--text-dim)", marginTop: "1rem" }}>
+            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>
               {form.companions > 0
                 ? `Você e mais ${form.companions} ${
                     form.companions === 1 ? "acompanhante" : "acompanhantes"
@@ -172,43 +191,35 @@ export function RSVPForm() {
             <Icon name="RotateCcw" size={16} /> Enviar outra confirmação
           </button>
         </div>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="section" id="rsvp">
-      <div className="section-head">
-        <span className="eyebrow reveal">Solte uma lanterna por nós</span>
-        <h2 className="section-title reveal d1">Confirme seu lugar nessa história</h2>
-        <p
-          className="reveal d2"
-          style={{ color: "var(--text-dim)", maxWidth: "44ch", margin: "1rem auto 0", lineHeight: 1.7 }}
-        >
-          Preencha com carinho e faça parte do nosso céu de luzes.
-        </p>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
-        </div>
-      </div>
+    <section className={sectionClass} id={standalone ? undefined : "rsvp"}>
+      <div className="section-band__inner">
+      <SectionHead
+        variant="action"
+        title="Confirme seu lugar nessa história"
+        description="Preencha com carinho e faça parte do nosso céu de luzes."
+      />
 
       {!group ? (
         <GuestSearch onSelect={setGroup} />
       ) : (
         <form
-          className="glass reveal d1"
+          className="panel reveal d1"
           style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
           onSubmit={submit}
           noValidate
         >
-          <p style={{ color: "var(--text-dim)", marginBottom: "1rem" }}>
-            Confirmando para: <strong style={{ color: "var(--cream)" }}>{group.displayName}</strong>{" "}
+          <p style={{ color: "var(--ink-soft)", marginBottom: "1rem" }}>
+            Confirmando para: <strong style={{ color: "var(--ink)" }}>{group.displayName}</strong>{" "}
             <button
               type="button"
               onClick={() => setGroup(null)}
-              style={{ background: "none", border: "none", color: "var(--gold-400)", cursor: "pointer" }}
+              style={{ background: "none", border: "none", color: "var(--sage-600)", cursor: "pointer" }}
             >
               (trocar)
             </button>
@@ -267,7 +278,7 @@ export function RSVPForm() {
                       +
                     </button>
                   </div>
-                  <span style={{ fontSize: ".75rem", color: "var(--text-dim)" }}>
+                  <span style={{ fontSize: ".75rem", color: "var(--ink-soft)" }}>
                     Máximo de {group.maxCompanions} acompanhante(s) neste convite
                   </span>
                 </div>
@@ -282,7 +293,7 @@ export function RSVPForm() {
                   />
                 </div>
                 {form.companions > 0 && (
-                  <div className="field full">
+                  <div className={`field full ${errors.companionNames ? "error" : ""}`}>
                     <label>
                       <Icon name="PenLine" size={14} /> Nomes dos acompanhantes
                     </label>
@@ -290,7 +301,12 @@ export function RSVPForm() {
                       value={form.companionNames}
                       onChange={(event) => updateField("companionNames", event.target.value)}
                       placeholder="Separe os nomes por vírgula"
+                      maxLength={300}
+                      required
                     />
+                    <span className="err-msg" role="alert">
+                      {errors.companionNames}
+                    </span>
                   </div>
                 )}
               </>
@@ -308,13 +324,22 @@ export function RSVPForm() {
             </div>
           </div>
 
+          {errors.submit && (
+            <p className="form-error-banner" role="alert">
+              {errors.submit}
+            </p>
+          )}
+
           <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
-            <button type="submit" className="btn btn-gold" style={{ padding: "1rem 2.6rem" }} disabled={submitting}>
+            <button type="submit" className="btn btn-ink" style={{ padding: "1rem 2.6rem" }} disabled={submitting}>
               <Icon name="Send" size={18} /> {submitting ? "Enviando..." : "Enviar para o céu de lanternas"}
             </button>
           </div>
+
+          <ContactHelp context="rsvp" compact />
         </form>
       )}
+      </div>
     </section>
   );
 }

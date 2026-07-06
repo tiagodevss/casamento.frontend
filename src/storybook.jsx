@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { STORY, WEDDING } from "./data";
 import { Icon, MiniLantern } from "./effects";
+import { SectionHead } from "./SectionHead";
 
 function IlluPlate({ chapter }) {
   return (
@@ -312,22 +313,11 @@ export function StorySection() {
 
   return (
     <section className="section" id="historia">
-      <div className="section-head">
-        <span className="eyebrow reveal">Era uma vez</span>
-        <h2 className="section-title reveal d1">Nossa História</h2>
-        <p
-          className="reveal d2"
-          style={{ color: "var(--text-dim)", maxWidth: "46ch", margin: "1rem auto 0", lineHeight: 1.7 }}
-        >
-          Abra o nosso livro de contos e folheie, página a página, a jornada que nos trouxe até
-          aqui.
-        </p>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
-        </div>
-      </div>
+      <SectionHead
+        variant="narrative"
+        title="Nossa História"
+        description="Abra o nosso livro de contos e folheie, página a página, a jornada que nos trouxe até aqui."
+      />
       {narrow ? <BookMobile story={STORY} /> : <BookDesktop story={STORY} />}
     </section>
   );

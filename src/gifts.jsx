@@ -1,16 +1,69 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "./effects";
-import { api } from "./api";
+import { api, resolveUploadUrl } from "./api";
+import { parseBrlAmount } from "./contact";
+import { SectionHead } from "./SectionHead";
 
 const POLL_INTERVAL_MS = 5000;
+
+function pixQrImageSrc(brCodeBase64) {
+  if (!brCodeBase64) return undefined;
+  return brCodeBase64.startsWith("data:")
+    ? brCodeBase64
+    : `data:image/png;base64,${brCodeBase64}`;
+}
+
+function GiftVisual({ gift, size = 22, className = "gift-emoji-wrap" }) {
+  const url = resolveUploadUrl(gift.imagePath);
+  if (url) {
+    return (
+      <span className={className} style={{ padding: 0, overflow: "hidden" }}>
+        <img
+          src={url}
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      </span>
+    );
+  }
+  return (
+    <span className={className}>
+      <Icon name={gift.icon} size={size} />
+    </span>
+  );
+}
 
 function GiftModal({ gift, onClose }) {
   const [copied, setCopied] = useState(false);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [awaitingPayment, setAwaitingPayment] = useState(false);
   const pollRef = useRef(null);
+  const giftRef = useRef(gift);
+
+  giftRef.current = gift;
+
+  const createOrder = async () => {
+    const current = giftRef.current;
+    setLoading(true);
+    setError("");
+    setOrder(null);
+    setAwaitingPayment(false);
+    try {
+      const payload = current.custom
+        ? { kind: "FREE_CONTRIBUTION", amountCents: Math.round(current.value * 100), donorMessage: current.title }
+        : { kind: "FIXED_GIFT", giftId: current.id };
+
+      const created = await api.createPaymentOrder(payload);
+      setOrder(created);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const onKey = (event) => event.key === "Escape" && onClose();
@@ -19,39 +72,19 @@ function GiftModal({ gift, onClose }) {
   }, [onClose]);
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function createOrder() {
-      setLoading(true);
-      setError("");
-      try {
-        const payload = gift.custom
-          ? { kind: "FREE_CONTRIBUTION", amountCents: Math.round(gift.value * 100), donorMessage: gift.title }
-          : { kind: "FIXED_GIFT", giftId: gift.id };
-
-        const created = await api.createPaymentOrder(payload);
-        if (!cancelled) setOrder(created);
-      } catch (err) {
-        if (!cancelled) setError(err.message);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-
     createOrder();
-    return () => {
-      cancelled = true;
-    };
-  }, [gift]);
+  }, [gift.id, gift.custom, gift.value]);
 
   useEffect(() => {
     if (!order || order.status === "PAID") return undefined;
 
+    setAwaitingPayment(true);
     pollRef.current = setInterval(async () => {
       try {
         const status = await api.getPaymentStatus(order.id);
         if (status.status === "PAID") {
           setOrder((current) => ({ ...current, status: "PAID" }));
+          setAwaitingPayment(false);
           clearInterval(pollRef.current);
         }
       } catch {
@@ -89,7 +122,7 @@ function GiftModal({ gift, onClose }) {
           <Icon name="X" size={20} />
         </button>
         <div className="modal-emoji">
-          <Icon name={gift.icon} size={32} />
+          <GiftVisual gift={gift} size={32} />
         </div>
         <h3>{gift.title}</h3>
         <div className="modal-value">
@@ -104,23 +137,31 @@ function GiftModal({ gift, onClose }) {
             </p>
           </div>
         ) : loading ? (
-          <p style={{ textAlign: "center", color: "var(--text-dim)", padding: "2rem 0" }}>
+          <p style={{ textAlign: "center", color: "var(--ink-soft)", padding: "2rem 0" }}>
             Gerando seu Pix...
           </p>
         ) : error ? (
-          <p style={{ textAlign: "center", color: "var(--rose)", padding: "1rem 0" }}>{error}</p>
+          <div style={{ textAlign: "center", padding: "1rem 0" }}>
+            <p style={{ color: "var(--rose)", marginBottom: "1.2rem" }}>{error}</p>
+            <button type="button" className="btn btn-ghost" onClick={createOrder}>
+              Tentar novamente
+            </button>
+          </div>
         ) : (
           <>
+            <p className="pix-status" role="status" aria-live="polite">
+              {awaitingPayment
+                ? "Aguardando confirmação do pagamento Pix..."
+                : "Escaneie o QR Code ou copie o código abaixo"}
+            </p>
+
             <div className="qr-box">
               <img
-                src={`data:image/png;base64,${order.brCodeBase64}`}
+                src={pixQrImageSrc(order.brCodeBase64)}
                 alt="QR Code Pix"
                 style={{ width: "100%", height: "auto" }}
               />
             </div>
-            <p style={{ textAlign: "center", color: "var(--text-dim)", fontSize: ".82rem", marginTop: "-.6rem", marginBottom: "1.2rem" }}>
-              Aponte a câmera do seu banco ou copie o código Pix abaixo
-            </p>
 
             <div className="pix-row">
               <div className="pix-key">{order.brCode}</div>
@@ -141,12 +182,18 @@ function GiftModal({ gift, onClose }) {
   );
 }
 
-export function GiftSection() {
+export function GiftSection({ standalone = false }) {
   const [gifts, setGifts] = useState([]);
+  const [giftsLoading, setGiftsLoading] = useState(true);
+  const [giftsError, setGiftsError] = useState(false);
   const [modal, setModal] = useState(null);
   const [customValue, setCustomValue] = useState("");
+  const [customError, setCustomError] = useState("");
 
-  useEffect(() => {
+  const loadGifts = () => {
+    setGiftsLoading(true);
+    setGiftsError(false);
+
     api
       .listGifts()
       .then((list) =>
@@ -154,6 +201,7 @@ export function GiftSection() {
           list.map((gift) => ({
             id: gift.id,
             icon: gift.iconName,
+            imagePath: gift.imagePath ?? null,
             title: gift.title,
             desc: gift.description,
             value: gift.priceCents / 100,
@@ -161,45 +209,63 @@ export function GiftSection() {
           })),
         ),
       )
-      .catch(() => setGifts([]));
+      .catch(() => {
+        setGifts([]);
+        setGiftsError(true);
+      })
+      .finally(() => setGiftsLoading(false));
+  };
+
+  useEffect(() => {
+    loadGifts();
   }, []);
 
   const openCustom = () => {
-    const value = parseFloat(String(customValue).replace(",", "."));
+    const value = parseBrlAmount(customValue);
+    if (value <= 0) {
+      setCustomError("Informe um valor válido (ex.: 150,00)");
+      return;
+    }
+    setCustomError("");
     setModal({
       icon: "Sparkles",
       title: "Contribuição livre",
-      value: value > 0 ? value : 0,
+      value,
       custom: true,
     });
   };
 
+  const sectionClass = `section-band section-band--light${standalone ? " action-page-form" : ""}`;
+
   return (
-    <section className="section" id="presentes">
-      <div className="section-head">
-        <span className="eyebrow reveal">Escolha um presente para iluminar nossa jornada</span>
-        <h2 className="section-title reveal d1">Lista de Presentes</h2>
-        <p
-          className="reveal d2"
-          style={{ color: "var(--text-dim)", maxWidth: "48ch", margin: "1rem auto 0", lineHeight: 1.7 }}
-        >
-          Mais do que objetos, cada presente é uma lanterna que acende um pedaço do nosso futuro.
-          Sua presença já é o nosso maior presente.
+    <section className={sectionClass} id={standalone ? undefined : "presentes"}>
+      <div className="section-band__inner">
+      <SectionHead
+        variant="action"
+        title="Lista de Presentes"
+        description="Mais do que objetos, cada presente é uma lanterna que acende um pedaço do nosso futuro. Sua presença já é o nosso maior presente."
+      />
+
+      {giftsLoading && (
+        <p className="status-line" aria-live="polite">
+          Carregando lista de presentes...
         </p>
-        <div className="divider-flourish reveal d2">
-          <span className="line" />
-          <span className="dot" />
-          <span className="line right" />
+      )}
+
+      {giftsError && (
+        <div className="status-panel" role="alert">
+          <p>Não foi possível carregar os presentes agora.</p>
+          <button type="button" className="btn btn-ghost" onClick={loadGifts}>
+            Tentar novamente
+          </button>
         </div>
-      </div>
+      )}
 
       <div className="gift-grid">
         {gifts.map((gift, index) => (
           <div className={`gift-card reveal ${["", "d1", "d2", "d3"][index % 4]}`} key={gift.id}>
             {gift.tag && <span className="gift-tag">{gift.tag}</span>}
-            <span className="gift-emoji-wrap">
-              <Icon name={gift.icon} size={22} />
-            </span>
+            <GiftVisual gift={gift} />
             <h3>{gift.title}</h3>
             <p className="gift-desc">{gift.desc}</p>
             <div className="gift-foot">
@@ -224,14 +290,21 @@ export function GiftSection() {
             <span className="cur">R$</span>
             <input
               value={customValue}
-              onChange={(event) =>
-                setCustomValue(event.target.value.replace(/[^\d.,]/g, ""))
-              }
+              onChange={(event) => {
+                setCustomValue(event.target.value.replace(/[^\d.,]/g, ""));
+                if (customError) setCustomError("");
+              }}
               placeholder="0,00"
               inputMode="decimal"
               aria-label="Valor da contribuição"
+              aria-describedby="custom-amount-error"
             />
           </div>
+          {customError && (
+            <span id="custom-amount-error" className="err-msg" role="alert">
+              {customError}
+            </span>
+          )}
           <div className="gift-foot">
             <span />
             <button className="gift-give" onClick={openCustom}>
@@ -242,6 +315,7 @@ export function GiftSection() {
       </div>
 
       {modal && <GiftModal gift={modal} onClose={() => setModal(null)} />}
+      </div>
     </section>
   );
 }

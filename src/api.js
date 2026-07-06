@@ -15,16 +15,41 @@ export function clearToken() {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+/** URL pública para imagens enviadas ao servidor (imagePath = gifts/{id}.ext) */
+export function resolveUploadUrl(imagePath) {
+  if (!imagePath) return null;
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
+
+  const customBase = import.meta.env.VITE_UPLOADS_URL?.trim();
+  if (customBase) {
+    return `${customBase.replace(/\/$/, "")}/${imagePath.replace(/^\//, "")}`;
+  }
+
+  const origin = API_URL.replace(/\/api\/?$/, "");
+  if (origin && origin !== API_URL) {
+    return `${origin}/uploads/${imagePath.replace(/^\//, "")}`;
+  }
+
+  return `/uploads/${imagePath.replace(/^\//, "")}`;
+}
+
 async function request(path, options = {}) {
   const token = getToken();
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  const isFormData = options.body instanceof FormData;
+  let response;
+
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new Error("Sem conexão. Verifique sua internet e tente novamente.");
+  }
 
   const body = await response.json().catch(() => null);
   if (!response.ok) {
@@ -54,4 +79,17 @@ export const api = {
   updateGuestGroup: (id, payload) =>
     request(`/guests/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteGuestGroup: (id) => request(`/guests/${id}`, { method: "DELETE" }),
+
+  listAdminGifts: () => request("/admin/gifts"),
+  createGift: (payload) => request("/admin/gifts", { method: "POST", body: JSON.stringify(payload) }),
+  updateGift: (id, payload) =>
+    request(`/admin/gifts/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  setGiftActive: (id, active) =>
+    request(`/admin/gifts/${id}/active`, { method: "PATCH", body: JSON.stringify({ active }) }),
+  uploadGiftImage: (id, file) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request(`/admin/gifts/${id}/image`, { method: "POST", body: form });
+  },
+  deleteGiftImage: (id) => request(`/admin/gifts/${id}/image`, { method: "DELETE" }),
 };
