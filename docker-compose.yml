@@ -12,9 +12,9 @@ services:
     # on this compose network, not from the host/internet.
 
   backend:
-    build: ./backend
+    build: ../backend
     restart: unless-stopped
-    env_file: ./backend/.env
+    env_file: ../backend/.env
     environment:
       DATABASE_URL: postgresql://casamento:${POSTGRES_PASSWORD}@postgres:5432/casamento
     depends_on:
