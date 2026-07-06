@@ -168,15 +168,15 @@ export function HeroScene() {
             <img
               className="hero-photo-main"
               src="/photos/ensaio-1.jpg"
-              alt=""
+              alt="Tiago e Gabriela à beira do lago"
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
             />
             <img
               className="hero-photo-accent"
-              src="/photos/ensaio-3.jpg"
-              alt=""
+              src="/photos/ensaio-4.jpg"
+              alt="Tiago e Gabriela mostrando o anel de noivado"
               onError={(event) => {
                 event.currentTarget.style.display = "none";
               }}
