@@ -1,10 +1,9 @@
 import { useState } from "react";
 
 import { Icon, MiniLantern, fireConfetti } from "./effects";
+import { api } from "./api";
 
 const emptyForm = {
-  name: "",
-  phone: "",
   attending: "",
   companions: 0,
   companionNames: "",
@@ -12,10 +11,84 @@ const emptyForm = {
   message: "",
 };
 
+function GuestSearch({ onSelect }) {
+  const [query, setQuery] = useState("");
+  const [candidates, setCandidates] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const search = async (event) => {
+    event.preventDefault();
+    if (query.trim().length < 3) {
+      setError("Digite ao menos 3 letras do seu nome");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const results = await api.searchGuests(query.trim());
+      setCandidates(results);
+      if (results.length === 0) setError("Não encontramos seu convite. Confira o nome digitado.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form
+      className="glass reveal d1"
+      style={{ maxWidth: 620, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
+      onSubmit={search}
+      noValidate
+    >
+      <div className="field full">
+        <label>
+          <Icon name="Search" size={14} /> Como devemos te encontrar?
+        </label>
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Digite seu nome ou o nome da sua família"
+        />
+        <span className="err-msg">{error}</span>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: "1.2rem" }}>
+        <button type="submit" className="btn btn-gold" disabled={loading}>
+          <Icon name="Search" size={16} /> {loading ? "Buscando..." : "Buscar convite"}
+        </button>
+      </div>
+
+      {candidates && candidates.length > 0 && (
+        <div style={{ marginTop: "1.6rem", display: "grid", gap: ".6rem" }}>
+          {candidates.map((candidate) => (
+            <button
+              key={candidate.id}
+              type="button"
+              className="btn btn-ghost"
+              style={{ justifyContent: "space-between", width: "100%" }}
+              onClick={() => onSelect(candidate)}
+            >
+              <span>{candidate.displayName}</span>
+              {candidate.hasResponded && (
+                <span style={{ fontSize: ".75rem", color: "var(--text-dim)" }}>já confirmado</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+    </form>
+  );
+}
+
 export function RSVPForm() {
+  const [group, setGroup] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const updateField = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -24,14 +97,11 @@ export function RSVPForm() {
 
   const validate = () => {
     const nextErrors = {};
-    if (!form.name.trim()) nextErrors.name = "Conte-nos seu nome";
-    if (!form.phone.trim()) nextErrors.phone = "Precisamos de um contato";
-    else if (form.phone.replace(/\D/g, "").length < 10) nextErrors.phone = "Telefone incompleto";
     if (!form.attending) nextErrors.attending = "Escolha uma opção";
     return nextErrors;
   };
 
-  const submit = (event) => {
+  const submit = async (event) => {
     event.preventDefault();
     const nextErrors = validate();
     setErrors(nextErrors);
@@ -39,8 +109,23 @@ export function RSVPForm() {
       document.querySelector(".field.error input, .field.error select")?.focus();
       return;
     }
-    setSent(true);
-    setTimeout(() => fireConfetti(), 250);
+
+    setSubmitting(true);
+    try {
+      await api.confirmRsvp(group.id, {
+        attending: form.attending === "yes",
+        companionsCount: form.companions,
+        companionNames: form.companionNames || undefined,
+        diet: form.diet || undefined,
+        message: form.message || undefined,
+      });
+      setSent(true);
+      setTimeout(() => fireConfetti(), 250);
+    } catch (err) {
+      setErrors({ attending: err.message });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (sent) {
@@ -80,6 +165,7 @@ export function RSVPForm() {
             style={{ marginTop: "1.8rem" }}
             onClick={() => {
               setSent(false);
+              setGroup(null);
               setForm(emptyForm);
             }}
           >
@@ -108,131 +194,127 @@ export function RSVPForm() {
         </div>
       </div>
 
-      <form
-        className="glass reveal d1"
-        style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
-        onSubmit={submit}
-        noValidate
-      >
-        <div className="form-grid">
-          <div className={`field ${errors.name ? "error" : ""}`}>
-            <label>
-              <Icon name="User" size={14} /> Nome completo
-            </label>
-            <input
-              value={form.name}
-              onChange={(event) => updateField("name", event.target.value)}
-              placeholder="Como devemos chamar você"
-            />
-            <span className="err-msg">{errors.name}</span>
-          </div>
-          <div className={`field ${errors.phone ? "error" : ""}`}>
-            <label>
-              <Icon name="Phone" size={14} /> Telefone / WhatsApp
-            </label>
-            <input
-              value={form.phone}
-              onChange={(event) => updateField("phone", event.target.value)}
-              placeholder="(00) 00000-0000"
-              inputMode="tel"
-            />
-            <span className="err-msg">{errors.phone}</span>
-          </div>
+      {!group ? (
+        <GuestSearch onSelect={setGroup} />
+      ) : (
+        <form
+          className="glass reveal d1"
+          style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
+          onSubmit={submit}
+          noValidate
+        >
+          <p style={{ color: "var(--text-dim)", marginBottom: "1rem" }}>
+            Confirmando para: <strong style={{ color: "var(--cream)" }}>{group.displayName}</strong>{" "}
+            <button
+              type="button"
+              onClick={() => setGroup(null)}
+              style={{ background: "none", border: "none", color: "var(--gold-400)", cursor: "pointer" }}
+            >
+              (trocar)
+            </button>
+          </p>
 
-          <div className={`field full ${errors.attending ? "error" : ""}`}>
-            <label>
-              <Icon name="Heart" size={14} /> Você poderá vir?
-            </label>
-            <div className="choice-row">
-              <label className="choice yes">
-                <input
-                  type="radio"
-                  name="attending"
-                  checked={form.attending === "yes"}
-                  onChange={() => updateField("attending", "yes")}
-                />
-                <span className="radio" /> <span>Sim, eu vou! ✨</span>
+          <div className="form-grid">
+            <div className={`field full ${errors.attending ? "error" : ""}`}>
+              <label>
+                <Icon name="Heart" size={14} /> Você poderá vir?
               </label>
-              <label className="choice no">
-                <input
-                  type="radio"
-                  name="attending"
-                  checked={form.attending === "no"}
-                  onChange={() => updateField("attending", "no")}
-                />
-                <span className="radio" /> <span>Não poderei ir</span>
-              </label>
+              <div className="choice-row">
+                <label className="choice yes">
+                  <input
+                    type="radio"
+                    name="attending"
+                    checked={form.attending === "yes"}
+                    onChange={() => updateField("attending", "yes")}
+                  />
+                  <span className="radio" /> <span>Sim, eu vou! ✨</span>
+                </label>
+                <label className="choice no">
+                  <input
+                    type="radio"
+                    name="attending"
+                    checked={form.attending === "no"}
+                    onChange={() => updateField("attending", "no")}
+                  />
+                  <span className="radio" /> <span>Não poderei ir</span>
+                </label>
+              </div>
+              <span className="err-msg">{errors.attending}</span>
             </div>
-            <span className="err-msg">{errors.attending}</span>
-          </div>
 
-          {form.attending === "yes" && (
-            <>
-              <div className="field">
-                <label>
-                  <Icon name="Users" size={14} /> Acompanhantes
-                </label>
-                <div className="stepper">
-                  <button
-                    type="button"
-                    onClick={() => updateField("companions", Math.max(0, form.companions - 1))}
-                    aria-label="Menos"
-                  >
-                    −
-                  </button>
-                  <span className="count">{form.companions}</span>
-                  <button
-                    type="button"
-                    onClick={() => updateField("companions", Math.min(10, form.companions + 1))}
-                    aria-label="Mais"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <div className="field">
-                <label>
-                  <Icon name="Utensils" size={14} /> Restrições alimentares
-                </label>
-                <input
-                  value={form.diet}
-                  onChange={(event) => updateField("diet", event.target.value)}
-                  placeholder="Vegetariano, alergias..."
-                />
-              </div>
-              {form.companions > 0 && (
-                <div className="field full">
+            {form.attending === "yes" && (
+              <>
+                <div className="field">
                   <label>
-                    <Icon name="PenLine" size={14} /> Nomes dos acompanhantes
+                    <Icon name="Users" size={14} /> Acompanhantes
+                  </label>
+                  <div className="stepper">
+                    <button
+                      type="button"
+                      onClick={() => updateField("companions", Math.max(0, form.companions - 1))}
+                      aria-label="Menos"
+                    >
+                      −
+                    </button>
+                    <span className="count">{form.companions}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateField("companions", Math.min(group.maxCompanions, form.companions + 1))
+                      }
+                      aria-label="Mais"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span style={{ fontSize: ".75rem", color: "var(--text-dim)" }}>
+                    Máximo de {group.maxCompanions} acompanhante(s) neste convite
+                  </span>
+                </div>
+                <div className="field">
+                  <label>
+                    <Icon name="Utensils" size={14} /> Restrições alimentares
                   </label>
                   <input
-                    value={form.companionNames}
-                    onChange={(event) => updateField("companionNames", event.target.value)}
-                    placeholder="Separe os nomes por vírgula"
+                    value={form.diet}
+                    onChange={(event) => updateField("diet", event.target.value)}
+                    placeholder="Vegetariano, alergias..."
                   />
                 </div>
-              )}
-            </>
-          )}
+                {form.companions > 0 && (
+                  <div className="field full">
+                    <label>
+                      <Icon name="PenLine" size={14} /> Nomes dos acompanhantes
+                    </label>
+                    <input
+                      value={form.companionNames}
+                      onChange={(event) => updateField("companionNames", event.target.value)}
+                      placeholder="Separe os nomes por vírgula"
+                    />
+                  </div>
+                )}
+              </>
+            )}
 
-          <div className="field full">
-            <label>
-              <Icon name="MessageCircleHeart" size={14} /> Mensagem para os noivos
-            </label>
-            <textarea
-              value={form.message}
-              onChange={(event) => updateField("message", event.target.value)}
-              placeholder="Deixe um recado cheio de luz (opcional)"
-            />
+            <div className="field full">
+              <label>
+                <Icon name="MessageCircleHeart" size={14} /> Mensagem para os noivos
+              </label>
+              <textarea
+                value={form.message}
+                onChange={(event) => updateField("message", event.target.value)}
+                placeholder="Deixe um recado cheio de luz (opcional)"
+              />
+            </div>
           </div>
-        </div>
 
-        <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
-          <button type="submit" className="btn btn-gold" style={{ padding: "1rem 2.6rem" }}>
-            <Icon name="Send" size={18} /> Enviar para o céu de lanternas
-          </button>
-        </div>
-      </form>
+          <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
+            <button type="submit" className="btn btn-gold" style={{ padding: "1rem 2.6rem" }} disabled={submitting}>
+              <Icon name="Send" size={18} /> {submitting ? "Enviando..." : "Enviar para o céu de lanternas"}
+            </button>
+          </div>
+        </form>
+      )}
     </section>
   );
 }

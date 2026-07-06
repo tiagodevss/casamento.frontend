@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: casamento
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: casamento
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    # Intentionally no `ports:` mapping — only reachable from other containers
+    # on this compose network, not from the host/internet.
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      DATABASE_URL: postgresql://casamento:${POSTGRES_PASSWORD}@postgres:5432/casamento
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      # After running certbot and obtaining certificates, extend nginx/nginx.conf
+      # with a 443 server block and uncomment the mapping below.
+      # - '443:443'
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

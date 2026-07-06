@@ -1,43 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { GIFTS, WEDDING } from "./data";
 import { Icon } from "./effects";
+import { api } from "./api";
 
-function QRPlaceholder() {
-  const size = 21;
-  const cells = [];
-  const rnd = (i, j) => ((i * 928371 + j * 1237 + i * j * 13) % 7) < 3;
-
-  for (let i = 0; i < size; i += 1) {
-    for (let j = 0; j < size; j += 1) {
-      const inFinder = (x, y) => x < 7 && y < 7;
-      const tl = inFinder(i, j);
-      const tr = inFinder(i, size - 1 - j);
-      const bl = inFinder(size - 1 - i, j);
-      let on = false;
-
-      if (tl || tr || bl) {
-        const fi = tl ? i : tr ? i : size - 1 - i;
-        const fj = tl ? j : tr ? size - 1 - j : j;
-        on =
-          fi === 0 ||
-          fi === 6 ||
-          fj === 0 ||
-          fj === 6 ||
-          (fi >= 2 && fi <= 4 && fj >= 2 && fj <= 4);
-      } else {
-        on = rnd(i, j);
-      }
-
-      if (on) cells.push(<rect key={`${i}-${j}`} x={j} y={i} width="1" height="1" fill="#0b0f2b" />);
-    }
-  }
-
-  return <svg viewBox={`0 0 ${size} ${size}`} shapeRendering="crispEdges">{cells}</svg>;
-}
+const POLL_INTERVAL_MS = 5000;
 
 function GiftModal({ gift, onClose }) {
   const [copied, setCopied] = useState(false);
+  const [order, setOrder] = useState(null);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const pollRef = useRef(null);
 
   useEffect(() => {
     const onKey = (event) => event.key === "Escape" && onClose();
@@ -45,12 +18,58 @@ function GiftModal({ gift, onClose }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function createOrder() {
+      setLoading(true);
+      setError("");
+      try {
+        const payload = gift.custom
+          ? { kind: "FREE_CONTRIBUTION", amountCents: Math.round(gift.value * 100), donorMessage: gift.title }
+          : { kind: "FIXED_GIFT", giftId: gift.id };
+
+        const created = await api.createPaymentOrder(payload);
+        if (!cancelled) setOrder(created);
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    createOrder();
+    return () => {
+      cancelled = true;
+    };
+  }, [gift]);
+
+  useEffect(() => {
+    if (!order || order.status === "PAID") return undefined;
+
+    pollRef.current = setInterval(async () => {
+      try {
+        const status = await api.getPaymentStatus(order.id);
+        if (status.status === "PAID") {
+          setOrder((current) => ({ ...current, status: "PAID" }));
+          clearInterval(pollRef.current);
+        }
+      } catch {
+        // Silently retry on the next tick — a transient network hiccup shouldn't
+        // interrupt the guest's checkout experience.
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(pollRef.current);
+  }, [order]);
+
   const copy = async () => {
+    if (!order?.brCode) return;
     try {
-      await navigator.clipboard.writeText(WEDDING.pixKey);
+      await navigator.clipboard.writeText(order.brCode);
     } catch {
       const textArea = document.createElement("textarea");
-      textArea.value = WEDDING.pixKey;
+      textArea.value = order.brCode;
       document.body.appendChild(textArea);
       textArea.select();
       try {
@@ -77,33 +96,73 @@ function GiftModal({ gift, onClose }) {
           {gift.value ? `R$ ${Number(gift.value).toLocaleString("pt-BR")}` : "Valor livre"}
         </div>
 
-        <div className="qr-box">
-          <QRPlaceholder />
-        </div>
-        <p style={{ textAlign: "center", color: "var(--text-dim)", fontSize: ".82rem", marginTop: "-.6rem", marginBottom: "1.2rem" }}>
-          Aponte a câmera do seu banco ou copie a chave Pix abaixo
-        </p>
+        {order?.status === "PAID" ? (
+          <div style={{ textAlign: "center", padding: "1.4rem 0" }}>
+            <Icon name="CheckCircle2" size={40} />
+            <p className="thanks" style={{ marginTop: "1rem" }}>
+              Pagamento confirmado! Obrigado por iluminar a nossa nova jornada. 💛
+            </p>
+          </div>
+        ) : loading ? (
+          <p style={{ textAlign: "center", color: "var(--text-dim)", padding: "2rem 0" }}>
+            Gerando seu Pix...
+          </p>
+        ) : error ? (
+          <p style={{ textAlign: "center", color: "var(--rose)", padding: "1rem 0" }}>{error}</p>
+        ) : (
+          <>
+            <div className="qr-box">
+              <img
+                src={`data:image/png;base64,${order.brCodeBase64}`}
+                alt="QR Code Pix"
+                style={{ width: "100%", height: "auto" }}
+              />
+            </div>
+            <p style={{ textAlign: "center", color: "var(--text-dim)", fontSize: ".82rem", marginTop: "-.6rem", marginBottom: "1.2rem" }}>
+              Aponte a câmera do seu banco ou copie o código Pix abaixo
+            </p>
 
-        <div className="pix-row">
-          <div className="pix-key">{WEDDING.pixKey}</div>
-          <button className={`copy-btn ${copied ? "copied" : ""}`} onClick={copy}>
-            <Icon name={copied ? "Check" : "Copy"} size={16} />
-            {copied ? "Copiado!" : "Copiar"}
-          </button>
-        </div>
+            <div className="pix-row">
+              <div className="pix-key">{order.brCode}</div>
+              <button className={`copy-btn ${copied ? "copied" : ""}`} onClick={copy}>
+                <Icon name={copied ? "Check" : "Copy"} size={16} />
+                {copied ? "Copiado!" : "Copiar"}
+              </button>
+            </div>
 
-        <p className="thanks">
-          Obrigado por iluminar a nossa nova jornada. Cada gesto de carinho vira luz no nosso
-          caminho. 💛
-        </p>
+            <p className="thanks">
+              Obrigado por iluminar a nossa nova jornada. Cada gesto de carinho vira luz no nosso
+              caminho. 💛
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
 export function GiftSection() {
+  const [gifts, setGifts] = useState([]);
   const [modal, setModal] = useState(null);
   const [customValue, setCustomValue] = useState("");
+
+  useEffect(() => {
+    api
+      .listGifts()
+      .then((list) =>
+        setGifts(
+          list.map((gift) => ({
+            id: gift.id,
+            icon: gift.iconName,
+            title: gift.title,
+            desc: gift.description,
+            value: gift.priceCents / 100,
+            tag: gift.tag,
+          })),
+        ),
+      )
+      .catch(() => setGifts([]));
+  }, []);
 
   const openCustom = () => {
     const value = parseFloat(String(customValue).replace(",", "."));
@@ -135,7 +194,7 @@ export function GiftSection() {
       </div>
 
       <div className="gift-grid">
-        {GIFTS.map((gift, index) => (
+        {gifts.map((gift, index) => (
           <div className={`gift-card reveal ${["", "d1", "d2", "d3"][index % 4]}`} key={gift.id}>
             {gift.tag && <span className="gift-tag">{gift.tag}</span>}
             <span className="gift-emoji-wrap">

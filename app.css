@@ -2456,6 +2456,16 @@ h3 {
   margin-top: 1rem;
 }
 
+/* Honeypot: off-screen but present in the DOM/tab order avoidance for bots that fill every field. */
+.hp-field {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 720px) {
   .mural-form {
     grid-template-columns: 1fr;

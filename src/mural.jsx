@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { INITIAL_MESSAGES, WEDDING } from "./data";
+import { WEDDING } from "./data";
 import { Icon, MiniLantern, fireConfetti } from "./effects";
+import { api } from "./api";
+
+const NAME_MAX = 60;
+const TEXT_MAX = 400;
 
 function goToSection(event, href) {
   event.preventDefault();
@@ -14,15 +18,46 @@ function goToSection(event, href) {
   }
 }
 
+// Purely decorative tilt, derived from the message id so it stays stable across
+// re-renders instead of reshuffling every time React repaints the wall.
+function rotFor(id) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return ((hash % 400) / 100) - 2;
+}
+
 export function GuestMessages() {
-  const [messages, setMessages] = useState(() =>
-    INITIAL_MESSAGES.map((message, index) => ({ ...message, id: `init-${index}` })),
-  );
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [name, setName] = useState("");
   const [text, setText] = useState("");
+  const [website, setWebsite] = useState("");
   const [err, setErr] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const add = (event) => {
+  useEffect(() => {
+    let cancelled = false;
+
+    api
+      .listMessages()
+      .then((data) => {
+        if (cancelled) return;
+        setMessages(data.map((message) => ({ ...message, rot: rotFor(message.id) })));
+      })
+      .catch(() => {
+        if (!cancelled) setLoadError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const add = async (event) => {
     event.preventDefault();
     if (!name.trim() || !text.trim()) {
       setErr("Preencha seu nome e a mensagem.");
@@ -30,19 +65,22 @@ export function GuestMessages() {
     }
 
     setErr("");
-    setMessages((current) => [
-      {
-        id: `u-${Date.now()}`,
-        name: name.trim(),
-        text: text.trim(),
-        rot: Math.random() * 4 - 2,
-        isNew: true,
-      },
-      ...current,
-    ]);
-    setName("");
-    setText("");
-    setTimeout(() => fireConfetti(), 200);
+    setSubmitting(true);
+    try {
+      const created = await api.postMessage({
+        name: name.trim().slice(0, NAME_MAX),
+        text: text.trim().slice(0, TEXT_MAX),
+        website,
+      });
+      setMessages((current) => [{ ...created, rot: rotFor(created.id), isNew: true }, ...current]);
+      setName("");
+      setText("");
+      setTimeout(() => fireConfetti(), 200);
+    } catch (error) {
+      setErr(error.message ?? "Algo deu errado. Tente novamente.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -78,6 +116,8 @@ export function GuestMessages() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               placeholder="Quem está escrevendo"
+              maxLength={NAME_MAX}
+              disabled={submitting}
             />
           </div>
           <div className="field">
@@ -88,14 +128,39 @@ export function GuestMessages() {
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder="Um desejo de luz para os noivos"
+              maxLength={TEXT_MAX}
+              disabled={submitting}
             />
           </div>
-          <button type="submit" className="btn btn-gold" style={{ height: 48 }}>
-            <Icon name="Send" size={16} /> Acender
+          {/* Honeypot: hidden from real guests, only a bot filling every field finds this one. */}
+          <input
+            className="hp-field"
+            type="text"
+            name="website"
+            value={website}
+            onChange={(event) => setWebsite(event.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
+          <button type="submit" className="btn btn-gold" style={{ height: 48 }} disabled={submitting}>
+            <Icon name="Send" size={16} /> {submitting ? "Enviando..." : "Acender"}
           </button>
         </div>
         {err && <p style={{ color: "var(--rose-soft)", fontSize: ".82rem", marginTop: ".7rem", marginBottom: 0 }}>{err}</p>}
       </form>
+
+      {loadError && (
+        <p style={{ color: "var(--text-dim)", textAlign: "center", marginTop: "2rem" }}>
+          Não foi possível carregar as mensagens agora. Sua mensagem ainda pode ser enviada.
+        </p>
+      )}
+
+      {!loading && !loadError && messages.length === 0 && (
+        <p style={{ color: "var(--text-dim)", textAlign: "center", marginTop: "2rem" }}>
+          Seja o primeiro a acender uma lanterna de carinho para os noivos.
+        </p>
+      )}
 
       <div className="mural">
         {messages.map((message) => (

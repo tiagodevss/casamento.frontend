@@ -1,2 +1,9 @@
 dist/
 node_modules/
+.gstack/
+.env
+backend/dist/
+backend/node_modules/
+backend/.env
+admin/dist/
+admin/node_modules/

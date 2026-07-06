@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-05T00:00:00Z",
+  "title": "Design System: Céu de Lanternas (Sky of Lanterns)",
+  "extensions": {
+    "colorMeta": {
+      "gold-500": { "role": "primary", "displayName": "Candle Gold", "canonical": "#d8a94a", "tonalRamp": ["#2a1c06", "#4a3413", "#6f5220", "#9a7530", "#bd8a33", "#d8a94a", "#f0d49a", "#f6e3b4"] },
+      "purple-500": { "role": "secondary", "displayName": "Deep Lilac", "canonical": "#4a3a8e", "tonalRamp": ["#0f0a1f", "#1a1340", "#2c2065", "#4a3a8e", "#7361b3", "#a293d3", "#c4b3ec", "#ddd2f4"] },
+      "rose": { "role": "tertiary", "displayName": "Old Rose", "canonical": "#d49a9b", "tonalRamp": ["#3a1516", "#5c2224", "#823336", "#a85a5c", "#d49a9b", "#e0b3b4", "#e8c2c2", "#f2dcdc"] },
+      "night-950": { "role": "neutral", "displayName": "Deep Night", "canonical": "#05071a", "tonalRamp": ["#05071a", "#080b22", "#0b0f2b", "#101537", "#171d4a", "#242c66", "#333d82", "#4a3a8e"] },
+      "cream": { "role": "neutral", "displayName": "Cream Text", "canonical": "#f6ecd3", "tonalRamp": ["#3a2f1a", "#5b4a2b", "#8a713f", "#b99655", "#d8bd82", "#eaddbb", "#f6ecd3", "#fbf6e8"] },
+      "parchment": { "role": "neutral", "displayName": "Storybook Parchment", "canonical": "#f3e6c4", "tonalRamp": ["#3b2a13", "#5c421d", "#7a5a2a", "#a5813f", "#c9a866", "#e4d1a3", "#f3e6c4", "#faf3e1"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display (Cinzel)", "purpose": "Couple's names in the hero only." },
+      "script": { "displayName": "Script Accent (Cormorant Garamond Italic)", "purpose": "Hero subtitle, ampersand, quote-like asides." },
+      "headline": { "displayName": "Headline (Cinzel)", "purpose": "Section titles across the page." },
+      "body": { "displayName": "Body (Jost)", "purpose": "All functional copy: descriptions, form text, gift copy." },
+      "label": { "displayName": "Eyebrow Label (Jost, wide-tracked)", "purpose": "Small uppercase kicker above section titles." }
+    },
+    "shadows": [
+      { "name": "glow-gold", "value": "0 0 30px rgba(230, 193, 120, 0.45)", "purpose": "Default emphasis glow: focus rings, badges, active dots." },
+      { "name": "glow-gold-strong", "value": "0 0 60px rgba(255, 207, 134, 0.6)", "purpose": "Hero-level emphasis on names and primary lantern." },
+      { "name": "shadow-card", "value": "0 24px 60px -24px rgba(5, 7, 26, 0.85)", "purpose": "Standard card lift against the night backdrop." },
+      { "name": "shadow-deep", "value": "0 30px 80px -30px rgba(0, 0, 0, 0.8)", "purpose": "Heaviest lift: storybook and modal." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "Default button/hover lift easing." },
+      { "name": "ease-reveal", "value": "cubic-bezier(0.2, 0.7, 0.2, 1)", "purpose": "Scroll-reveal fade/translate easing." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" },
+      { "name": "tablet", "value": "820px" },
+      { "name": "nav-collapse", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Gold gradient CTA with a light-sweep hover shimmer.",
+      "html": "<button class=\"ds-btn-gold\">Confirmar Presença</button>",
+      "css": ".ds-btn-gold { font-family: 'Jost', system-ui, sans-serif; font-weight: 500; letter-spacing: 0.08em; font-size: 0.95rem; padding: 0.95rem 1.9rem; border-radius: 999px; border: 1px solid transparent; cursor: pointer; background: linear-gradient(135deg, #f0d49a, #d8a94a 60%, #bd8a33); color: #2a1c06; box-shadow: 0 12px 32px -12px rgba(216, 169, 74, 0.7), inset 0 1px 0 rgba(255,255,255,0.4); transition: transform 0.35s cubic-bezier(.2,.8,.2,1), box-shadow 0.35s; } .ds-btn-gold:hover { transform: translateY(-3px); box-shadow: 0 18px 44px -12px rgba(255,207,134,0.85), inset 0 1px 0 rgba(255,255,255,0.5); } .ds-btn-gold:focus-visible { outline: 3px solid rgba(230,193,120,0.5); outline-offset: 2px; } .ds-btn-gold:active { transform: scale(0.97); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Frosted secondary button used alongside the gold CTA.",
+      "html": "<button class=\"ds-btn-ghost\">Ver detalhes</button>",
+      "css": ".ds-btn-ghost { font-family: 'Jost', system-ui, sans-serif; font-weight: 500; letter-spacing: 0.08em; font-size: 0.95rem; padding: 0.95rem 1.9rem; border-radius: 999px; cursor: pointer; background: rgba(255,255,255,0.04); color: #f6ecd3; border: 1px solid rgba(230,193,120,0.22); backdrop-filter: blur(6px); transition: transform 0.35s, box-shadow 0.35s, color 0.35s, border-color 0.35s; } .ds-btn-ghost:hover { transform: translateY(-3px); border-color: #e6c178; box-shadow: 0 0 30px rgba(230,193,120,0.45); color: #f6e3b4; } .ds-btn-ghost:focus-visible { outline: 3px solid rgba(230,193,120,0.5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "RSVP form input: dark translucent field with gold focus halo.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Nome</span><input class=\"ds-input\" type=\"text\" placeholder=\"Seu nome completo\" /></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 0.5rem; } .ds-label { font-family: 'Jost', system-ui, sans-serif; font-size: 0.82rem; letter-spacing: 0.1em; text-transform: uppercase; color: #c4b3ec; } .ds-input { font-family: 'Jost', system-ui, sans-serif; font-size: 1rem; color: #f6ecd3; background: rgba(8,11,34,0.5); border: 1px solid rgba(196,179,236,0.22); border-radius: 12px; padding: 0.85rem 1rem; outline: none; transition: border-color 0.3s, box-shadow 0.3s, background 0.3s; } .ds-input::placeholder { color: rgba(185,176,212,0.5); } .ds-input:focus { border-color: #e6c178; box-shadow: 0 0 0 3px rgba(230,193,120,0.16), 0 0 30px rgba(230,193,120,0.45); background: rgba(8,11,34,0.75); }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card-glass",
+      "description": "Frosted panel floating over the night backdrop; base surface for most content blocks.",
+      "html": "<div class=\"ds-glass\">Conteúdo</div>",
+      "css": ".ds-glass { background: rgba(18,22,56,0.55); border: 1px solid rgba(230,193,120,0.22); border-radius: 22px; backdrop-filter: blur(14px); box-shadow: 0 24px 60px -24px rgba(5,7,26,0.85); padding: 1.5rem; color: #f4ecd8; }"
+    },
+    {
+      "name": "Gift Card",
+      "kind": "card",
+      "refersTo": "gift-card",
+      "description": "Registry item card with icon, description, value, and a discreet 'give' link.",
+      "html": "<div class=\"ds-gift-card\"><div class=\"ds-gift-icon\">&#9733;</div><h3 class=\"ds-gift-title\">Jantar de conto de fadas</h3><p class=\"ds-gift-desc\">Um jantar romântico à luz de velas.</p><div class=\"ds-gift-foot\"><span class=\"ds-gift-value\">R$ 250</span><button class=\"ds-gift-give\">Presentear &rarr;</button></div></div>",
+      "css": ".ds-gift-card { border-radius: 14px; padding: 1.9rem 1.7rem; background: rgba(255,255,255,0.022); border: 1px solid rgba(230,193,120,0.14); display: flex; flex-direction: column; gap: 0.55rem; transition: transform 0.4s cubic-bezier(.2,.8,.2,1), border-color 0.4s, background 0.4s; } .ds-gift-card:hover { transform: translateY(-3px); border-color: rgba(230,193,120,0.42); background: rgba(255,255,255,0.045); } .ds-gift-icon { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(230,193,120,0.28); color: #f0d49a; } .ds-gift-title { font-family: 'Cinzel', serif; font-weight: 500; font-size: 1.16rem; color: #f6ecd3; margin: 0; } .ds-gift-desc { color: #b9b0d4; font-size: 0.9rem; line-height: 1.6; flex: 1; margin: 0; } .ds-gift-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(230,193,120,0.1); } .ds-gift-value { font-family: 'Cinzel', serif; font-size: 1.2rem; font-weight: 500; color: #f0d49a; } .ds-gift-give { background: none; border: none; cursor: pointer; color: #f0d49a; font-family: 'Jost', system-ui, sans-serif; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; transition: color 0.3s; } .ds-gift-give:hover { color: #f6e3b4; }"
+    },
+    {
+      "name": "Navbar",
+      "kind": "nav",
+      "refersTo": "navbar",
+      "description": "Fixed nav that goes from transparent to a frosted gold-bordered bar on scroll.",
+      "html": "<nav class=\"ds-navbar ds-navbar-scrolled\"><a class=\"ds-nav-brand\">Tiago <span class=\"ds-amp\">&amp;</span> Gabriela</a><ul class=\"ds-nav-links\"><li><a href=\"#\">História</a></li><li><a href=\"#\" class=\"ds-nav-cta\">RSVP</a></li></ul></nav>",
+      "css": ".ds-navbar { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 2rem; border-bottom: 1px solid transparent; transition: background 0.4s, border-color 0.4s; } .ds-navbar-scrolled { background: rgba(8,11,34,0.72); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(230,193,120,0.22); } .ds-nav-brand { font-family: 'Cinzel', serif; font-size: 1.15rem; letter-spacing: 0.18em; color: #f6ecd3; text-decoration: none; } .ds-amp { color: #e6c178; } .ds-nav-links { display: flex; align-items: center; gap: 0.3rem; list-style: none; margin: 0; padding: 0; } .ds-nav-links a { font-family: 'Jost', system-ui, sans-serif; font-size: 0.86rem; color: #b9b0d4; text-decoration: none; padding: 0.5rem 0.85rem; border-radius: 999px; transition: color 0.3s; } .ds-nav-links a:hover { color: #f6e3b4; } .ds-nav-cta { color: #2a1c06 !important; background: linear-gradient(135deg, #f0d49a, #d8a94a); font-weight: 500; box-shadow: 0 8px 22px -10px rgba(216,169,74,0.7); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A storybook told under a starlit sky, lit by candle-gold.",
+    "overview": "The site is one continuous night scene: a deep starfield backdrop sits behind every section, and candle-gold light — from lanterns, glow effects, and gold gradients — is the one warm element that cuts through the dark. The couple's story is literally told as a page-turning storybook component (.book), reinforcing the \"chapters\" framing already present in the copy (Capítulo I–IV). Per PRODUCT.md, this reads as elegant and formal first, with the lantern/storybook motifs as a romantic accent thread rather than the dominant register — whimsy supports the occasion, it doesn't override its formality.",
+    "keyCharacteristics": [
+      "Deep night-sky base with a twinkling star field, never flat black",
+      "Candle-gold as the singular accent, carried through glows, gradients, and borders",
+      "Cinzel (display) + Cormorant Garamond italic (script accent) + Jost (body)",
+      "Pill-shaped buttons and soft-radius glass cards; nothing sharp-cornered",
+      "Glow-based elevation instead of hard shadows for emphasis"
+    ],
+    "rules": [
+      { "name": "The Single Accent Rule", "body": "Gold is the only color that means \"light\" or \"action.\" If a new element needs emphasis, reach for gold-400/500 and a glow, not a new hue.", "section": "colors" },
+      { "name": "The Ceremonial Caps Rule", "body": "Cinzel is reserved for names, section titles, and storybook chapter titles — never for body copy or UI labels.", "section": "typography" },
+      { "name": "The Glow-Not-Shadow Rule", "body": "Emphasis reads as light (gold glow), not as a gray drop shadow. A component floating over the night sky should look lit from within.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep gold (gold-400/gold-500) as the only active/important color — buttons, focus states, glows, badges.",
+      "Do use glow-based emphasis (glow-gold, shadow-card) rather than plain gray drop shadows.",
+      "Do reserve Cinzel for names, section titles, and chapter titles; keep Jost for all functional/body text.",
+      "Do default to pill-shaped buttons and soft-radius (12-22px) cards.",
+      "Do treat the storybook motif and lantern imagery as an accent layer over an otherwise elegant, formal composition."
+    ],
+    "donts": [
+      "Don't introduce a second accent hue competing with gold; rose is reserved strictly for negative/error states.",
+      "Don't flatten the background to solid black or plain white; the night gradient + star field is load-bearing.",
+      "Don't use sharp 0px corners or hard gray box-shadows.",
+      "Don't set body copy in Cinzel or the script italic; both are accent/display faces only.",
+      "Don't let the storybook/lantern whimsy overwhelm the page — this is a formal church wedding, not a children's fairy tale site."
+    ]
+  }
+}
