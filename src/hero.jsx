@@ -165,22 +165,34 @@ export function HeroScene() {
         </div>
         <div className="hero-visual" aria-hidden="true">
           <div className="hero-visual-inner">
-            <img
-              className="hero-photo-main"
-              src="/photos/ensaio-1.jpg"
-              alt="Tiago e Gabriela à beira do lago"
-              onError={(event) => {
-                event.currentTarget.style.display = "none";
-              }}
-            />
-            <img
-              className="hero-photo-accent"
-              src="/photos/ensaio-4.jpg"
-              alt="Tiago e Gabriela mostrando o anel de noivado"
-              onError={(event) => {
-                event.currentTarget.style.display = "none";
-              }}
-            />
+            <div className="hero-photo-frame hero-photo-frame--main ornate">
+              <img
+                className="hero-photo-main"
+                src="/photos/ensaio-1.jpg"
+                alt="Tiago e Gabriela à beira do lago"
+                onError={(event) => {
+                  event.currentTarget.parentElement.style.display = "none";
+                }}
+              />
+              <span className="corner tl" />
+              <span className="corner tr" />
+              <span className="corner bl" />
+              <span className="corner br" />
+            </div>
+            <div className="hero-photo-frame hero-photo-frame--accent ornate">
+              <img
+                className="hero-photo-accent"
+                src="/photos/ensaio-4.jpg"
+                alt="Tiago e Gabriela mostrando o anel de noivado"
+                onError={(event) => {
+                  event.currentTarget.parentElement.style.display = "none";
+                }}
+              />
+              <span className="corner tl" />
+              <span className="corner tr" />
+              <span className="corner bl" />
+              <span className="corner br" />
+            </div>
           </div>
         </div>
       </div>
