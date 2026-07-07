@@ -2897,8 +2897,18 @@ h3 {
 .mural-compose {
   position: relative;
   max-width: 680px;
-  margin: 0 auto;
-  padding: clamp(1.5rem, 3.5vw, 2.2rem);
+  margin: 2.6rem auto 0;
+  padding: clamp(2.1rem, 4vw, 2.6rem) clamp(1.5rem, 3.5vw, 2.2rem) clamp(1.5rem, 3.5vw, 2.2rem);
+  overflow: visible;
+}
+
+.mural-compose__seal {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  filter: drop-shadow(0 10px 22px oklch(0.55 0.14 86 / 0.35));
+  pointer-events: none;
 }
 
 .mural-compose__grid {
@@ -2986,9 +2996,8 @@ h3 {
 .mural {
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  gap: clamp(1.4rem, 3vw, 1.8rem);
+  columns: 3 240px;
+  column-gap: clamp(1.4rem, 3vw, 1.8rem);
   padding-top: 0.6rem;
 }
 
@@ -2996,12 +3005,14 @@ h3 {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  width: 100%;
+  margin: 0 0 clamp(1.4rem, 3vw, 1.8rem);
   padding: 2.35rem 1.2rem 1.15rem;
   background: oklch(0.18 0.022 84 / 0.92);
   border: 1px solid oklch(0.55 0.04 88 / 0.28);
   border-radius: 14px;
   box-shadow: var(--shadow-card);
+  break-inside: avoid;
   transform: rotate(var(--rot, -1deg));
   transition:
     transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
@@ -3013,6 +3024,36 @@ h3 {
 .mural-lantern:hover {
   transform: rotate(0deg) translateY(-5px);
   box-shadow: var(--shadow-card), var(--glow-gold);
+}
+
+/* Wish length sets lantern weight, so the sky reads as scattered heights
+   instead of a uniform grid — short wishes stand taller and brighter. */
+.mural-lantern--lg {
+  padding-top: 2.7rem;
+}
+
+.mural-lantern--lg .mural-lantern__text {
+  font-size: clamp(1.35rem, 3.2vw, 1.65rem);
+}
+
+.mural-lantern--lg .mural-lantern__beacon {
+  width: 40px;
+  height: 49px;
+  top: -19px;
+}
+
+.mural-lantern--sm {
+  padding-top: 2rem;
+}
+
+.mural-lantern--sm .mural-lantern__text {
+  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+}
+
+.mural-lantern--sm .mural-lantern__beacon {
+  width: 28px;
+  height: 34px;
+  top: -13px;
 }
 
 .mural-lantern--new {

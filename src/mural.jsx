@@ -20,6 +20,14 @@ function rotFor(id) {
   return ((hash % 400) / 100) - 2;
 }
 
+// Short wishes read as bigger lanterns, long ones as smaller ones — the sky's
+// silhouette comes from what guests actually wrote, not from a fixed grid.
+function sizeFor(text) {
+  if (text.length <= 70) return "lg";
+  if (text.length <= 190) return "md";
+  return "sm";
+}
+
 export function GuestMessages() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +100,9 @@ export function GuestMessages() {
         />
 
         <form className="panel mural-compose reveal d1" onSubmit={add}>
+          <div className="mural-compose__seal" aria-hidden="true">
+            <MiniLantern size={40} />
+          </div>
           <div className="mural-compose__grid">
             <div className="field">
               <label htmlFor="mural-name">
@@ -188,7 +199,9 @@ export function GuestMessages() {
                 <div className="mural">
                   {messages.map((message, index) => (
                     <article
-                      className={`mural-lantern${message.isNew ? " mural-lantern--new" : ""}`}
+                      className={`mural-lantern mural-lantern--${sizeFor(message.text)}${
+                        message.isNew ? " mural-lantern--new" : ""
+                      }`}
                       key={message.id}
                       style={{
                         "--rot": `${message.rot}deg`,
