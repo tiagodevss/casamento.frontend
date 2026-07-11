@@ -4,9 +4,11 @@ import { Icon, MiniLantern, fireConfetti } from "./effects";
 import { api } from "./api";
 import { ContactHelp } from "./ContactHelp";
 import { SectionHead } from "./SectionHead";
+import { PARTY } from "./data";
 
 const emptyForm = {
   attending: "",
+  partyAttending: "",
   companions: 0,
   companionNames: "",
   diet: "",
@@ -112,6 +114,9 @@ export function RSVPForm({ standalone = false }) {
   const validate = () => {
     const nextErrors = {};
     if (!form.attending) nextErrors.attending = "Escolha uma opção";
+    if (group?.invitedToParty && !form.partyAttending) {
+      nextErrors.partyAttending = "Confirme também sua presença na festa";
+    }
     if (form.attending === "yes" && form.companions > 0 && !form.companionNames.trim()) {
       nextErrors.companionNames = "Informe os nomes dos acompanhantes";
     }
@@ -131,6 +136,7 @@ export function RSVPForm({ standalone = false }) {
     try {
       await api.confirmRsvp(group.id, {
         attending: form.attending === "yes",
+        partyAttending: group.invitedToParty ? form.partyAttending === "yes" : undefined,
         companionsCount: form.companions,
         companionNames: form.companionNames || undefined,
         diet: form.diet || undefined,
@@ -163,7 +169,8 @@ export function RSVPForm({ standalone = false }) {
             style={{
               color: "var(--ink-soft)",
               fontFamily: "var(--font-script)",
-              fontSize: "1.4rem",
+              fontSize: "clamp(1.8rem, 4vw, 2.45rem)",
+              lineHeight: 1.02,
               margin: "1rem auto 0",
               maxWidth: "34ch",
             }}
@@ -177,6 +184,16 @@ export function RSVPForm({ standalone = false }) {
                     form.companions === 1 ? "acompanhante" : "acompanhantes"
                   } estão confirmados.`
                 : "Você está confirmado(a)."}
+            </p>
+          )}
+          {group?.invitedToParty && form.partyAttending === "yes" && (
+            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
+              Sua presença na festa também foi confirmada.
+            </p>
+          )}
+          {group?.invitedToParty && form.partyAttending === "no" && (
+            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
+              Obrigado por nos avisar sobre a festa.
             </p>
           )}
           <button
@@ -218,12 +235,51 @@ export function RSVPForm({ standalone = false }) {
             Confirmando para: <strong style={{ color: "var(--ink)" }}>{group.displayName}</strong>{" "}
             <button
               type="button"
-              onClick={() => setGroup(null)}
+              onClick={() => {
+                setGroup(null);
+                setForm(emptyForm);
+                setErrors({});
+              }}
               style={{ background: "none", border: "none", color: "var(--sage-600)", cursor: "pointer" }}
             >
               (trocar)
             </button>
           </p>
+
+          {group.invitedToParty && (
+            <div
+              style={{
+                marginBottom: "1.4rem",
+                padding: "1rem 1.1rem",
+                border: "1px solid rgba(120, 86, 48, 0.18)",
+                borderRadius: "1.1rem",
+                background: "rgba(255, 248, 239, 0.72)",
+              }}
+            >
+              <p style={{ margin: 0, color: "var(--ink)", fontWeight: 600 }}>{PARTY.title}</p>
+              <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", lineHeight: 1.6 }}>{PARTY.description}</p>
+              <div style={{ display: "grid", gap: ".25rem", marginTop: ".8rem", color: "var(--ink-soft)", fontSize: ".94rem" }}>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Horário:</strong> {PARTY.timeLabel}
+                </span>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Local:</strong> {PARTY.venue}
+                </span>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Endereço:</strong> {PARTY.address}
+                </span>
+              </div>
+              <a
+                className="btn btn-ghost"
+                href={PARTY.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginTop: ".9rem", display: "inline-flex" }}
+              >
+                <Icon name="Navigation" size={16} /> Ver rota da festa
+              </a>
+            </div>
+          )}
 
           <div className="form-grid">
             <div className={`field full ${errors.attending ? "error" : ""}`}>
@@ -252,6 +308,35 @@ export function RSVPForm({ standalone = false }) {
               </div>
               <span className="err-msg">{errors.attending}</span>
             </div>
+
+            {group.invitedToParty && (
+              <div className={`field full ${errors.partyAttending ? "error" : ""}`}>
+                <label>
+                  <Icon name="PartyPopper" size={14} /> Você irá para a festa?
+                </label>
+                <div className="choice-row">
+                  <label className="choice yes">
+                    <input
+                      type="radio"
+                      name="partyAttending"
+                      checked={form.partyAttending === "yes"}
+                      onChange={() => updateField("partyAttending", "yes")}
+                    />
+                    <span className="radio" /> <span>Sim, estarei na festa</span>
+                  </label>
+                  <label className="choice no">
+                    <input
+                      type="radio"
+                      name="partyAttending"
+                      checked={form.partyAttending === "no"}
+                      onChange={() => updateField("partyAttending", "no")}
+                    />
+                    <span className="radio" /> <span>Não irei para a festa</span>
+                  </label>
+                </div>
+                <span className="err-msg">{errors.partyAttending}</span>
+              </div>
+            )}
 
             {form.attending === "yes" && (
               <>

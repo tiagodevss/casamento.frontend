@@ -31,7 +31,8 @@ export function EventDetails() {
             color: "var(--ink-soft)",
             fontFamily: "var(--font-script)",
             fontStyle: "italic",
-            fontSize: "1.25rem",
+            fontSize: "clamp(1.7rem, 3.8vw, 2.4rem)",
+            lineHeight: 1,
             margin: ".6rem 0 0",
           }}
         >
@@ -142,11 +143,11 @@ export function Countdown() {
           marginTop: time.done ? "0.5rem" : "2rem",
           fontFamily: "var(--font-script)",
           fontStyle: "italic",
-          fontSize: "1.2rem",
+          fontSize: "clamp(1.65rem, 3.6vw, 2.2rem)",
           maxWidth: "42ch",
           marginInline: "auto",
           textAlign: "center",
-          lineHeight: 1.65,
+          lineHeight: 1.08,
         }}
       >
         {time.done

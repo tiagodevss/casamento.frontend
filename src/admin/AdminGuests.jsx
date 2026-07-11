@@ -8,6 +8,7 @@ const emptyForm = {
   displayName: "",
   searchNames: "",
   maxCompanions: 0,
+  invitedToParty: false,
   phone: "",
   notes: "",
 };
@@ -17,6 +18,7 @@ function toForm(group) {
     displayName: group.displayName,
     searchNames: group.searchNames.join(", "),
     maxCompanions: group.maxCompanions,
+    invitedToParty: Boolean(group.invitedToParty),
     phone: group.phone ?? "",
     notes: group.notes ?? "",
   };
@@ -30,6 +32,7 @@ function toPayload(form) {
       .map((name) => name.trim())
       .filter(Boolean),
     maxCompanions: Number(form.maxCompanions) || 0,
+    invitedToParty: Boolean(form.invitedToParty),
     phone: form.phone.trim() || undefined,
     notes: form.notes.trim() || undefined,
   };
@@ -98,6 +101,17 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
             onChange={(event) => updateField("phone", event.target.value)}
             placeholder="(19) 99999-9999"
           />
+        </div>
+        <div className="field">
+          <label style={{ marginBottom: ".5rem" }}>Convite extra</label>
+          <label style={{ display: "flex", alignItems: "center", gap: ".6rem", color: "var(--text-dim)" }}>
+            <input
+              type="checkbox"
+              checked={form.invitedToParty}
+              onChange={(event) => updateField("invitedToParty", event.target.checked)}
+            />
+            Convidado para a festa
+          </label>
         </div>
         <div className="field full">
           <label>Notas</label>
@@ -196,24 +210,48 @@ export function AdminGuests() {
                       Até {group.maxCompanions} acompanhante(s)
                       {group.phone ? ` · ${group.phone}` : ""}
                     </p>
+                    <p style={{ color: "var(--text-dim)", margin: ".25rem 0 0", fontSize: ".78rem" }}>
+                      {group.invitedToParty ? "Inclui convite para a festa" : "Somente cerimônia"}
+                    </p>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".5rem" }}>
-                    <span
-                      style={{
-                        fontSize: ".75rem",
-                        color: group.rsvpResponse
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".3rem" }}>
+                      <span
+                        style={{
+                          fontSize: ".75rem",
+                          color: group.rsvpResponse
+                            ? group.rsvpResponse.attending
+                              ? "var(--gold-400)"
+                              : "var(--rose)"
+                            : "var(--text-dim)",
+                        }}
+                      >
+                        {group.rsvpResponse
                           ? group.rsvpResponse.attending
-                            ? "var(--gold-400)"
-                            : "var(--rose)"
-                          : "var(--text-dim)",
-                      }}
-                    >
-                      {group.rsvpResponse
-                        ? group.rsvpResponse.attending
-                          ? "Confirmado"
-                          : "Não vai"
-                        : "Sem resposta"}
-                    </span>
+                            ? "Cerimônia confirmada"
+                            : "Cerimônia: não vai"
+                          : "Cerimônia: sem resposta"}
+                      </span>
+                      {group.invitedToParty && (
+                        <span
+                          style={{
+                            fontSize: ".72rem",
+                            color:
+                              group.rsvpResponse?.partyAttending === true
+                                ? "var(--gold-400)"
+                                : group.rsvpResponse?.partyAttending === false
+                                  ? "var(--rose)"
+                                  : "var(--text-dim)",
+                          }}
+                        >
+                          {group.rsvpResponse?.partyAttending === true
+                            ? "Festa confirmada"
+                            : group.rsvpResponse?.partyAttending === false
+                              ? "Festa: não vai"
+                              : "Festa: sem resposta"}
+                        </span>
+                      )}
+                    </div>
                     <div style={{ display: "flex", gap: ".5rem" }}>
                       <button className="btn btn-ghost" onClick={() => setEditing(group)}>
                         <Icon name="Pencil" size={14} /> Editar

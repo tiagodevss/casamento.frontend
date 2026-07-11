@@ -91,7 +91,8 @@ export function GallerySection() {
               color: "var(--lilac-soft)",
               fontFamily: "var(--font-script)",
               fontStyle: "italic",
-              fontSize: "1.2rem",
+              fontSize: "clamp(1.6rem, 3.8vw, 2.2rem)",
+              lineHeight: 1.02,
             }}
           >
             {GALLERY[active].caption} · {active + 1}/{GALLERY.length}
