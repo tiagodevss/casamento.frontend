@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { Icon } from "../effects";
 import { useAuth } from "./AuthContext";
+import "./admin.css";
 
 export function AdminLogin() {
   const { login } = useAuth();
@@ -29,59 +30,51 @@ export function AdminLogin() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <div className="sky-backdrop" />
-      <form
-        className="glass"
-        style={{ maxWidth: 420, width: "90%", padding: "clamp(1.8rem, 4vw, 2.6rem)" }}
-        onSubmit={submit}
-        noValidate
-      >
-        <div style={{ textAlign: "center", marginBottom: "1.6rem" }}>
-          <span className="eyebrow">Área reservada</span>
-          <h1
-            className="section-title"
-            style={{ fontSize: "clamp(1.4rem, 4vw, 1.9rem)", marginTop: ".4rem" }}
-          >
-            Entrar
-          </h1>
-        </div>
+    <div className="adm">
+      <div className="adm-auth">
+        <form className="adm-auth-card" onSubmit={submit} noValidate>
+          <div className="adm-auth-header">
+            <div className="adm-auth-mark">
+              <Icon name="LayoutGrid" size={20} />
+            </div>
+            <h1 className="adm-auth-title">Painel administrativo</h1>
+            <p className="adm-auth-sub">Entre com suas credenciais para continuar</p>
+          </div>
 
-        <div className="field full">
-          <label>
-            <Icon name="Mail" size={14} /> E-mail
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="seu@email.com"
-            autoComplete="username"
-            required
-          />
-        </div>
+          <div className="adm-field adm-field-full" style={{ marginBottom: "1rem" }}>
+            <label htmlFor="adm-email">E-mail</label>
+            <input
+              id="adm-email"
+              className="adm-input"
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="seu@email.com"
+              autoComplete="username"
+              required
+            />
+          </div>
 
-        <div className="field full">
-          <label>
-            <Icon name="Lock" size={14} /> Senha
-          </label>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            placeholder="••••••••"
-            autoComplete="current-password"
-            required
-          />
-          <span className="err-msg">{error}</span>
-        </div>
+          <div className="adm-field adm-field-full" style={{ marginBottom: "1.4rem" }}>
+            <label htmlFor="adm-password">Senha</label>
+            <input
+              id="adm-password"
+              className="adm-input"
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
+            {error && <span className="adm-error">{error}</span>}
+          </div>
 
-        <div style={{ textAlign: "center", marginTop: "1.4rem" }}>
-          <button type="submit" className="btn btn-gold" style={{ width: "100%" }} disabled={submitting}>
+          <button type="submit" className="adm-btn adm-btn-primary adm-btn-block" disabled={submitting}>
             <Icon name="LogIn" size={16} /> {submitting ? "Entrando..." : "Entrar"}
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
