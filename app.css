@@ -2012,121 +2012,203 @@ h3 {
 }
 
 /* =========================================================================
-   EVENT DETAILS (pergaminho)
+   EVENT DETAILS (convite / canhoto de ticket)
    ========================================================================= */
-.parchment {
+.invite {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.invite-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.3fr 30px 1fr;
+  align-items: stretch;
+  border-radius: 18px;
+  box-shadow: var(--shadow-deep);
+  overflow: hidden;
+}
+
+.invite-intro {
   position: relative;
   background:
-    radial-gradient(120% 100% at 50% 0%, rgba(255, 255, 255, 0.5), transparent 60%),
+    radial-gradient(140% 120% at 0% 0%, rgba(255, 255, 255, 0.45), transparent 60%),
     linear-gradient(160deg, var(--parchment) 0%, var(--parchment-dark) 100%);
   color: var(--ink);
-  border-radius: 8px;
-  padding: clamp(2.2rem, 5vw, 4rem);
-  box-shadow: var(--shadow-deep), inset 0 0 60px rgba(150, 110, 40, 0.18);
-  border: 1px solid rgba(150, 110, 40, 0.3);
-}
-
-.parchment::before,
-.parchment::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 26px;
-  background: radial-gradient(closest-side, transparent 60%, rgba(120, 85, 30, 0.18));
-}
-
-.parchment::before {
-  top: -13px;
-}
-
-.parchment::after {
-  bottom: -13px;
-}
-
-.parchment .deco-seal {
-  position: absolute;
-  top: -26px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 35%, var(--rose), #a85c5d 70%, #7d3f40);
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.6), inset 0 2px 6px rgba(255, 255, 255, 0.3);
+  padding: clamp(2.2rem, 4.5vw, 3.4rem) clamp(1.8rem, 4vw, 3rem);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: var(--cream);
-  border: 2px solid rgba(255, 255, 255, 0.25);
-}
-
-.details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: clamp(1.2rem, 4vw, 2.4rem);
-  margin-top: 1.6rem;
-}
-
-.detail-item {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-start;
-}
-
-.detail-item .di-icon {
-  flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  background: oklch(0.96 0.02 155);
-  border: 1px solid oklch(0.62 0.06 155 / 0.25);
-  color: var(--sage-600);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.detail-item .di-label {
-  font-family: var(--font-body);
-  text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-size: 0.68rem;
-  color: var(--ink-soft);
-}
-
-.detail-item .di-value {
-  font-family: var(--font-display);
-  font-size: 1.15rem;
-  color: var(--ink);
-  margin-top: 0.2rem;
-  line-height: 1.3;
-}
-
-.detail-item .di-value.sm {
-  font-family: var(--font-body);
-  font-size: 0.98rem;
-  line-height: 1.5;
-}
-
-.parchment h2 {
-  color: #3a2a12;
   text-align: center;
+  border: 1px solid rgba(150, 110, 40, 0.28);
+  border-right: none;
 }
 
-.parchment .eyebrow {
+.invite-intro__eyebrow {
+  display: block;
+  margin: 0.9rem 0 0.4rem;
   color: var(--blush-500);
 }
 
-.map-btn {
-  margin-top: 1.8rem;
+.invite-intro__names {
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  letter-spacing: 0.01em;
+}
+
+.invite-intro__quote {
+  color: var(--ink-soft);
+  font-family: var(--font-script);
+  font-style: italic;
+  font-size: 1.2rem;
+  margin: 0.7rem 0 0;
+  max-width: 30ch;
+}
+
+.invite-divider {
+  position: relative;
+  background: var(--parchment-dark);
+  border-top: 1px solid rgba(150, 110, 40, 0.28);
+  border-bottom: 1px solid rgba(150, 110, 40, 0.28);
+}
+
+.invite-divider::before {
+  content: "";
+  position: absolute;
+  inset: 14px 0;
+  left: 50%;
+  width: 0;
+  border-left: 2px dashed rgba(120, 85, 30, 0.4);
+}
+
+.invite-divider::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  transform: translateX(-50%);
+  background-image:
+    radial-gradient(circle 13px at 50% 0%, var(--paper-white) 99%, transparent 100%),
+    radial-gradient(circle 13px at 50% 100%, var(--paper-white) 99%, transparent 100%);
+  background-repeat: no-repeat;
+}
+
+.invite-stub {
+  position: relative;
+  background: linear-gradient(165deg, oklch(0.94 0.035 84) 0%, oklch(0.89 0.045 82) 100%);
+  border: 1px solid rgba(150, 110, 40, 0.28);
+  border-left: none;
+  padding: clamp(2rem, 4vw, 2.8rem) clamp(1.8rem, 4vw, 2.6rem);
   display: flex;
+  flex-direction: column;
+}
+
+.invite-facts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.invite-fact {
+  display: grid;
+  grid-template-columns: 20px auto;
+  column-gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid rgba(120, 85, 30, 0.18);
+}
+
+.invite-fact:first-child {
+  padding-top: 0;
+}
+
+.invite-fact:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.invite-fact__icon {
+  grid-row: 1 / 3;
+  align-self: center;
+  color: var(--amber-600);
+}
+
+.invite-fact__label {
+  grid-column: 2;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+}
+
+.invite-fact__value {
+  grid-column: 2;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.35;
+}
+
+.invite-stub__cta {
+  margin-top: 1.6rem;
   justify-content: center;
 }
 
-@media (max-width: 640px) {
-  .details-grid {
+.invite-note {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-top: 1.8rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .invite-card {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 26px auto;
+  }
+
+  .invite-intro {
+    border-right: 1px solid rgba(150, 110, 40, 0.28);
+    border-bottom: none;
+  }
+
+  .invite-divider {
+    border-top: none;
+    border-bottom: none;
+    border-left: 1px solid rgba(150, 110, 40, 0.28);
+    border-right: 1px solid rgba(150, 110, 40, 0.28);
+  }
+
+  .invite-divider::before {
+    inset: 0 14px;
+    left: 0;
+    top: 50%;
+    width: auto;
+    height: 0;
+    border-left: none;
+    border-top: 2px dashed rgba(120, 85, 30, 0.4);
+  }
+
+  .invite-divider::after {
+    left: 0;
+    right: 0;
+    top: 50%;
+    bottom: auto;
+    width: auto;
+    height: 26px;
+    transform: translateY(-50%);
+    background-image:
+      radial-gradient(circle 13px at 0% 50%, var(--paper-white) 99%, transparent 100%),
+      radial-gradient(circle 13px at 100% 50%, var(--paper-white) 99%, transparent 100%);
+  }
+
+  .invite-stub {
+    border-left: 1px solid rgba(150, 110, 40, 0.28);
+    border-top: none;
   }
 }
 

@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 
 import { WEDDING } from "./data";
-import { Icon } from "./effects";
+import { Icon, MiniLantern } from "./effects";
 import { SectionHead } from "./SectionHead";
 
 export function EventDetails() {
-  const items = [
+  const facts = [
     { icon: "Calendar", label: "Data", value: WEDDING.dateLabel },
     { icon: "Clock", label: "Horário", value: WEDDING.timeLabel },
     { icon: "MapPin", label: "Local", value: WEDDING.venue },
-    { icon: "Shirt", label: "Traje", value: WEDDING.dressCode, sm: true },
+    { icon: "Shirt", label: "Traje", value: WEDDING.dressCode },
+    { icon: "Map", label: "Endereço", value: WEDDING.address },
   ];
 
   return (
     <section className="section-band section-band--light" id="detalhes">
       <div className="section-band__inner">
-      <SectionHead variant="logistics" title="O Grande Dia" />
+        <SectionHead variant="logistics" title="O Grande Dia" />
 
       <div className="parchment reveal d1" style={{ maxWidth: 880, margin: "0 auto" }}>
         <span className="deco-seal">
@@ -45,41 +46,40 @@ export function EventDetails() {
               <span className="di-icon">
                 <Icon name={item.icon} size={22} />
               </span>
-              <div>
-                <div className="di-label">{item.label}</div>
-                <div className={`di-value ${item.sm ? "sm" : ""}`}>{item.value}</div>
-              </div>
+              <h2 className="invite-intro__names">{WEDDING.namesDisplay}</h2>
+              <p className="invite-intro__quote">
+                convidam você para celebrar o início da nossa eternidade.
+              </p>
             </div>
-          ))}
-          <div className="detail-item" style={{ gridColumn: "1 / -1" }}>
-            <span className="di-icon">
-              <Icon name="Map" size={22} />
-            </span>
-            <div>
-              <div className="di-label">Endereço</div>
-              <div className="di-value sm">{WEDDING.address}</div>
+
+            <div className="invite-divider" aria-hidden="true" />
+
+            <div className="invite-stub">
+              <ul className="invite-facts">
+                {facts.map((item) => (
+                  <li className="invite-fact" key={item.label}>
+                    <Icon name={item.icon} size={16} className="invite-fact__icon" />
+                    <span className="invite-fact__label">{item.label}</span>
+                    <span className="invite-fact__value">{item.value}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                className="btn btn-ink invite-stub__cta"
+                href={WEDDING.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Icon name="Navigation" size={18} /> Como chegar
+              </a>
             </div>
           </div>
-        </div>
 
-        <div className="map-btn">
-          <a className="btn btn-ink" href={WEDDING.mapsUrl} target="_blank" rel="noopener noreferrer">
-            <Icon name="Navigation" size={18} /> Como chegar
-          </a>
+          <p className="invite-note">
+            Cada presença acende uma luz nesse dia. Será uma alegria imensa ter você conosco.
+          </p>
         </div>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: "var(--ink-soft)",
-            fontSize: ".92rem",
-            marginTop: "1.6rem",
-            lineHeight: 1.6,
-          }}
-        >
-          Cada presença acende uma luz nesse dia. Será uma alegria imensa ter você conosco.
-        </p>
-      </div>
       </div>
     </section>
   );
