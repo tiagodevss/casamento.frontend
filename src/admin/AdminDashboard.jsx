@@ -7,6 +7,7 @@ import { useAuth } from "./AuthContext";
 const emptyForm = {
   displayName: "",
   searchNames: "",
+  maxCompanions: 0,
   invitedToParty: false,
   phone: "",
   notes: "",
@@ -16,6 +17,7 @@ function toForm(group) {
   return {
     displayName: group.displayName,
     searchNames: group.searchNames.join(", "),
+    maxCompanions: group.maxCompanions,
     invitedToParty: Boolean(group.invitedToParty),
     phone: group.phone ?? "",
     notes: group.notes ?? "",
@@ -29,6 +31,7 @@ function toPayload(form) {
       .split(",")
       .map((name) => name.trim())
       .filter(Boolean),
+    maxCompanions: Number(form.maxCompanions) || 0,
     invitedToParty: Boolean(form.invitedToParty),
     phone: form.phone.trim() || undefined,
     notes: form.notes.trim() || undefined,
@@ -80,6 +83,15 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
             value={form.searchNames}
             onChange={(event) => updateField("searchNames", event.target.value)}
             placeholder="Maria Silva, João Silva"
+          />
+        </div>
+        <div className="field">
+          <label>Máx. acompanhantes</label>
+          <input
+            type="number"
+            min="0"
+            value={form.maxCompanions}
+            onChange={(event) => updateField("maxCompanions", event.target.value)}
           />
         </div>
         <div className="field">
@@ -212,7 +224,8 @@ export function AdminDashboard() {
                         {group.searchNames.join(", ")}
                       </p>
                       <p style={{ color: "var(--text-dim)", margin: ".2rem 0 0", fontSize: ".8rem" }}>
-                        {group.phone ?? ""}
+                        Até {group.maxCompanions} acompanhante(s)
+                        {group.phone ? ` · ${group.phone}` : ""}
                       </p>
                       <p style={{ color: "var(--text-dim)", margin: ".25rem 0 0", fontSize: ".78rem" }}>
                         {group.invitedToParty ? "Inclui convite para a festa" : "Somente cerimônia"}

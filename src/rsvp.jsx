@@ -9,6 +9,8 @@ import { PARTY } from "./data";
 const emptyForm = {
   attending: "",
   partyAttending: "",
+  companions: 0,
+  companionNames: "",
   diet: "",
   message: "",
 };
@@ -115,6 +117,9 @@ export function RSVPForm({ standalone = false }) {
     if (group?.invitedToParty && !form.partyAttending) {
       nextErrors.partyAttending = "Confirme também sua presença na festa";
     }
+    if (form.attending === "yes" && form.companions > 0 && !form.companionNames.trim()) {
+      nextErrors.companionNames = "Informe os nomes dos acompanhantes";
+    }
     return nextErrors;
   };
 
@@ -132,6 +137,8 @@ export function RSVPForm({ standalone = false }) {
       await api.confirmRsvp(group.id, {
         attending: form.attending === "yes",
         partyAttending: group.invitedToParty ? form.partyAttending === "yes" : undefined,
+        companionsCount: form.companions,
+        companionNames: form.companionNames || undefined,
         diet: form.diet || undefined,
         message: form.message || undefined,
       });
@@ -171,7 +178,13 @@ export function RSVPForm({ standalone = false }) {
             Sua presença foi enviada para o nosso céu de lanternas.
           </p>
           {form.attending === "yes" && (
-            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>Você está confirmado(a).</p>
+            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>
+              {form.companions > 0
+                ? `Você e mais ${form.companions} ${
+                    form.companions === 1 ? "acompanhante" : "acompanhantes"
+                  } estão confirmados.`
+                : "Você está confirmado(a)."}
+            </p>
           )}
           {group?.invitedToParty && form.partyAttending === "yes" && (
             <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
@@ -326,16 +339,62 @@ export function RSVPForm({ standalone = false }) {
             )}
 
             {form.attending === "yes" && (
-              <div className="field">
-                <label>
-                  <Icon name="Utensils" size={14} /> Restrições alimentares
-                </label>
-                <input
-                  value={form.diet}
-                  onChange={(event) => updateField("diet", event.target.value)}
-                  placeholder="Vegetariano, alergias..."
-                />
-              </div>
+              <>
+                <div className="field">
+                  <label>
+                    <Icon name="Users" size={14} /> Acompanhantes
+                  </label>
+                  <div className="stepper">
+                    <button
+                      type="button"
+                      onClick={() => updateField("companions", Math.max(0, form.companions - 1))}
+                      aria-label="Menos"
+                    >
+                      −
+                    </button>
+                    <span className="count">{form.companions}</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateField("companions", Math.min(group.maxCompanions, form.companions + 1))
+                      }
+                      aria-label="Mais"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <span style={{ fontSize: ".75rem", color: "var(--ink-soft)" }}>
+                    Máximo de {group.maxCompanions} acompanhante(s) neste convite
+                  </span>
+                </div>
+                <div className="field">
+                  <label>
+                    <Icon name="Utensils" size={14} /> Restrições alimentares
+                  </label>
+                  <input
+                    value={form.diet}
+                    onChange={(event) => updateField("diet", event.target.value)}
+                    placeholder="Vegetariano, alergias..."
+                  />
+                </div>
+                {form.companions > 0 && (
+                  <div className={`field full ${errors.companionNames ? "error" : ""}`}>
+                    <label>
+                      <Icon name="PenLine" size={14} /> Nomes dos acompanhantes
+                    </label>
+                    <input
+                      value={form.companionNames}
+                      onChange={(event) => updateField("companionNames", event.target.value)}
+                      placeholder="Separe os nomes por vírgula"
+                      maxLength={300}
+                      required
+                    />
+                    <span className="err-msg" role="alert">
+                      {errors.companionNames}
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
             <div className="field full">
