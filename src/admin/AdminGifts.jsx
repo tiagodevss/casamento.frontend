@@ -62,16 +62,26 @@ function GiftThumb({ gift, size = 46 }) {
           width: size,
           height: size,
           objectFit: "cover",
-          borderRadius: 8,
-          border: "1px solid var(--line-light)",
+          borderRadius: 6,
+          border: "1px solid var(--adm-border)",
+          flexShrink: 0,
         }}
       />
     );
   }
   return (
     <span
-      className="gift-emoji-wrap"
-      style={{ width: size, height: size, marginBottom: 0, flexShrink: 0 }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 6,
+        background: "var(--adm-primary-tint)",
+        color: "var(--adm-primary)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}
     >
       <Icon name={gift.iconName} size={Math.round(size * 0.48)} />
     </span>
@@ -134,45 +144,49 @@ function GiftForm({ initial, onCancel, onSaved }) {
   };
 
   return (
-    <form className="panel" style={{ padding: "1.6rem", marginBottom: "1.6rem" }} onSubmit={submit} noValidate>
-      <div className="form-grid">
-        <div className="field full">
+    <form className="adm-card adm-card-pad" style={{ marginBottom: "1rem" }} onSubmit={submit} noValidate>
+      <div className="adm-form-grid">
+        <div className="adm-field adm-field-full">
           <label>Título</label>
           <input
+            className="adm-input"
             value={form.title}
             onChange={(event) => updateField("title", event.target.value)}
             placeholder="Nome do presente"
           />
         </div>
-        <div className="field full">
+        <div className="adm-field adm-field-full">
           <label>Descrição</label>
           <textarea
+            className="adm-textarea"
             value={form.description}
             onChange={(event) => updateField("description", event.target.value)}
             placeholder="Texto exibido no site"
             rows={3}
           />
         </div>
-        <div className="field">
+        <div className="adm-field">
           <label>Valor (R$)</label>
           <input
+            className="adm-input"
             value={form.price}
             onChange={(event) => updateField("price", event.target.value.replace(/[^\d.,]/g, ""))}
             placeholder="150,00"
             inputMode="decimal"
           />
         </div>
-        <div className="field">
+        <div className="adm-field">
           <label>Etiqueta (opcional)</label>
           <input
+            className="adm-input"
             value={form.tag}
             onChange={(event) => updateField("tag", event.target.value)}
             placeholder="Ex.: Mágico"
           />
         </div>
-        <div className="field">
+        <div className="adm-field">
           <label>Ícone (se não houver foto)</label>
-          <select value={form.iconName} onChange={(event) => updateField("iconName", event.target.value)}>
+          <select className="adm-select" value={form.iconName} onChange={(event) => updateField("iconName", event.target.value)}>
             {GIFT_ICONS.map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -180,9 +194,10 @@ function GiftForm({ initial, onCancel, onSaved }) {
             ))}
           </select>
         </div>
-        <div className="field">
+        <div className="adm-field">
           <label>Status</label>
           <select
+            className="adm-select"
             value={form.active ? "active" : "inactive"}
             onChange={(event) => updateField("active", event.target.value === "active")}
           >
@@ -190,9 +205,10 @@ function GiftForm({ initial, onCancel, onSaved }) {
             <option value="inactive">Oculto</option>
           </select>
         </div>
-        <div className="field full">
+        <div className="adm-field adm-field-full">
           <label>Foto do presente (JPEG, PNG ou WebP — máx. 5 MB)</label>
           <input
+            className="adm-input"
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={(event) => setImageFile(event.target.files?.[0] ?? null)}
@@ -206,13 +222,13 @@ function GiftForm({ initial, onCancel, onSaved }) {
                   width: 80,
                   height: 80,
                   objectFit: "cover",
-                  borderRadius: 8,
-                  border: "1px solid var(--line-light)",
+                  borderRadius: 6,
+                  border: "1px solid var(--adm-border)",
                 }}
               />
               <button
                 type="button"
-                className="btn btn-ghost"
+                className="adm-btn adm-btn-ghost adm-btn-sm"
                 onClick={() => {
                   setImageFile(null);
                   setPreviewUrl(null);
@@ -225,14 +241,16 @@ function GiftForm({ initial, onCancel, onSaved }) {
           )}
         </div>
       </div>
-      <span className="err-msg" role="alert">
-        {error}
-      </span>
-      <div style={{ display: "flex", gap: ".8rem", marginTop: "1.2rem" }}>
-        <button type="submit" className="btn btn-ink" disabled={saving}>
+      {error && (
+        <span className="adm-error" style={{ display: "block", marginTop: "0.75rem" }} role="alert">
+          {error}
+        </span>
+      )}
+      <div style={{ display: "flex", gap: ".6rem", marginTop: "1.1rem" }}>
+        <button type="submit" className="adm-btn adm-btn-primary" disabled={saving}>
           <Icon name="Check" size={16} /> {saving ? "Salvando..." : "Salvar"}
         </button>
-        <button type="button" className="btn btn-ghost" onClick={onCancel}>
+        <button type="button" className="adm-btn adm-btn-ghost" onClick={onCancel}>
           Cancelar
         </button>
       </div>
@@ -282,68 +300,67 @@ export function AdminGifts() {
   return (
     <>
       {!creating && !editing && (
-        <button className="btn btn-ink" style={{ marginBottom: "1.6rem" }} onClick={() => setCreating(true)}>
+        <button className="adm-btn adm-btn-primary" style={{ marginBottom: "1.1rem" }} onClick={() => setCreating(true)}>
           <Icon name="Plus" size={16} /> Novo presente
         </button>
       )}
 
       {creating && <GiftForm onCancel={() => setCreating(false)} onSaved={handleSaved} />}
 
-      {error && <p className="err-msg">{error}</p>}
+      {error && <p className="adm-error">{error}</p>}
 
-      {gifts === null && !error && <p style={{ color: "var(--text-dim)" }}>Carregando...</p>}
+      {gifts === null && !error && <p className="adm-hint">Carregando...</p>}
 
-      {gifts && (
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {gifts.map((gift) =>
-            editing?.id === gift.id ? (
-              <GiftForm key={gift.id} initial={gift} onCancel={() => setEditing(null)} onSaved={handleSaved} />
-            ) : (
-              <div
-                key={gift.id}
-                className="panel"
-                style={{
-                  padding: "1.2rem 1.6rem",
-                  opacity: gift.active ? 1 : 0.72,
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".8rem" }}>
-                  <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start" }}>
-                    <GiftThumb gift={gift} size={56} />
+      {gifts && gifts.length === 0 && <div className="adm-card adm-empty">Nenhum presente cadastrado ainda.</div>}
+
+      {gifts && gifts.length > 0 && (
+        <div className="adm-card">
+          <div className="adm-list">
+            {gifts.map((gift, index) =>
+              editing?.id === gift.id ? (
+                <div key={gift.id} style={{ padding: "0 0.5rem" }}>
+                  <GiftForm initial={gift} onCancel={() => setEditing(null)} onSaved={handleSaved} />
+                </div>
+              ) : (
+                <div
+                  key={gift.id}
+                  className="adm-row"
+                  style={{
+                    opacity: gift.active ? 1 : 0.6,
+                    ...(index > 0 ? { borderTop: "1px solid var(--adm-border)" } : {}),
+                  }}
+                >
+                  <div className="adm-row-main">
+                    <GiftThumb gift={gift} size={44} />
                     <div>
-                      <strong style={{ color: "var(--ink)", fontSize: "1.05rem" }}>{gift.title}</strong>
-                      <p style={{ color: "var(--ink-soft)", margin: ".3rem 0 0", fontSize: ".85rem", maxWidth: "48ch" }}>
+                      <div className="adm-row-title">{gift.title}</div>
+                      <p className="adm-row-meta" style={{ maxWidth: "48ch" }}>
                         {gift.description}
                       </p>
-                      <p style={{ color: "var(--sage-700)", margin: ".4rem 0 0", fontFamily: "var(--font-display)" }}>
+                      <p className="adm-row-meta" style={{ color: "var(--adm-text)", fontWeight: 600 }}>
                         R$ {(gift.priceCents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                         {gift.tag ? ` · ${gift.tag}` : ""}
                       </p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".5rem" }}>
-                    <span
-                      style={{
-                        fontSize: ".75rem",
-                        color: gift.active ? "var(--sage-600)" : "var(--ink-soft)",
-                      }}
-                    >
+                  <div className="adm-row-side">
+                    <span className={`adm-badge ${gift.active ? "adm-badge-success" : "adm-badge-neutral"}`}>
                       {gift.active ? "Ativo" : "Oculto"}
                     </span>
-                    <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
-                      <button className="btn btn-ghost" onClick={() => setEditing(gift)}>
-                        <Icon name="Pencil" size={14} /> Editar
+                    <div className="adm-row-actions">
+                      <button className="adm-btn adm-btn-ghost adm-btn-sm" onClick={() => setEditing(gift)}>
+                        <Icon name="Pencil" size={13} /> Editar
                       </button>
-                      <button className="btn btn-ghost" onClick={() => toggleActive(gift)}>
-                        <Icon name={gift.active ? "X" : "Check"} size={14} />
+                      <button className="adm-btn adm-btn-ghost adm-btn-sm" onClick={() => toggleActive(gift)}>
+                        <Icon name={gift.active ? "X" : "Check"} size={13} />
                         {gift.active ? "Ocultar" : "Ativar"}
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ),
-          )}
+              ),
+            )}
+          </div>
         </div>
       )}
     </>
