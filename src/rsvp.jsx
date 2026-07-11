@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Icon, MiniLantern, fireConfetti } from "./effects";
 import { api } from "./api";
 import { ContactHelp } from "./ContactHelp";
 import { SectionHead } from "./SectionHead";
+import { PARTY } from "./data";
 
 const emptyForm = {
   attending: "",
+  partyAttending: "",
   companions: 0,
   companionNames: "",
   diet: "",
@@ -74,7 +76,16 @@ function GuestSearch({ onSelect }) {
       </div>
 
       {candidates && candidates.length > 0 && (
-        <div style={{ marginTop: "1.6rem", display: "grid", gap: ".6rem" }}>
+        <div
+          style={{ marginTop: "1.6rem", display: "grid", gap: ".6rem" }}
+          aria-live="polite"
+          role="status"
+        >
+          <span className="sr-only">
+            {candidates.length === 1
+              ? "1 convite encontrado"
+              : `${candidates.length} convites encontrados`}
+          </span>
           {candidates.map((candidate) => (
             <button
               key={candidate.id}
@@ -103,6 +114,16 @@ export function RSVPForm({ standalone = false }) {
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const formRef = useRef(null);
+
+  // Roda depois que o React já re-renderizou os campos com a classe .error,
+  // então o foco encontra o elemento certo mesmo na primeira tentativa de envio.
+  useEffect(() => {
+    if (Object.keys(errors).length === 0) return;
+    formRef.current
+      ?.querySelector(".field.error input, .field.error select, .field.error textarea")
+      ?.focus();
+  }, [errors]);
 
   const updateField = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
@@ -112,6 +133,9 @@ export function RSVPForm({ standalone = false }) {
   const validate = () => {
     const nextErrors = {};
     if (!form.attending) nextErrors.attending = "Escolha uma opção";
+    if (group?.invitedToParty && !form.partyAttending) {
+      nextErrors.partyAttending = "Confirme também sua presença na festa";
+    }
     if (form.attending === "yes" && form.companions > 0 && !form.companionNames.trim()) {
       nextErrors.companionNames = "Informe os nomes dos acompanhantes";
     }
@@ -123,7 +147,6 @@ export function RSVPForm({ standalone = false }) {
     const nextErrors = validate();
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length) {
-      document.querySelector(".field.error input, .field.error select, .field.error textarea")?.focus();
       return;
     }
 
@@ -131,6 +154,7 @@ export function RSVPForm({ standalone = false }) {
     try {
       await api.confirmRsvp(group.id, {
         attending: form.attending === "yes",
+        partyAttending: group.invitedToParty ? form.partyAttending === "yes" : undefined,
         companionsCount: form.companions,
         companionNames: form.companionNames || undefined,
         diet: form.diet || undefined,
@@ -163,7 +187,8 @@ export function RSVPForm({ standalone = false }) {
             style={{
               color: "var(--ink-soft)",
               fontFamily: "var(--font-script)",
-              fontSize: "1.4rem",
+              fontSize: "clamp(1.8rem, 4vw, 2.45rem)",
+              lineHeight: 1.02,
               margin: "1rem auto 0",
               maxWidth: "34ch",
             }}
@@ -179,17 +204,31 @@ export function RSVPForm({ standalone = false }) {
                 : "Você está confirmado(a)."}
             </p>
           )}
-          <button
-            className="btn btn-ghost"
-            style={{ marginTop: "1.8rem" }}
-            onClick={() => {
-              setSent(false);
-              setGroup(null);
-              setForm(emptyForm);
-            }}
-          >
-            <Icon name="RotateCcw" size={16} /> Enviar outra confirmação
-          </button>
+          {group?.invitedToParty && form.partyAttending === "yes" && (
+            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
+              Sua presença na festa também foi confirmada.
+            </p>
+          )}
+          {group?.invitedToParty && form.partyAttending === "no" && (
+            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
+              Obrigado por nos avisar sobre a festa.
+            </p>
+          )}
+          <div style={{ display: "flex", gap: ".8rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1.8rem" }}>
+            <button className="btn btn-ghost" onClick={() => setSent(false)}>
+              <Icon name="PenLine" size={16} /> Corrigir minha resposta
+            </button>
+            <button
+              className="btn btn-ghost"
+              onClick={() => {
+                setSent(false);
+                setGroup(null);
+                setForm(emptyForm);
+              }}
+            >
+              <Icon name="RotateCcw" size={16} /> Confirmar para outra pessoa
+            </button>
+          </div>
         </div>
         </div>
       </section>
@@ -209,6 +248,7 @@ export function RSVPForm({ standalone = false }) {
         <GuestSearch onSelect={setGroup} />
       ) : (
         <form
+          ref={formRef}
           className="panel reveal d1"
           style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)" }}
           onSubmit={submit}
@@ -218,12 +258,58 @@ export function RSVPForm({ standalone = false }) {
             Confirmando para: <strong style={{ color: "var(--ink)" }}>{group.displayName}</strong>{" "}
             <button
               type="button"
-              onClick={() => setGroup(null)}
+              onClick={() => {
+                setGroup(null);
+                setForm(emptyForm);
+                setErrors({});
+              }}
               style={{ background: "none", border: "none", color: "var(--sage-600)", cursor: "pointer" }}
             >
               (trocar)
             </button>
           </p>
+
+          {group.hasResponded && (
+            <p className="rsvp-notice" role="status">
+              Encontramos uma confirmação anterior para {group.displayName}. Ao enviar, sua resposta
+              antiga será substituída pela nova.
+            </p>
+          )}
+
+          {group.invitedToParty && (
+            <div
+              style={{
+                marginBottom: "1.4rem",
+                padding: "1rem 1.1rem",
+                border: "1px solid rgba(120, 86, 48, 0.18)",
+                borderRadius: "1.1rem",
+                background: "rgba(255, 248, 239, 0.72)",
+              }}
+            >
+              <p style={{ margin: 0, color: "var(--ink)", fontWeight: 600 }}>{PARTY.title}</p>
+              <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", lineHeight: 1.6 }}>{PARTY.description}</p>
+              <div style={{ display: "grid", gap: ".25rem", marginTop: ".8rem", color: "var(--ink-soft)", fontSize: ".94rem" }}>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Horário:</strong> {PARTY.timeLabel}
+                </span>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Local:</strong> {PARTY.venue}
+                </span>
+                <span>
+                  <strong style={{ color: "var(--ink)" }}>Endereço:</strong> {PARTY.address}
+                </span>
+              </div>
+              <a
+                className="btn btn-ghost"
+                href={PARTY.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ marginTop: ".9rem", display: "inline-flex" }}
+              >
+                <Icon name="Navigation" size={16} /> Ver rota da festa
+              </a>
+            </div>
+          )}
 
           <div className="form-grid">
             <div className={`field full ${errors.attending ? "error" : ""}`}>
@@ -238,7 +324,7 @@ export function RSVPForm({ standalone = false }) {
                     checked={form.attending === "yes"}
                     onChange={() => updateField("attending", "yes")}
                   />
-                  <span className="radio" /> <span>Sim, eu vou! ✨</span>
+                  <span className="radio" /> <span>Sim, eu vou! <span aria-hidden="true">✨</span></span>
                 </label>
                 <label className="choice no">
                   <input
@@ -252,6 +338,35 @@ export function RSVPForm({ standalone = false }) {
               </div>
               <span className="err-msg">{errors.attending}</span>
             </div>
+
+            {group.invitedToParty && (
+              <div className={`field full ${errors.partyAttending ? "error" : ""}`}>
+                <label>
+                  <Icon name="PartyPopper" size={14} /> Você irá para a festa?
+                </label>
+                <div className="choice-row">
+                  <label className="choice yes">
+                    <input
+                      type="radio"
+                      name="partyAttending"
+                      checked={form.partyAttending === "yes"}
+                      onChange={() => updateField("partyAttending", "yes")}
+                    />
+                    <span className="radio" /> <span>Sim, estarei na festa</span>
+                  </label>
+                  <label className="choice no">
+                    <input
+                      type="radio"
+                      name="partyAttending"
+                      checked={form.partyAttending === "no"}
+                      onChange={() => updateField("partyAttending", "no")}
+                    />
+                    <span className="radio" /> <span>Não irei para a festa</span>
+                  </label>
+                </div>
+                <span className="err-msg">{errors.partyAttending}</span>
+              </div>
+            )}
 
             {form.attending === "yes" && (
               <>
@@ -318,9 +433,14 @@ export function RSVPForm({ standalone = false }) {
               </label>
               <textarea
                 value={form.message}
-                onChange={(event) => updateField("message", event.target.value)}
+                onChange={(event) => updateField("message", event.target.value.slice(0, 500))}
                 placeholder="Deixe um recado cheio de luz (opcional)"
+                maxLength={500}
+                aria-describedby="rsvp-message-count"
               />
+              <span id="rsvp-message-count" className="field-hint" style={{ textAlign: "right" }}>
+                {form.message.length}/500
+              </span>
             </div>
           </div>
 

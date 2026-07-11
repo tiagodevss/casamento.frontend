@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 
 import { Icon } from "../effects";
 import { api } from "../api";
-import { useAuth } from "./AuthContext";
 
 const emptyForm = {
   displayName: "",
   searchNames: "",
-  maxCompanions: 0,
+  invitedToParty: false,
   phone: "",
   notes: "",
 };
@@ -16,7 +15,7 @@ function toForm(group) {
   return {
     displayName: group.displayName,
     searchNames: group.searchNames.join(", "),
-    maxCompanions: group.maxCompanions,
+    invitedToParty: Boolean(group.invitedToParty),
     phone: group.phone ?? "",
     notes: group.notes ?? "",
   };
@@ -29,10 +28,24 @@ function toPayload(form) {
       .split(",")
       .map((name) => name.trim())
       .filter(Boolean),
-    maxCompanions: Number(form.maxCompanions) || 0,
+    invitedToParty: Boolean(form.invitedToParty),
     phone: form.phone.trim() || undefined,
     notes: form.notes.trim() || undefined,
   };
+}
+
+function initials(name) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function RsvpBadge({ label, state }) {
+  const variant = state === true ? "adm-badge-success" : state === false ? "adm-badge-danger" : "adm-badge-neutral";
+  return <span className={`adm-badge ${variant}`}>{label}</span>;
 }
 
 function GuestGroupForm({ initial, onCancel, onSaved }) {
@@ -64,56 +77,66 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
   };
 
   return (
-    <form className="glass" style={{ padding: "1.6rem", marginBottom: "1.6rem" }} onSubmit={submit} noValidate>
-      <div className="form-grid">
-        <div className="field full">
+    <form className="adm-card adm-card-pad" style={{ marginBottom: "1rem" }} onSubmit={submit} noValidate>
+      <div className="adm-form-grid">
+        <div className="adm-field adm-field-full">
           <label>Nome de exibição</label>
           <input
+            className="adm-input"
             value={form.displayName}
             onChange={(event) => updateField("displayName", event.target.value)}
             placeholder="Família Silva"
           />
         </div>
-        <div className="field full">
+        <div className="adm-field adm-field-full">
           <label>Nomes de busca (separados por vírgula)</label>
           <input
+            className="adm-input"
             value={form.searchNames}
             onChange={(event) => updateField("searchNames", event.target.value)}
             placeholder="Maria Silva, João Silva"
           />
         </div>
-        <div className="field">
-          <label>Máx. acompanhantes</label>
-          <input
-            type="number"
-            min="0"
-            value={form.maxCompanions}
-            onChange={(event) => updateField("maxCompanions", event.target.value)}
-          />
-        </div>
-        <div className="field">
+        <div className="adm-field">
           <label>Telefone</label>
           <input
+            className="adm-input"
             value={form.phone}
             onChange={(event) => updateField("phone", event.target.value)}
             placeholder="(19) 99999-9999"
           />
         </div>
-        <div className="field full">
+        <div className="adm-field">
+          <label>Convite extra</label>
+          <label className="adm-field-checkbox">
+            <input
+              type="checkbox"
+              checked={form.invitedToParty}
+              onChange={(event) => updateField("invitedToParty", event.target.checked)}
+            />
+            Convidado para a festa
+          </label>
+        </div>
+        <div className="adm-field adm-field-full">
           <label>Notas</label>
           <input
+            className="adm-input"
             value={form.notes}
             onChange={(event) => updateField("notes", event.target.value)}
             placeholder="Observações internas"
           />
         </div>
       </div>
-      <span className="err-msg">{error}</span>
-      <div style={{ display: "flex", gap: ".8rem", marginTop: "1.2rem" }}>
-        <button type="submit" className="btn btn-gold" disabled={saving}>
+      {error && (
+        <span className="adm-error" style={{ display: "block", marginTop: "0.75rem" }}>
+          {error}
+        </span>
+      )}
+      <div style={{ display: "flex", gap: ".6rem", marginTop: "1.1rem" }}>
+        <button type="submit" className="adm-btn adm-btn-primary" disabled={saving}>
           <Icon name="Check" size={16} /> {saving ? "Salvando..." : "Salvar"}
         </button>
-        <button type="button" className="btn btn-ghost" onClick={onCancel}>
+        <button type="button" className="adm-btn adm-btn-ghost" onClick={onCancel}>
           Cancelar
         </button>
       </div>
@@ -163,70 +186,82 @@ export function AdminGuests() {
   return (
     <>
       {!creating && !editing && (
-        <button className="btn btn-gold" style={{ marginBottom: "1.6rem" }} onClick={() => setCreating(true)}>
+        <button className="adm-btn adm-btn-primary" style={{ marginBottom: "1.1rem" }} onClick={() => setCreating(true)}>
           <Icon name="Plus" size={16} /> Novo convidado
         </button>
       )}
 
       {creating && <GuestGroupForm onCancel={() => setCreating(false)} onSaved={handleSaved} />}
 
-      {error && <p className="err-msg">{error}</p>}
+      {error && <p className="adm-error">{error}</p>}
 
-      {groups === null && !error && <p style={{ color: "var(--text-dim)" }}>Carregando...</p>}
+      {groups === null && !error && <p className="adm-hint">Carregando...</p>}
 
-      {groups && (
-        <div style={{ display: "grid", gap: "1rem" }}>
-          {groups.map((group) =>
-            editing?.id === group.id ? (
-              <GuestGroupForm
-                key={group.id}
-                initial={group}
-                onCancel={() => setEditing(null)}
-                onSaved={handleSaved}
-              />
-            ) : (
-              <div key={group.id} className="glass" style={{ padding: "1.2rem 1.6rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".8rem" }}>
-                  <div>
-                    <strong style={{ color: "var(--cream)", fontSize: "1.05rem" }}>{group.displayName}</strong>
-                    <p style={{ color: "var(--text-dim)", margin: ".3rem 0 0", fontSize: ".85rem" }}>
-                      {group.searchNames.join(", ")}
-                    </p>
-                    <p style={{ color: "var(--text-dim)", margin: ".2rem 0 0", fontSize: ".8rem" }}>
-                      Até {group.maxCompanions} acompanhante(s)
-                      {group.phone ? ` · ${group.phone}` : ""}
-                    </p>
+      {groups && groups.length === 0 && <div className="adm-card adm-empty">Nenhum convidado cadastrado ainda.</div>}
+
+      {groups && groups.length > 0 && (
+        <div className="adm-card">
+          <div className="adm-list">
+            {groups.map((group, index) =>
+              editing?.id === group.id ? (
+                <div key={group.id} style={{ padding: "0 0.5rem" }}>
+                  <GuestGroupForm initial={group} onCancel={() => setEditing(null)} onSaved={handleSaved} />
+                </div>
+              ) : (
+                <div
+                  key={group.id}
+                  className="adm-row"
+                  style={index > 0 ? { borderTop: "1px solid var(--adm-border)" } : undefined}
+                >
+                  <div className="adm-row-main">
+                    <span className="adm-avatar">{initials(group.displayName)}</span>
+                    <div>
+                      <div className="adm-row-title">{group.displayName}</div>
+                      <p className="adm-row-meta">{group.searchNames.join(", ")}</p>
+                      {group.phone && <p className="adm-row-meta">{group.phone}</p>}
+                      <p className="adm-row-meta">
+                        {group.invitedToParty ? "Inclui convite para a festa" : "Somente cerimônia"}
+                      </p>
+                    </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".5rem" }}>
-                    <span
-                      style={{
-                        fontSize: ".75rem",
-                        color: group.rsvpResponse
-                          ? group.rsvpResponse.attending
-                            ? "var(--gold-400)"
-                            : "var(--rose)"
-                          : "var(--text-dim)",
-                      }}
-                    >
-                      {group.rsvpResponse
-                        ? group.rsvpResponse.attending
-                          ? "Confirmado"
-                          : "Não vai"
-                        : "Sem resposta"}
-                    </span>
-                    <div style={{ display: "flex", gap: ".5rem" }}>
-                      <button className="btn btn-ghost" onClick={() => setEditing(group)}>
-                        <Icon name="Pencil" size={14} /> Editar
+                  <div className="adm-row-side">
+                    <div style={{ display: "flex", gap: ".4rem", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                      <RsvpBadge
+                        label={
+                          group.rsvpResponse
+                            ? group.rsvpResponse.attending
+                              ? "Cerimônia confirmada"
+                              : "Cerimônia: não vai"
+                            : "Cerimônia: sem resposta"
+                        }
+                        state={group.rsvpResponse ? group.rsvpResponse.attending : null}
+                      />
+                      {group.invitedToParty && (
+                        <RsvpBadge
+                          label={
+                            group.rsvpResponse?.partyAttending === true
+                              ? "Festa confirmada"
+                              : group.rsvpResponse?.partyAttending === false
+                                ? "Festa: não vai"
+                                : "Festa: sem resposta"
+                          }
+                          state={group.rsvpResponse?.partyAttending ?? null}
+                        />
+                      )}
+                    </div>
+                    <div className="adm-row-actions">
+                      <button className="adm-btn adm-btn-ghost adm-btn-sm" onClick={() => setEditing(group)}>
+                        <Icon name="Pencil" size={13} /> Editar
                       </button>
-                      <button className="btn btn-ghost" onClick={() => remove(group)}>
-                        <Icon name="Trash2" size={14} /> Remover
+                      <button className="adm-btn adm-btn-danger adm-btn-sm" onClick={() => remove(group)}>
+                        <Icon name="Trash2" size={13} /> Remover
                       </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ),
-          )}
+              ),
+            )}
+          </div>
         </div>
       )}
     </>

@@ -44,7 +44,7 @@ export function GallerySection() {
             key={item.src}
             onClick={() => setActive(index)}
           >
-            <PhotoFrame src={item.src} label={item.src} caption={item.caption} />
+            <PhotoFrame src={item.src} label={item.caption} caption={item.caption} />
           </div>
         ))}
       </div>
@@ -67,7 +67,7 @@ export function GallerySection() {
           <div className="lb-frame" onClick={(event) => event.stopPropagation()}>
             <PhotoFrame
               src={GALLERY[active].src}
-              label={GALLERY[active].src}
+              label={GALLERY[active].caption}
               caption={GALLERY[active].caption}
             />
           </div>
@@ -91,7 +91,8 @@ export function GallerySection() {
               color: "var(--lilac-soft)",
               fontFamily: "var(--font-script)",
               fontStyle: "italic",
-              fontSize: "1.2rem",
+              fontSize: "clamp(1.6rem, 3.8vw, 2.2rem)",
+              lineHeight: 1.02,
             }}
           >
             {GALLERY[active].caption} · {active + 1}/{GALLERY.length}
