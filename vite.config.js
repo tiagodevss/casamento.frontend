@@ -13,9 +13,11 @@ export default defineConfig(({ mode }) => {
       "import.meta.env.VITE_API_URL": JSON.stringify(apiUrl),
     },
     server: {
+      // 3001 porque a 3000 costuma estar ocupada por outros projetos (ex.: WMS);
+      // manter em sincronia com PORT no backend/.env
       proxy: {
-        "/api": "http://localhost:3000",
-        "/uploads": "http://localhost:3000",
+        "/api": "http://localhost:3001",
+        "/uploads": "http://localhost:3001",
       },
     },
   };

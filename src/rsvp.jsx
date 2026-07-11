@@ -282,19 +282,23 @@ export function RSVPForm({ standalone = false }) {
                 <span>
                   <strong style={{ color: "var(--ink)" }}>Local:</strong> {PARTY.venue}
                 </span>
-                <span>
-                  <strong style={{ color: "var(--ink)" }}>Endereço:</strong> {PARTY.address}
-                </span>
+                {PARTY.address && (
+                  <span>
+                    <strong style={{ color: "var(--ink)" }}>Endereço:</strong> {PARTY.address}
+                  </span>
+                )}
               </div>
-              <a
-                className="btn btn-ghost"
-                href={PARTY.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ marginTop: ".9rem", display: "inline-flex" }}
-              >
-                <Icon name="Navigation" size={16} /> Ver rota da festa
-              </a>
+              {PARTY.mapsUrl && (
+                <a
+                  className="btn btn-ghost"
+                  href={PARTY.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ marginTop: ".9rem", display: "inline-flex" }}
+                >
+                  <Icon name="Navigation" size={16} /> Ver rota da festa
+                </a>
+              )}
             </div>
           )}
 

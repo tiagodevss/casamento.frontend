@@ -74,7 +74,8 @@ export function Navbar() {
 
   return (
     <>
-      <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
+      {/* Fora da home o fundo é claro; o estado "scrolled" (barra escura) garante contraste do logo e dos links */}
+      <nav className={`navbar ${scrolled || !onHome ? "scrolled" : ""}`}>
         {onHome ? (
           <a href="#inicio" className="nav-brand" onClick={(event) => goToSection(event, "#inicio")}>
             <Icon name="Sparkles" size={18} style={{ color: "var(--blush-400)" }} />
@@ -93,21 +94,18 @@ export function Navbar() {
             </li>
           ))}
         </ul>
-        <button className="nav-toggle" onClick={() => setOpen(true)} aria-label="Abrir menu" aria-expanded={open}>
-          <Icon name="Menu" size={22} />
-          <span className="nav-toggle-label">Menu</span>
+        <button
+          className="nav-toggle"
+          onClick={() => setOpen((current) => !current)}
+          aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={open}
+        >
+          <Icon name={open ? "X" : "Menu"} size={22} />
+          <span className="nav-toggle-label">{open ? "Fechar" : "Menu"}</span>
         </button>
       </nav>
 
       <div className={`mobile-menu ${open ? "open" : ""}`}>
-        <button
-          className="nav-toggle"
-          style={{ position: "absolute", top: "1.1rem", right: "1.25rem" }}
-          onClick={closeMenu}
-          aria-label="Fechar menu"
-        >
-          <Icon name="X" size={22} />
-        </button>
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.href ?? item.to}

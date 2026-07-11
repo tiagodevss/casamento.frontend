@@ -100,7 +100,7 @@ export function Countdown() {
         title={
           time.done
             ? "Foi um dia inesquecível"
-            : "Faltam poucos dias para o nosso felizes para sempre"
+            : "Contagem regressiva para o nosso felizes para sempre"
         }
         titleStyle={{ fontSize: "clamp(1.8rem, 4.5vw, 3rem)" }}
         headStyle={{ marginBottom: "1.5rem" }}

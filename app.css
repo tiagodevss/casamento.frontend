@@ -1594,6 +1594,19 @@ h3 {
   flex: 1;
 }
 
+/* Em telas pequenas a cursiva fica ilegível em parágrafos longos — troca pela serifada
+   e permite rolar o texto, já que a página do livro tem altura fixa (aspect-ratio) */
+@media (max-width: 720px) {
+  .page-text .body {
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    line-height: 1.65;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 0.4rem;
+  }
+}
+
 .page-text .body::first-letter {
   font-family: var(--font-display);
   font-weight: 700;
@@ -2716,7 +2729,19 @@ h3 {
 .rsvp-success {
   text-align: center;
   padding: 2rem 1rem;
-  animation: msg-pop 0.6s both;
+  animation: success-pop 0.6s both;
+}
+
+@keyframes success-pop {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .rsvp-success .rising-lantern {
@@ -2927,7 +2952,6 @@ h3 {
   background: rgba(4, 5, 16, 0.86);
   backdrop-filter: blur(12px);
   display: flex;
-  align-items: center;
   justify-content: center;
   padding: 1.5rem;
   animation: fade-in 0.35s both;
@@ -2936,6 +2960,8 @@ h3 {
 
 .modal {
   position: relative;
+  /* margin auto centraliza e, quando o modal é maior que a tela, permite rolar sem cortar o topo */
+  margin: auto;
   width: min(480px, 100%);
   background: linear-gradient(165deg, oklch(0.20 0.024 84), oklch(0.15 0.020 82));
   border: 1px solid var(--surface-border);

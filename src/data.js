@@ -12,12 +12,14 @@ export const WEDDING = {
     "https://www.google.com/maps/search/?api=1&query=Igreja+Universal+Paulínia+Av.+José+Paulino+610+Centro+Paulínia+SP",
 };
 
+// Enquanto o local da festa não estiver definido, deixe address e mapsUrl
+// vazios — o convite esconde esses campos automaticamente.
 export const PARTY = {
   title: "Celebração da Festa",
   timeLabel: "Após a cerimônia",
-  venue: "Local da festa a definir",
-  address: "Atualize este endereço em frontend/src/data.js",
-  mapsUrl: "https://www.google.com/maps",
+  venue: "Local será anunciado em breve",
+  address: "",
+  mapsUrl: "",
   description:
     "Alguns convidados também celebrarão conosco na festa em um segundo local. Se este convite incluir a festa, confirme sua presença abaixo para nos ajudar na organização.",
 };

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Icon } from "./effects";
 import { api, resolveUploadUrl } from "./api";
@@ -115,7 +116,9 @@ function GiftModal({ gift, onClose }) {
     setTimeout(() => setCopied(false), 2200);
   };
 
-  return (
+  // Portal para o body: escapa dos stacking contexts das seções (lantern-zone)
+  // para o overlay realmente cobrir a navbar.
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fechar">
@@ -178,7 +181,8 @@ function GiftModal({ gift, onClose }) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
