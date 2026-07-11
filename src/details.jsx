@@ -18,12 +18,33 @@ export function EventDetails() {
       <div className="section-band__inner">
         <SectionHead variant="logistics" title="O Grande Dia" />
 
-        <div className="invite reveal d1">
-          <div className="invite-card">
-            <div className="invite-intro">
-              <MiniLantern size={40} />
-              <span className="eyebrow invite-intro__eyebrow">
-                Com a bênção de Deus e de nossas famílias
+      <div className="parchment reveal d1" style={{ maxWidth: 880, margin: "0 auto" }}>
+        <span className="deco-seal">
+          <Icon name="Heart" size={22} />
+        </span>
+        <span className="eyebrow" style={{ display: "block", textAlign: "center", marginBottom: ".6rem" }}>
+          Com a bênção de Deus e de nossas famílias
+        </span>
+        <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)" }}>{WEDDING.namesDisplay}</h2>
+        <p
+          style={{
+            textAlign: "center",
+            color: "var(--ink-soft)",
+            fontFamily: "var(--font-script)",
+            fontStyle: "italic",
+            fontSize: "clamp(1.7rem, 3.8vw, 2.4rem)",
+            lineHeight: 1,
+            margin: ".6rem 0 0",
+          }}
+        >
+          convidam você para celebrar o início da nossa eternidade.
+        </p>
+
+        <div className="details-grid">
+          {items.map((item) => (
+            <div className="detail-item" key={item.label}>
+              <span className="di-icon">
+                <Icon name={item.icon} size={22} />
               </span>
               <h2 className="invite-intro__names">{WEDDING.namesDisplay}</h2>
               <p className="invite-intro__quote">
@@ -122,11 +143,11 @@ export function Countdown() {
           marginTop: time.done ? "0.5rem" : "2rem",
           fontFamily: "var(--font-script)",
           fontStyle: "italic",
-          fontSize: "1.2rem",
+          fontSize: "clamp(1.65rem, 3.6vw, 2.2rem)",
           maxWidth: "42ch",
           marginInline: "auto",
           textAlign: "center",
-          lineHeight: 1.65,
+          lineHeight: 1.08,
         }}
       >
         {time.done
