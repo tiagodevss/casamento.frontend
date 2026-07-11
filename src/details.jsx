@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { WEDDING } from "./data";
-import { Icon, MiniLantern } from "./effects";
+import { Icon } from "./effects";
 import { SectionHead } from "./SectionHead";
 
 export function EventDetails() {
@@ -17,34 +17,15 @@ export function EventDetails() {
     <section className="section-band section-band--light" id="detalhes">
       <div className="section-band__inner">
         <SectionHead variant="logistics" title="O Grande Dia" />
+        <div className="parchment reveal d1" style={{ maxWidth: 880, margin: "0 auto" }}>
+          <span className="deco-seal">
+            <Icon name="Heart" size={22} />
+          </span>
 
-      <div className="parchment reveal d1" style={{ maxWidth: 880, margin: "0 auto" }}>
-        <span className="deco-seal">
-          <Icon name="Heart" size={22} />
-        </span>
-        <span className="eyebrow" style={{ display: "block", textAlign: "center", marginBottom: ".6rem" }}>
-          Com a bênção de Deus e de nossas famílias
-        </span>
-        <h2 style={{ fontSize: "clamp(1.6rem, 4vw, 2.4rem)" }}>{WEDDING.namesDisplay}</h2>
-        <p
-          style={{
-            textAlign: "center",
-            color: "var(--ink-soft)",
-            fontFamily: "var(--font-script)",
-            fontStyle: "italic",
-            fontSize: "clamp(1.7rem, 3.8vw, 2.4rem)",
-            lineHeight: 1,
-            margin: ".6rem 0 0",
-          }}
-        >
-          convidam você para celebrar o início da nossa eternidade.
-        </p>
-
-        <div className="details-grid">
-          {items.map((item) => (
-            <div className="detail-item" key={item.label}>
-              <span className="di-icon">
-                <Icon name={item.icon} size={22} />
+          <div className="invite-card">
+            <div className="invite-intro">
+              <span className="eyebrow invite-intro__eyebrow">
+                Com a bênção de Deus e de nossas famílias
               </span>
               <h2 className="invite-intro__names">{WEDDING.namesDisplay}</h2>
               <p className="invite-intro__quote">
