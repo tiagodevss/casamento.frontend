@@ -9,7 +9,7 @@ export function SectionHead({
 }) {
   const showEyebrow = variant === "narrative" && eyebrow;
   const showFlourish = variant === "narrative";
-  const showRule = variant === "action";
+  const showRule = variant === "action" || variant === "logistics";
 
   return (
     <div className={`section-head section-head--${variant}`} style={headStyle}>

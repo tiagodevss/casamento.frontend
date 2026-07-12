@@ -129,29 +129,35 @@ export function HeroScene() {
 
   return (
     <header className="hero lantern-zone" id="inicio">
-      <FloatingLanterns scoped interactive count={7} />
+      <FloatingLanterns scoped interactive={false} count={4} />
       <div className="hero-grid">
         <div className={`hero-content hero-stagger ${ready ? "ready" : ""}`}>
+          <p className="hero-kicker">Convite de casamento</p>
           <p className="hero-date">{WEDDING.dateLabel}</p>
           <h1 className="hero-names">
             {WEDDING.groom}
             <span className="amp">&amp;</span>
             {WEDDING.bride}
           </h1>
-          <p className="hero-sub">O nosso melhor capítulo começa aqui</p>
+          <p className="hero-sub">Vamos celebrar esse dia com você.</p>
+          <p className="hero-intro">
+            Depois de tantos capítulos importantes, chegou a hora de reunir quem faz parte da
+            nossa história para o nosso sim.
+          </p>
           <div className="hero-meta">
-            <span>
+            <span className="hero-meta-item">
+              <span className="hero-meta-label">Cerimônia</span>
               <b>{WEDDING.timeLabel}</b>
             </span>
-            <span className="sep" aria-hidden="true" />
-            <span>{WEDDING.venue}</span>
-            <span className="sep" aria-hidden="true" />
-            <span>Paulínia/SP</span>
+            <span className="hero-meta-item">
+              <span className="hero-meta-label">Local</span>
+              <b>{WEDDING.venue}</b>
+            </span>
+            <span className="hero-meta-item">
+              <span className="hero-meta-label">Cidade</span>
+              <b>Paulínia/SP</b>
+            </span>
           </div>
-          <p className="hero-quote">
-            Entre lanternas, sonhos e promessas, convidamos você para viver conosco o início da
-            nossa maior aventura.
-          </p>
           <div className="hero-ctas">
             <Link to="/confirmar" className="btn btn-gold">
               <Icon name="Heart" size={18} /> Confirmar presença
@@ -163,7 +169,7 @@ export function HeroScene() {
         </div>
         <div className="hero-visual" aria-hidden="true">
           <div className="hero-visual-inner">
-            <div className="hero-photo-frame hero-photo-frame--main ornate">
+            <div className="hero-photo-frame hero-photo-frame--main">
               <img
                 className="hero-photo-main"
                 src="/photos/ensaio-1.jpg"
@@ -172,12 +178,8 @@ export function HeroScene() {
                   event.currentTarget.parentElement.style.display = "none";
                 }}
               />
-              <span className="corner tl" />
-              <span className="corner tr" />
-              <span className="corner bl" />
-              <span className="corner br" />
             </div>
-            <div className="hero-photo-frame hero-photo-frame--accent ornate">
+            <div className="hero-photo-frame hero-photo-frame--accent">
               <img
                 className="hero-photo-accent"
                 src="/photos/ensaio-4.jpg"
@@ -186,10 +188,6 @@ export function HeroScene() {
                   event.currentTarget.parentElement.style.display = "none";
                 }}
               />
-              <span className="corner tl" />
-              <span className="corner tr" />
-              <span className="corner bl" />
-              <span className="corner br" />
             </div>
           </div>
         </div>

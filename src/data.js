@@ -6,6 +6,7 @@ export const WEDDING = {
   dateLabel: "14 de Novembro de 2026",
   timeLabel: "16h00",
   venue: "Igreja Universal Paulínia",
+  churchPhoto: "",
   address: "Av. José Paulino, 610 — Centro, Paulínia / SP",
   dressCode: "Traje social / Esporte fino",
   mapsUrl:

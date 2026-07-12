@@ -96,13 +96,10 @@ export function GuestMessages() {
         <SectionHead
           variant="action"
           title="Mural dos Convidados"
-          description="Escreva um desejo, uma lembrança ou um carinho. Cada mensagem vira uma lanterna no nosso céu."
+          description="Deixe uma mensagem para os noivos. Pode ser um desejo, uma lembrança ou um carinho."
         />
 
         <form className="panel mural-compose reveal d1" onSubmit={add}>
-          <div className="mural-compose__seal" aria-hidden="true">
-            <MiniLantern size={40} />
-          </div>
           <div className="mural-compose__grid">
             <div className="field">
               <label htmlFor="mural-name">
@@ -126,7 +123,7 @@ export function GuestMessages() {
                 id="mural-text"
                 value={text}
                 onChange={(event) => setText(event.target.value)}
-                placeholder="Um desejo de luz para os noivos"
+                placeholder="Escreva sua mensagem para o casal"
                 maxLength={TEXT_MAX}
                 rows={4}
                 disabled={submitting}
@@ -150,7 +147,7 @@ export function GuestMessages() {
           />
           <div className="mural-compose__actions">
             <button type="submit" className="btn btn-gold" disabled={submitting}>
-              <Icon name="Send" size={16} /> {submitting ? "Enviando..." : "Acender lanterna"}
+              <Icon name="Send" size={16} /> {submitting ? "Enviando..." : "Enviar mensagem"}
             </button>
           </div>
           {err && (
@@ -183,9 +180,9 @@ export function GuestMessages() {
             {!loadError && messages.length === 0 && (
               <div className="mural-empty">
                 <MiniLantern size={52} />
-                <p className="mural-empty__title">O céu ainda está quieto</p>
+                <p className="mural-empty__title">Ainda não há mensagens por aqui</p>
                 <p className="mural-empty__lead">
-                  Seja o primeiro a acender uma lanterna de carinho para os noivos.
+                  Seja a primeira pessoa a deixar um recado para os noivos.
                 </p>
               </div>
             )}
@@ -193,8 +190,7 @@ export function GuestMessages() {
             {!loadError && messages.length > 0 && (
               <>
                 <p className="mural-sky__count">
-                  {messages.length}{" "}
-                  {messages.length === 1 ? "lanterna acesa" : "lanternas acesas"} no céu
+                  {messages.length} {messages.length === 1 ? "mensagem publicada" : "mensagens publicadas"}
                 </p>
                 <div className="mural">
                   {messages.map((message, index) => (
@@ -260,9 +256,7 @@ export function Footer() {
       <div className="f-names reveal d1" style={{ marginTop: "1.4rem" }}>
         {WEDDING.groom} <span className="amp">&amp;</span> {WEDDING.bride}
       </div>
-      <p className="f-quote reveal d2">
-        “E assim, entre lanternas e estrelas, a nossa história ganha o seu para sempre.”
-      </p>
+      <p className="f-quote reveal d2">Obrigado por fazer parte desse momento com a gente.</p>
       <div className="f-links reveal d2">
         {NAV_ITEMS.map((item) => (
           <FooterLink key={item.href ?? item.to} item={item} />
@@ -271,7 +265,7 @@ export function Footer() {
       <div className="f-date reveal d2">{WEDDING.dateLabel} · Paulínia / SP</div>
       <ContactHelp context="geral" compact />
       <div className="f-credit reveal d3">
-        Feito com muito amor e luz de lanternas · {WEDDING.namesDisplay} {new Date().getFullYear()}
+        {WEDDING.namesDisplay} · {new Date().getFullYear()}
       </div>
     </footer>
   );

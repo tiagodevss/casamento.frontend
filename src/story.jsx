@@ -31,8 +31,8 @@ export function GallerySection() {
     <section className="section" id="galeria">
       <SectionHead
         variant="narrative"
-        title="Galeria do Ensaio"
-        description="Páginas soltas do nosso livro de luz. Toque numa imagem para vê-la de perto."
+        title="Fotos do Ensaio"
+        description="Alguns registros dessa fase. Toque em uma foto para ver melhor."
       />
 
       <div className="gallery-grid">
@@ -81,20 +81,7 @@ export function GallerySection() {
           >
             <Icon name="ChevronRight" size={24} />
           </button>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "1.6rem",
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              color: "var(--lilac-soft)",
-              fontFamily: "var(--font-script)",
-              fontStyle: "italic",
-              fontSize: "clamp(1.6rem, 3.8vw, 2.2rem)",
-              lineHeight: 1.02,
-            }}
-          >
+          <div className="lb-caption">
             {GALLERY[active].caption} · {active + 1}/{GALLERY.length}
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "react-router-dom";
 
 import { Icon } from "./effects";
 import { api, resolveUploadUrl } from "./api";
@@ -39,14 +40,15 @@ function GiftModal({ gift, onClose }) {
   const [copied, setCopied] = useState(false);
   const [order, setOrder] = useState(null);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [awaitingPayment, setAwaitingPayment] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("PIX");
   const pollRef = useRef(null);
   const giftRef = useRef(gift);
 
   giftRef.current = gift;
 
-  const createOrder = async () => {
+  const createOrder = async (method = paymentMethod) => {
     const current = giftRef.current;
     setLoading(true);
     setError("");
@@ -54,10 +56,23 @@ function GiftModal({ gift, onClose }) {
     setAwaitingPayment(false);
     try {
       const payload = current.custom
-        ? { kind: "FREE_CONTRIBUTION", amountCents: Math.round(current.value * 100), donorMessage: current.title }
-        : { kind: "FIXED_GIFT", giftId: current.id };
+        ? {
+            kind: "FREE_CONTRIBUTION",
+            method,
+            amountCents: Math.round(current.value * 100),
+            donorMessage: current.title,
+          }
+        : { kind: "FIXED_GIFT", method, giftId: current.id };
 
       const created = await api.createPaymentOrder(payload);
+      if (method === "CARD") {
+        if (!created.checkoutUrl) {
+          throw new Error("O checkout do cartão não foi retornado. Tente novamente.");
+        }
+        window.location.href = created.checkoutUrl;
+        return;
+      }
+
       setOrder(created);
     } catch (err) {
       setError(err.message);
@@ -73,11 +88,20 @@ function GiftModal({ gift, onClose }) {
   }, [onClose]);
 
   useEffect(() => {
-    createOrder();
+    setPaymentMethod("PIX");
+    setOrder(null);
+    setError("");
+    setLoading(false);
+    setAwaitingPayment(false);
   }, [gift.id, gift.custom, gift.value]);
 
   useEffect(() => {
-    if (!order || order.status === "PAID") return undefined;
+    if (paymentMethod !== "PIX" || order || loading || error) return;
+    createOrder("PIX");
+  }, [paymentMethod, order, loading, error]);
+
+  useEffect(() => {
+    if (!order || order.status === "PAID" || paymentMethod !== "PIX") return undefined;
 
     setAwaitingPayment(true);
     pollRef.current = setInterval(async () => {
@@ -120,66 +144,119 @@ function GiftModal({ gift, onClose }) {
   // para o overlay realmente cobrir a navbar.
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(event) => event.stopPropagation()}>
+      <div className="modal modal--payment" onClick={(event) => event.stopPropagation()}>
         <button className="modal-close" onClick={onClose} aria-label="Fechar">
           <Icon name="X" size={20} />
         </button>
-        <div className="modal-emoji">
-          <GiftVisual gift={gift} size={32} />
-        </div>
-        <h3>{gift.title}</h3>
-        <div className="modal-value">
-          {gift.value ? `R$ ${Number(gift.value).toLocaleString("pt-BR")}` : "Valor livre"}
-        </div>
-
-        {order?.status === "PAID" ? (
-          <div style={{ textAlign: "center", padding: "1.4rem 0" }}>
-            <Icon name="CheckCircle2" size={40} />
-            <p className="thanks" style={{ marginTop: "1rem" }}>
-              Pagamento confirmado! Obrigado por iluminar a nossa nova jornada. 💛
-            </p>
-          </div>
-        ) : loading ? (
-          <p style={{ textAlign: "center", color: "var(--ink-soft)", padding: "2rem 0" }}>
-            Gerando seu Pix...
-          </p>
-        ) : error ? (
-          <div style={{ textAlign: "center", padding: "1rem 0" }}>
-            <p style={{ color: "var(--rose)", marginBottom: "1.2rem" }}>{error}</p>
-            <button type="button" className="btn btn-ghost" onClick={createOrder}>
-              Tentar novamente
-            </button>
-          </div>
-        ) : (
-          <>
-            <p className="pix-status" role="status" aria-live="polite">
-              {awaitingPayment
-                ? "Aguardando confirmação do pagamento Pix..."
-                : "Escaneie o QR Code ou copie o código abaixo"}
-            </p>
-
-            <div className="qr-box">
-              <img
-                src={pixQrImageSrc(order.brCodeBase64)}
-                alt="QR Code Pix"
-                style={{ width: "100%", height: "auto" }}
-              />
+        <div className="modal-payment-layout">
+          <aside className="modal-payment-visual">
+            <div className="modal-emoji">
+              <GiftVisual gift={gift} size={32} className="gift-emoji-wrap gift-emoji-wrap--modal" />
             </div>
+            <div className="modal-visual-copy">
+              <h3>{gift.title}</h3>
+              <div className="modal-value">
+                {gift.value ? `R$ ${Number(gift.value).toLocaleString("pt-BR")}` : "Valor livre"}
+              </div>
+              <p className="modal-visual-note">Escolha como prefere presentear e siga com o pagamento.</p>
+            </div>
+          </aside>
 
-            <div className="pix-row">
-              <div className="pix-key">{order.brCode}</div>
-              <button className={`copy-btn ${copied ? "copied" : ""}`} onClick={copy}>
-                <Icon name={copied ? "Check" : "Copy"} size={16} />
-                {copied ? "Copiado!" : "Copiar"}
+          <div className="modal-payment-main">
+            <div className="payment-methods" aria-label="Método de pagamento">
+              <button
+                type="button"
+                className={`payment-method ${paymentMethod === "PIX" ? "is-active" : ""}`}
+                onClick={() => {
+                  setPaymentMethod("PIX");
+                  setError("");
+                }}
+                aria-pressed={paymentMethod === "PIX"}
+              >
+                <span className="payment-method__label">Pix</span>
+                <span className="payment-method__meta">QR Code e copia e cola</span>
+              </button>
+              <button
+                type="button"
+                className={`payment-method ${paymentMethod === "CARD" ? "is-active" : ""}`}
+                onClick={() => {
+                  setPaymentMethod("CARD");
+                  setError("");
+                  setOrder(null);
+                  setAwaitingPayment(false);
+                }}
+                aria-pressed={paymentMethod === "CARD"}
+              >
+                <span className="payment-method__label">Cartão de crédito</span>
+                <span className="payment-method__meta">Checkout seguro da AbacatePay</span>
               </button>
             </div>
 
-            <p className="thanks">
-              Obrigado por iluminar a nossa nova jornada. Cada gesto de carinho vira luz no nosso
-              caminho. 💛
-            </p>
-          </>
-        )}
+            <div className="payment-panel">
+              {order?.status === "PAID" ? (
+                <div className="payment-state payment-state--success">
+                  <Icon name="CheckCircle2" size={40} />
+                  <p className="thanks" style={{ marginTop: "1rem" }}>
+                    Pagamento confirmado. Obrigado pelo presente e pelo carinho com a nossa nova fase.
+                  </p>
+                </div>
+              ) : paymentMethod === "CARD" ? (
+                <div className="payment-state payment-state--card">
+                  <p className="pix-status">
+                    Você será redirecionado para o checkout seguro da AbacatePay para concluir o pagamento com cartão.
+                  </p>
+                  <button type="button" className="btn btn-gold payment-checkout-btn" onClick={() => createOrder("CARD")} disabled={loading}>
+                    <Icon name="CreditCard" size={16} />
+                    {loading ? "Abrindo checkout..." : "Pagar com cartão"}
+                  </button>
+                  <p className="thanks">
+                    Ao finalizar o pagamento, você volta para o site e a confirmação é registrada automaticamente.
+                  </p>
+                  {error && (
+                    <p className="payment-error" role="alert">
+                      {error}
+                    </p>
+                  )}
+                </div>
+              ) : loading ? (
+                <p className="payment-state payment-state--muted">Gerando o Pix...</p>
+              ) : error ? (
+                <div className="payment-state payment-state--error">
+                  <p style={{ color: "var(--rose)", marginBottom: "1.2rem" }}>{error}</p>
+                  <button type="button" className="btn btn-ghost" onClick={createOrder}>
+                    Tentar novamente
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="pix-status" role="status" aria-live="polite">
+                    {awaitingPayment
+                      ? "Aguardando a confirmação do pagamento..."
+                      : "Escaneie o QR Code ou copie o código Pix abaixo"}
+                  </p>
+
+                  <div className="qr-box">
+                    <img
+                      src={pixQrImageSrc(order.brCodeBase64)}
+                      alt="QR Code Pix"
+                      style={{ width: "100%", height: "auto" }}
+                    />
+                  </div>
+
+                  <div className="pix-row">
+                    <div className="pix-key">{order.brCode}</div>
+                    <button className={`copy-btn ${copied ? "copied" : ""}`} onClick={copy}>
+                      <Icon name={copied ? "Check" : "Copy"} size={16} />
+                      {copied ? "Copiado!" : "Copiar"}
+                    </button>
+                  </div>
+
+                  <p className="thanks">Obrigado por fazer parte desse começo com a gente.</p>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>,
     document.body
@@ -187,12 +264,14 @@ function GiftModal({ gift, onClose }) {
 }
 
 export function GiftSection({ standalone = false }) {
+  const location = useLocation();
   const [gifts, setGifts] = useState([]);
   const [giftsLoading, setGiftsLoading] = useState(true);
   const [giftsError, setGiftsError] = useState(false);
   const [modal, setModal] = useState(null);
   const [customValue, setCustomValue] = useState("");
   const [customError, setCustomError] = useState("");
+  const [returnMessage, setReturnMessage] = useState(null);
 
   const loadGifts = () => {
     setGiftsLoading(true);
@@ -224,6 +303,69 @@ export function GiftSection({ standalone = false }) {
     loadGifts();
   }, []);
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const payment = params.get("payment");
+    const orderId = params.get("order");
+
+    if (!payment || !orderId) {
+      setReturnMessage(null);
+      return undefined;
+    }
+
+    let cancelled = false;
+
+    const resolveReturn = async () => {
+      if (payment === "cancelled") {
+        if (!cancelled) {
+          setReturnMessage({
+            tone: "info",
+            text: "O checkout de cartão foi interrompido. Se quiser, você pode tentar novamente.",
+          });
+        }
+        return;
+      }
+
+      if (!cancelled) {
+        setReturnMessage({
+          tone: "info",
+          text: "Pagamento concluído no checkout. Estamos confirmando com a AbacatePay...",
+        });
+      }
+
+      for (let attempt = 0; attempt < 6; attempt += 1) {
+        try {
+          const status = await api.getPaymentStatus(orderId);
+          if (cancelled) return;
+          if (status.status === "PAID") {
+            setReturnMessage({
+              tone: "success",
+              text: "Pagamento confirmado. Obrigado pelo presente e pelo carinho com a nossa nova fase.",
+            });
+            return;
+          }
+        } catch {
+          // Try again shortly; the webhook may still be processing.
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+
+      if (!cancelled) {
+        setReturnMessage({
+          tone: "info",
+          text: "Recebemos seu retorno do checkout. A confirmação pode levar alguns instantes para aparecer.",
+        });
+      }
+    };
+
+    resolveReturn();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [location.search]);
+
   const openCustom = () => {
     const value = parseBrlAmount(customValue);
     if (value <= 0) {
@@ -247,8 +389,19 @@ export function GiftSection({ standalone = false }) {
       <SectionHead
         variant="action"
         title="Lista de Presentes"
-        description="Mais do que objetos, cada presente é uma lanterna que acende um pedaço do nosso futuro. Sua presença já é o nosso maior presente."
+        description="Se você quiser nos presentear, reunimos aqui algumas opções que vão nos ajudar a montar a nossa casa. Sua presença já é motivo de alegria para nós."
       />
+
+      <p className="gift-intro reveal d1">
+        Escolha o item que fizer sentido para você ou, se preferir, faça uma contribuição em
+        qualquer valor.
+      </p>
+
+      {returnMessage && (
+        <div className={`status-panel reveal d1 payment-return payment-return--${returnMessage.tone}`} role="status">
+          <p>{returnMessage.text}</p>
+        </div>
+      )}
 
       {giftsLoading && (
         <p className="status-line" aria-live="polite">
@@ -275,7 +428,7 @@ export function GiftSection({ standalone = false }) {
             <div className="gift-foot">
               <span className="gift-value">R$ {gift.value.toLocaleString("pt-BR")}</span>
               <button className="gift-give" onClick={() => setModal(gift)}>
-                Presentear <span className="arr">→</span>
+                Escolher <span className="arr">→</span>
               </button>
             </div>
           </div>
@@ -287,8 +440,7 @@ export function GiftSection({ standalone = false }) {
           </span>
           <h3>Contribuição livre</h3>
           <p className="gift-desc">
-            Quer nos presentear com um valor especial do seu coração? Escolha a quantia que
-            desejar.
+            Se preferir, você também pode contribuir com o valor que quiser.
           </p>
           <div className="free-amount">
             <span className="cur">R$</span>
@@ -312,7 +464,7 @@ export function GiftSection({ standalone = false }) {
           <div className="gift-foot">
             <span />
             <button className="gift-give" onClick={openCustom}>
-              Contribuir <span className="arr">→</span>
+              Continuar <span className="arr">→</span>
             </button>
           </div>
         </div>

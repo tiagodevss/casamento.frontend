@@ -65,7 +65,7 @@ function PageCover({ face = "recto" }) {
         <span className="page-corner tr" />
         <span className="page-corner bl" />
         <span className="page-corner br" />
-        <div className="pc-eyebrow">Era uma vez</div>
+        <div className="pc-eyebrow">Nossa história</div>
         <div className="page-medallion">
           <Icon name="Sparkles" size={28} />
         </div>
@@ -77,7 +77,7 @@ function PageCover({ face = "recto" }) {
         <div className="pc-amp">
           {WEDDING.groom} &amp; {WEDDING.bride}
         </div>
-        <p className="pc-sub">Um conto de luz, em quatro capítulos.</p>
+        <p className="pc-sub">Quatro momentos que nos trouxeram até aqui.</p>
       </div>
     </div>
   );
@@ -95,7 +95,7 @@ function PageInsideCover({ base }) {
           <Icon name="BookHeart" size={26} />
         </div>
         <p className="pc-sub" style={{ fontSize: "clamp(1rem,2.4vw,1.4rem)" }}>
-          “Toda grande aventura começa com uma página em branco… e a coragem de virá-la.”
+          Alguns encontros mudam o rumo de tudo.
         </p>
       </div>
     </div>
@@ -111,11 +111,11 @@ function PageEnd({ face = "verso" }) {
         <span className="page-corner bl" />
         <span className="page-corner br" />
         <h2>Fim?</h2>
-        <p className="pe-sub">Não… apenas o começo.</p>
+        <p className="pe-sub">Na verdade, o começo.</p>
         <div className="page-medallion" style={{ margin: "0.6rem auto" }}>
           <Icon name="Heart" size={26} />
         </div>
-        <p className="pe-sub">O próximo capítulo se escreve no nosso grande dia.</p>
+        <p className="pe-sub">O próximo capítulo acontece no nosso casamento.</p>
       </div>
     </div>
   );
@@ -133,7 +133,7 @@ function PageBackInside() {
           <MiniLantern size={64} />
         </div>
         <p className="pc-sub" style={{ marginTop: "1rem" }}>
-          Vire para confirmar sua presença nessa história.
+          Obrigado por chegar até aqui.
         </p>
       </div>
     </div>
@@ -215,8 +215,7 @@ function BookDesktop({ story }) {
         </button>
       </div>
       <div className="book-hint">
-        <Icon name="MousePointerClick" size={15} /> Clique nas setas ou no canto das páginas para
-        folhear
+        <Icon name="MousePointerClick" size={15} /> Use as setas para navegar pelas páginas
       </div>
     </div>
   );
@@ -316,7 +315,7 @@ export function StorySection() {
       <SectionHead
         variant="narrative"
         title="Nossa História"
-        description="Abra o nosso livro de contos e folheie, página a página, a jornada que nos trouxe até aqui."
+        description="Um resumo dos momentos que marcaram a nossa caminhada até o casamento."
       />
       {narrow ? <BookMobile story={STORY} /> : <BookDesktop story={STORY} />}
     </section>
