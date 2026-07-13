@@ -18,7 +18,7 @@ function IlluPlate({ chapter }) {
   );
 }
 
-function PageIllu({ chapter, pageNo }) {
+function PageIllu({ chapter, pageNo, hot }) {
   return (
     <div className="book-face verso">
       <div className="page-inner page-illu">
@@ -30,11 +30,12 @@ function PageIllu({ chapter, pageNo }) {
         <div className="illu-cap">{chapter.title}</div>
         {pageNo && <div className="page-num">{pageNo}</div>}
       </div>
+      {hot}
     </div>
   );
 }
 
-function PageText({ chapter, pageNo, face = "recto" }) {
+function PageText({ chapter, pageNo, face = "recto", hot }) {
   return (
     <div className={`book-face ${face}`}>
       <div className="page-inner page-text">
@@ -53,11 +54,12 @@ function PageText({ chapter, pageNo, face = "recto" }) {
         <p className="body">{chapter.text}</p>
         {pageNo && <div className="page-num">{pageNo}</div>}
       </div>
+      {hot}
     </div>
   );
 }
 
-function PageCover({ face = "recto" }) {
+function PageCover({ face = "recto", hot }) {
   return (
     <div className={`book-face ${face}`}>
       <div className="page-inner page-cover">
@@ -79,6 +81,7 @@ function PageCover({ face = "recto" }) {
         </div>
         <p className="pc-sub">Quatro momentos que nos trouxeram até aqui.</p>
       </div>
+      {hot}
     </div>
   );
 }
@@ -102,7 +105,7 @@ function PageInsideCover({ base }) {
   );
 }
 
-function PageEnd({ face = "verso" }) {
+function PageEnd({ face = "verso", hot }) {
   return (
     <div className={`book-face ${face}`}>
       <div className="page-inner page-end">
@@ -117,6 +120,7 @@ function PageEnd({ face = "verso" }) {
         </div>
         <p className="pe-sub">O próximo capítulo acontece no nosso casamento.</p>
       </div>
+      {hot}
     </div>
   );
 }
@@ -157,12 +161,17 @@ function BookDesktop({ story }) {
 
   const label = page === 0 ? "A capa" : page <= story.length ? story[page - 1].no : "Fim";
 
+  const nextHot = <div className="turn-hot next" onClick={() => goTo(page + 1)} title="Virar página" />;
+  const prevHot = (
+    <div className="turn-hot prev" onClick={() => goTo(page - 1)} title="Voltar página" style={{ left: 0, right: "auto" }} />
+  );
+
   const faces = [
-    { front: <PageCover />, back: <PageIllu chapter={story[0]} pageNo={1} /> },
-    { front: <PageText chapter={story[0]} pageNo={2} />, back: <PageIllu chapter={story[1]} pageNo={3} /> },
-    { front: <PageText chapter={story[1]} pageNo={4} />, back: <PageIllu chapter={story[2]} pageNo={5} /> },
-    { front: <PageText chapter={story[2]} pageNo={6} />, back: <PageIllu chapter={story[3]} pageNo={7} /> },
-    { front: <PageText chapter={story[3]} pageNo={8} />, back: <PageEnd /> },
+    { front: <PageCover hot={nextHot} />, back: <PageIllu chapter={story[0]} pageNo={1} hot={prevHot} /> },
+    { front: <PageText chapter={story[0]} pageNo={2} hot={nextHot} />, back: <PageIllu chapter={story[1]} pageNo={3} hot={prevHot} /> },
+    { front: <PageText chapter={story[1]} pageNo={4} hot={nextHot} />, back: <PageIllu chapter={story[2]} pageNo={5} hot={prevHot} /> },
+    { front: <PageText chapter={story[2]} pageNo={6} hot={nextHot} />, back: <PageIllu chapter={story[3]} pageNo={7} hot={prevHot} /> },
+    { front: <PageText chapter={story[3]} pageNo={8} hot={nextHot} />, back: <PageEnd hot={prevHot} /> },
   ];
 
   return (
@@ -185,14 +194,7 @@ function BookDesktop({ story }) {
           return (
             <div key={index} className={`leaf ${turned ? "turned" : ""}`} style={{ zIndex }}>
               {face.front}
-              <div className="turn-hot next" onClick={() => goTo(page + 1)} title="Virar página" />
               {face.back}
-              <div
-                className="turn-hot prev"
-                onClick={() => goTo(page - 1)}
-                title="Voltar página"
-                style={{ left: 0, right: "auto" }}
-              />
             </div>
           );
         })}

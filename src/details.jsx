@@ -23,7 +23,6 @@ export function EventDetails() {
         <div className="parchment reveal d1" style={{ maxWidth: 1180, margin: "0 auto" }}>
           <div className="day-highlight">
             <div className="day-highlight__intro">
-              <span className="day-highlight__eyebrow">Informações da cerimônia</span>
               <h2 className="day-highlight__title">Esperamos você nesse dia tão importante para nós</h2>
               <p className="day-highlight__lead">
                 Reunimos aqui o que você precisa para se programar e celebrar conosco com
@@ -89,10 +88,7 @@ export function EventDetails() {
                   <div
                     className="church-photo-card__placeholder"
                     hidden={Boolean(WEDDING.churchPhoto)}
-                  >
-                    <Icon name="Image" size={24} />
-                    <span>Foto do local da cerimônia</span>
-                  </div>
+                  />
                 </div>
 
                 <div className="church-photo-card__caption">

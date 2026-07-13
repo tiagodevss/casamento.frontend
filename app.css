@@ -710,7 +710,7 @@ h3 {
   box-shadow: var(--glow-gold), var(--shadow-card);
   text-align: center;
   pointer-events: none;
-  animation: msg-pop 0.5s cubic-bezier(.2, 1.2, .3, 1) both;
+  animation: msg-pop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .lantern-message .msg-label {
@@ -966,7 +966,7 @@ h3 {
 }
 
 .nav-brand .amp {
-  color: var(--blush-400);
+  color: var(--gold-500);
 }
 
 .nav-links {
@@ -997,14 +997,14 @@ h3 {
 
 .nav-links a.cta {
   color: var(--paper-white);
-  background: var(--blush-500);
+  background: var(--gold-400);
   font-weight: 600;
   box-shadow: 0 8px 22px -10px oklch(0.58 0.10 15 / 0.4);
 }
 
 .nav-links a.cta:hover {
   color: var(--paper-white);
-  background: var(--blush-400);
+  background: var(--gold-500);
   transform: translateY(-1px);
 }
 
@@ -1141,7 +1141,7 @@ h3 {
   font-size: clamp(0.82rem, 1.6vw, 0.94rem);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--blush-400);
+  color: var(--gold-500);
   margin-bottom: 1rem;
   font-weight: 600;
 }
@@ -1160,7 +1160,7 @@ h3 {
   display: inline-block;
   font-family: var(--font-script);
   font-size: 0.5em;
-  color: var(--blush-400);
+  color: var(--gold-500);
   margin: 0 0.14em;
   transform: translateY(-0.08em);
   letter-spacing: 0.02em;
@@ -1645,7 +1645,8 @@ h3 {
   line-height: 1.72;
   letter-spacing: 0.01em;
   color: #4a3618;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   flex: 1;
 }
 
@@ -2340,15 +2341,6 @@ h3 {
   padding: 2rem;
   text-align: center;
   color: var(--text-dim);
-  background:
-    linear-gradient(180deg, rgba(255, 226, 170, 0.06), transparent 30%),
-    repeating-linear-gradient(
-      -45deg,
-      rgba(255, 220, 150, 0.04) 0,
-      rgba(255, 220, 150, 0.04) 12px,
-      rgba(255, 255, 255, 0.02) 12px,
-      rgba(255, 255, 255, 0.02) 24px
-    );
 }
 
 .church-photo-card__placeholder span {
@@ -2721,6 +2713,107 @@ h3 {
   color: var(--ink-soft);
 }
 
+.rsvp-venue-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: clamp(1rem, 2.5vw, 1.6rem);
+  margin: 0 0 1.4rem;
+  padding: clamp(1rem, 2.5vw, 1.25rem);
+  border: 1px solid rgba(120, 86, 48, 0.18);
+  border-radius: 1.35rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(250, 244, 236, 0.92)),
+    rgba(255, 248, 239, 0.72);
+  box-shadow: 0 18px 40px -32px oklch(0.25 0.02 84 / 0.22);
+}
+
+.rsvp-venue-card__media {
+  position: relative;
+}
+
+.rsvp-venue-card__tag {
+  position: absolute;
+  top: 0.9rem;
+  left: 0.9rem;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: oklch(0.18 0.022 84 / 0.78);
+  color: var(--ivory);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.rsvp-venue-card__frame {
+  min-height: clamp(220px, 30vw, 300px);
+  border-radius: 1rem;
+}
+
+.rsvp-venue-card__body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.rsvp-venue-card__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--sage-600);
+}
+
+.rsvp-venue-card__title {
+  margin-top: 0.5rem;
+  font-size: clamp(1.35rem, 2.4vw, 1.8rem);
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.rsvp-venue-card__description {
+  margin: 0.7rem 0 0;
+  color: var(--ink-soft);
+  line-height: 1.65;
+}
+
+.rsvp-venue-card__facts {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.rsvp-venue-card__fact {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.95rem;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(120, 86, 48, 0.12);
+}
+
+.rsvp-venue-card__fact-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.rsvp-venue-card__fact-value {
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+.rsvp-venue-card__cta {
+  margin-top: 1rem;
+  align-self: flex-start;
+}
+
 .status-line {
   color: var(--text-dim);
   text-align: center;
@@ -2762,6 +2855,8 @@ h3 {
   border: 1px solid rgba(230, 193, 120, 0.16);
   background: rgba(255, 255, 255, 0.03);
   text-align: center;
+  max-width: 34rem;
+  margin-inline: auto;
 }
 
 .contact-help--compact {
@@ -2882,14 +2977,12 @@ h3 {
 .choice.yes:has(input:checked) {
   border-color: var(--gold-400);
   background: rgba(230, 193, 120, 0.12);
-  color: var(--cream);
   box-shadow: var(--glow-gold);
 }
 
 .choice.no:has(input:checked) {
   border-color: var(--rose);
   background: rgba(212, 154, 155, 0.1);
-  color: var(--cream);
 }
 
 .choice:has(input:checked) .radio {
@@ -2947,6 +3040,14 @@ h3 {
   .form-grid {
     grid-template-columns: 1fr;
   }
+
+  .rsvp-venue-card {
+    grid-template-columns: 1fr;
+  }
+
+  .rsvp-venue-card__frame {
+    min-height: 220px;
+  }
 }
 
 /* RSVP success */
@@ -3002,6 +3103,88 @@ h3 {
   color: var(--ink-soft);
   font-size: 1rem;
   line-height: 1.72;
+}
+
+.gift-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  max-width: 54rem;
+  margin: 0 auto 2.5rem;
+}
+
+.gift-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: 1px solid oklch(0.72 0.08 85 / 0.28);
+  background: oklch(0.97 0.014 92);
+  color: var(--ink-soft);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s;
+}
+
+.gift-filter-chip:hover {
+  border-color: oklch(0.72 0.1 85 / 0.42);
+  color: var(--ink);
+}
+
+.gift-filter-chip.is-active {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+  border-color: var(--gold-500);
+  color: var(--paper-white);
+}
+
+.gift-filter-count {
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+
+.gift-filter-chip.is-active .gift-filter-count {
+  opacity: 0.95;
+}
+
+.gift-category {
+  margin-bottom: 2.75rem;
+}
+
+.gift-category:last-of-type {
+  margin-bottom: 0;
+}
+
+.gift-category__title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  margin-bottom: 1.1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--line-light);
+}
+
+.gift-category__count {
+  font-family: var(--font-body);
+  font-size: 0.76rem;
+  font-weight: 400;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+
+.gift-grid--free {
+  margin-top: 0.5rem;
 }
 
 .gift-grid {
@@ -3096,9 +3279,16 @@ h3 {
   border: 1px dashed oklch(0.68 0.08 84 / 0.45);
 }
 
-.gift-card.free .gift-emoji-wrap {
-  background: oklch(0.95 0.02 90);
-  border-color: oklch(0.72 0.08 85 / 0.28);
+.gift-card__free-title {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--book-ink);
+}
+
+.gift-card__free-title svg {
+  color: var(--gold-600);
+  flex-shrink: 0;
 }
 
 .gift-tag {
@@ -3204,7 +3394,7 @@ h3 {
   border-radius: 18px;
   padding: 2.2rem;
   box-shadow: 0 28px 64px -34px oklch(0.10 0.018 82 / 0.92);
-  animation: modal-open 0.55s cubic-bezier(.2, 1.1, .3, 1) both;
+  animation: modal-open 0.55s cubic-bezier(.16, 1, .3, 1) both;
 }
 
 .modal.modal--payment {
@@ -3497,10 +3687,45 @@ h3 {
    ========================================================================= */
 .mural-compose {
   position: relative;
-  max-width: 680px;
-  margin: 2.6rem auto 0;
-  padding: clamp(2.1rem, 4vw, 2.6rem) clamp(1.5rem, 3.5vw, 2.2rem) clamp(1.5rem, 3.5vw, 2.2rem);
+  margin: 0;
+  padding: clamp(2rem, 4vw, 2.6rem);
   overflow: visible;
+  background:
+    linear-gradient(180deg, oklch(1 0 0 / 0.72), oklch(0.98 0.01 88 / 0.96)),
+    var(--ivory);
+  border: 1px solid oklch(0.80 0.04 82 / 0.4);
+  box-shadow:
+    0 30px 70px -42px oklch(0.22 0.03 65 / 0.38),
+    inset 0 1px 0 oklch(1 0 0 / 0.55);
+}
+
+.mural-stage {
+  display: grid;
+  gap: 1.3rem;
+  margin-top: 2.6rem;
+  align-items: stretch;
+}
+
+.mural-compose__intro {
+  display: grid;
+  gap: 0.7rem;
+  margin-bottom: 1.4rem;
+}
+
+.mural-compose__intro h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3.6vw, 2rem);
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.mural-compose__intro p {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--ink-soft);
+  line-height: 1.65;
 }
 
 .mural-compose__grid {
@@ -3520,8 +3745,113 @@ h3 {
 
 .mural-compose__actions {
   display: flex;
-  justify-content: center;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1rem;
   margin-top: 1.35rem;
+}
+
+.mural-compose__note {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+
+.mural-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  min-height: 2rem;
+  padding: 0.38rem 0.8rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber-600);
+  background: oklch(0.92 0.04 84 / 0.9);
+  border: 1px solid oklch(0.80 0.05 82 / 0.5);
+}
+
+.mural-badge--soft {
+  color: var(--amber-300);
+  background: oklch(0.24 0.026 82 / 0.6);
+  border-color: oklch(0.58 0.05 82 / 0.28);
+}
+
+.mural-spotlight {
+  position: relative;
+}
+
+.mural-spotlight__card {
+  position: relative;
+  height: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.2rem;
+  padding: clamp(1.6rem, 4vw, 2rem);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, oklch(0.76 0.12 80 / 0.18), transparent 0 28%),
+    linear-gradient(180deg, oklch(0.27 0.026 84), oklch(0.18 0.018 84));
+  border: 1px solid oklch(0.58 0.05 82 / 0.26);
+  box-shadow: 0 28px 60px -36px oklch(0.08 0.018 78 / 0.95);
+  overflow: hidden;
+}
+
+.mural-spotlight__card::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -18% auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, oklch(0.78 0.14 82 / 0.18), transparent 68%);
+  pointer-events: none;
+}
+
+.mural-spotlight__quote {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  line-height: 1.45;
+  color: var(--ivory);
+  text-wrap: balance;
+}
+
+.mural-spotlight__stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.mural-spotlight__stats div {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem;
+  border-radius: 18px;
+  background: oklch(0.24 0.022 84 / 0.56);
+  border: 1px solid oklch(0.58 0.05 82 / 0.2);
+}
+
+.mural-spotlight__stats strong {
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2rem);
+  color: var(--amber-300);
+}
+
+.mural-spotlight__stats span {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .section-band--light .form-error-banner {
@@ -3585,6 +3915,23 @@ h3 {
   box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.12);
 }
 
+.mural-sky__top {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1.8rem;
+  text-align: center;
+}
+
+.mural-sky__lead {
+  margin: 0;
+  max-width: 34rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
 .mural-empty {
   position: relative;
   z-index: 1;
@@ -3613,93 +3960,108 @@ h3 {
 .mural {
   position: relative;
   z-index: 1;
-  columns: 3 240px;
-  column-gap: clamp(1.4rem, 3vw, 1.8rem);
-  padding-top: 0.6rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: clamp(1.2rem, 2.6vw, 1.85rem);
   align-items: start;
 }
 
 .mural-lantern {
+  --note-bg: oklch(0.90 0.05 90);
+  --note-bg-2: oklch(0.85 0.06 90);
+  --note-ink: oklch(0.32 0.03 75);
   position: relative;
   display: flex;
   flex-direction: column;
   width: 100%;
-  margin: 0 0 clamp(1.4rem, 3vw, 1.8rem);
-  padding: 2.35rem 1.2rem 1.15rem;
-  background: oklch(0.18 0.022 84 / 0.92);
-  border: 1px solid oklch(0.55 0.04 88 / 0.28);
-  border-radius: 14px;
-  box-shadow: var(--shadow-card);
-  break-inside: avoid;
-  min-height: clamp(16rem, 28vw, 18.5rem);
-  padding: 2.85rem 1.35rem 1.25rem;
-  background:
-    linear-gradient(180deg, oklch(0.27 0.026 86 / 0.96), oklch(0.18 0.022 84 / 0.96)),
-    oklch(0.18 0.022 84 / 0.96);
-  border: 1px solid oklch(0.60 0.05 88 / 0.24);
-  border-radius: 22px 22px 16px 16px;
+  min-height: clamp(14rem, 22vw, 16.5rem);
+  padding: 1.5rem 1.25rem 1.2rem;
+  background: var(--note-bg);
+  border-radius: 3px;
   box-shadow:
-    0 20px 40px -28px oklch(0.08 0.016 82 / 0.9),
-    inset 0 1px 0 oklch(1 0 0 / 0.08);
+    0 22px 40px -26px oklch(0.1 0.02 82 / 0.55),
+    0 3px 6px -2px oklch(0.1 0.02 82 / 0.3);
   transform: rotate(var(--rot, -1deg));
   transition:
-    transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
-    box-shadow 0.45s cubic-bezier(0.2, 0.7, 0.2, 1),
-    border-color 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transform 0.4s cubic-bezier(0.2, 0.7, 0.2, 1),
+    box-shadow 0.4s cubic-bezier(0.2, 0.7, 0.2, 1);
   animation: mural-lantern-in 0.55s cubic-bezier(0.2, 0.85, 0.2, 1) both;
   animation-delay: var(--delay, 0s);
 }
 
+/* Folded corner, like a real sticky-note peeling at the edge. */
 .mural-lantern::before {
   content: "";
   position: absolute;
-  inset: 14px 14px auto;
-  height: 32%;
-  border-radius: 22px;
-  background: linear-gradient(180deg, oklch(1 0 0 / 0.08), transparent);
-  opacity: 0.9;
+  inset: auto 0 0 auto;
+  width: 26px;
+  height: 26px;
+  background: linear-gradient(135deg, transparent 50%, var(--note-bg-2) 50%);
+  box-shadow: -1px -1px 4px -1px oklch(0.1 0.02 82 / 0.25);
+  border-radius: 0 0 3px 0;
+  pointer-events: none;
+}
+
+/* Washi-tape strip holding the note up. */
+.mural-lantern__pin {
+  position: absolute;
+  top: -0.6rem;
+  left: 50%;
+  width: 3.4rem;
+  height: 1.3rem;
+  background: oklch(0.94 0.02 88 / 0.75);
+  border: 1px solid oklch(1 0 0 / 0.5);
+  box-shadow: 0 3px 6px -2px oklch(0.1 0.02 82 / 0.3);
+  transform: translateX(-50%) rotate(calc(var(--rot, -1deg) * -1.4));
   pointer-events: none;
 }
 
 .mural-lantern:hover {
-  transform: rotate(0deg) translateY(-5px);
-  border-color: oklch(0.76 0.10 88 / 0.4);
+  transform: rotate(0deg) translateY(-6px) scale(1.02);
   box-shadow:
-    0 30px 52px -30px oklch(0.08 0.016 82 / 0.95),
-    var(--glow-gold);
+    0 30px 54px -26px oklch(0.1 0.02 82 / 0.6),
+    0 6px 14px -4px oklch(0.1 0.02 82 / 0.35);
 }
 
-/* Wish length sets lantern weight, so the sky reads as scattered heights
-   instead of a uniform grid — short wishes stand taller and brighter. */
 .mural-lantern--lg {
-  padding-top: 2.7rem;
+  min-height: clamp(15rem, 23vw, 17rem);
 }
 
 .mural-lantern--lg .mural-lantern__text {
-  font-size: clamp(1.35rem, 3.2vw, 1.65rem);
-}
-
-.mural-lantern--lg .mural-lantern__beacon {
-  width: 40px;
-  height: 49px;
-  top: -19px;
+  font-size: clamp(1.22rem, 2.8vw, 1.42rem);
 }
 
 .mural-lantern--sm {
-  padding-top: 2rem;
+  min-height: clamp(13rem, 21vw, 14.8rem);
 }
 
 .mural-lantern--sm .mural-lantern__text {
-  font-size: clamp(1.05rem, 2.2vw, 1.2rem);
+  font-size: clamp(0.98rem, 2vw, 1.08rem);
 }
 
-.mural-lantern--sm .mural-lantern__beacon {
-  width: 28px;
-  height: 34px;
-  top: -13px;
+.mural-lantern--amber {
+  --note-bg: oklch(0.90 0.055 90);
+  --note-bg-2: oklch(0.84 0.065 90);
+}
+
+.mural-lantern--blush {
+  --note-bg: oklch(0.90 0.05 22);
+  --note-bg-2: oklch(0.84 0.06 22);
+}
+
+.mural-lantern--mint {
+  --note-bg: oklch(0.90 0.05 155);
+  --note-bg-2: oklch(0.84 0.06 155);
+}
+
+.mural-lantern--sky {
+  --note-bg: oklch(0.90 0.035 235);
+  --note-bg-2: oklch(0.84 0.045 235);
+}
+
+.mural-lantern--peach {
+  --note-bg: oklch(0.90 0.06 50);
+  --note-bg-2: oklch(0.84 0.07 50);
 }
 
 .mural-lantern--new {
@@ -3707,51 +4069,39 @@ h3 {
     mural-lantern-glow 2.4s ease-out 0.2s both;
 }
 
-.mural-lantern__beacon {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 42px;
-  height: 52px;
+.mural-lantern__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
 }
 
-.mural-lantern__glow {
-  position: absolute;
-  left: 50%;
-  top: 55%;
-  width: 220%;
-  height: 220%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, oklch(0.78 0.14 86 / 0.55), transparent 68%);
-  filter: blur(1px);
-  pointer-events: none;
+.mural-lantern__tag,
+.mural-lantern__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1.7rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--note-ink);
 }
 
-.mural-lantern__shape {
-  position: absolute;
-  inset: 0;
-  border-radius: 18% 18% 22% 22% / 12% 12% 16% 16%;
-  background:
-    var(--tangled-sun) center/100% 100% no-repeat,
-    linear-gradient(180deg, #f0c840 0%, #f5d850 30%, #fde068 55%, #fff0a8 82%, #fff8d8 100%);
-  box-shadow:
-    inset 0 -10px 16px rgba(255, 245, 180, 0.65),
-    inset 0 6px 12px rgba(220, 170, 40, 0.32),
-    0 0 18px rgba(255, 210, 80, 0.55);
+.mural-lantern__tag {
+  background: oklch(1 0 0 / 0.3);
+  border: 1px solid oklch(0.2 0.02 82 / 0.1);
 }
 
-.mural-lantern__flame {
-  position: absolute;
-  left: 50%;
-  bottom: 4%;
-  transform: translateX(-50%);
-  width: 52%;
-  height: 20%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at 50% 90%, #fffce8 0%, #ffe870 45%, transparent 72%);
-  animation: flicker 0.55s ease-in-out infinite alternate;
+.mural-lantern__date {
+  background: transparent;
+  border: none;
+  opacity: 0.75;
 }
 
 .mural-lantern__text {
@@ -3759,8 +4109,8 @@ h3 {
   flex: 1;
   font-family: var(--font-display);
   font-size: clamp(1.02rem, 2vw, 1.18rem);
-  line-height: 1.72;
-  color: var(--ivory);
+  line-height: 1.6;
+  color: var(--note-ink);
   text-align: left;
   text-shadow: none;
   overflow-wrap: anywhere;
@@ -3770,21 +4120,32 @@ h3 {
 .mural-lantern__author {
   min-width: 0;
   justify-content: flex-start;
-  margin-top: 1rem;
-  padding-top: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--note-ink);
+  border-top: 1px dashed oklch(0.2 0.02 82 / 0.18);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-body);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--amber-400);
-  border-top: 1px solid oklch(0.56 0.04 88 / 0.18);
+}
+
+.mural-lantern__author-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  color: var(--note-ink);
+  background: oklch(1 0 0 / 0.35);
+  border: none;
 }
 
 @keyframes mural-lantern-in {
@@ -3801,11 +4162,11 @@ h3 {
 
 @keyframes mural-lantern-glow {
   0% {
-    box-shadow: var(--shadow-card), 0 0 0 0 oklch(0.78 0.14 86 / 0.45);
+    box-shadow: var(--shadow-card), 0 0 0 0 oklch(0.86 0.1 88 / 0.55);
   }
 
   40% {
-    box-shadow: var(--shadow-card), 0 0 28px 6px oklch(0.78 0.14 86 / 0.35);
+    box-shadow: var(--shadow-card), 0 0 24px 6px oklch(0.86 0.1 88 / 0.4);
   }
 
   100% {
@@ -3816,10 +4177,6 @@ h3 {
 @media (prefers-reduced-motion: reduce) {
   .mural-lantern,
   .mural-lantern--new {
-    animation: none;
-  }
-
-  .mural-lantern__flame {
     animation: none;
   }
 }
@@ -3836,12 +4193,19 @@ h3 {
 
 @media (min-width: 640px) {
   .mural-compose__grid {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.4fr);
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.5fr);
     align-items: start;
   }
 
   .mural-compose__message {
     grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 960px) {
+  .mural-stage {
+    grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.82fr);
+    gap: 1.6rem;
   }
 }
 

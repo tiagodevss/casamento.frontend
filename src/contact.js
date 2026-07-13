@@ -11,6 +11,14 @@ export const CONTACT = {
   hasContact: digitsOnly(whatsappRaw).length >= 10 || phoneDisplay.length > 0,
 };
 
+if (import.meta.env.DEV && !CONTACT.hasContact) {
+  console.warn(
+    "[contact.js] VITE_CONTACT_WHATSAPP e VITE_CONTACT_PHONE não estão configurados. " +
+      "O bloco de ajuda (ContactHelp) vai exibir apenas uma mensagem genérica, sem nenhum " +
+      "canal de contato acionável para os convidados. Configure essas variáveis antes de publicar.",
+  );
+}
+
 export function contactWhatsAppUrl(context = "geral") {
   if (!CONTACT.hasWhatsApp) return null;
 

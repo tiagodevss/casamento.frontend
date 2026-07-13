@@ -1,4 +1,5 @@
 import { CONTACT, contactWhatsAppUrl } from "./contact";
+import { WEDDING } from "./data";
 import { Icon } from "./effects";
 
 export function ContactHelp({ context = "geral", compact = false }) {
@@ -33,7 +34,10 @@ export function ContactHelp({ context = "geral", compact = false }) {
           )}
         </div>
       ) : (
-        <p className="contact-help-fallback">Se ainda tiver dúvidas, fale com quem te convidou.</p>
+        <p className="contact-help-fallback">
+          Se ainda tiver dúvidas, fale com {WEDDING.groom} ou {WEDDING.bride}, ou com quem te
+          convidou para o casamento.
+        </p>
       )}
     </aside>
   );

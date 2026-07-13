@@ -261,7 +261,7 @@ export function useReveal() {
   }, []);
 }
 
-export function FloatingLanterns({ scoped = false, count: countOverride, interactive = true }) {
+export function FloatingLanterns({ scoped = false, count: countOverride, interactive = true, textColumn = "center" }) {
   const lanternRefs = useRef([]);
   const hideTimer = useRef(null);
   const [msg, setMsg] = useState(null);
@@ -274,6 +274,14 @@ export function FloatingLanterns({ scoped = false, count: countOverride, interac
     const count = countOverride ?? (reduce ? 3 : defaultCount);
     let messageIndex = 0;
 
+    // Scoped fields (hero, mural, footer) sit behind readable copy, so lanterns are
+    // kept out of the text column and drift past the margins instead. Mural/footer
+    // copy is centered (roughly the 14%-66% band), but on desktop the hero uses a
+    // left-aligned two-column layout where .hero-content spans roughly 11%-49% of
+    // the viewport (grid starts ~160px in on a 1440px screen, column ~545px wide) —
+    // so that variant needs a wider left exclusion instead of the centered default.
+    const isHeroLeftAligned = textColumn === "left" && !isMobile;
+
     lanterns.current = Array.from({ length: count }, (_, index) => {
       const depth = Math.random();
       const canInteract =
@@ -282,9 +290,19 @@ export function FloatingLanterns({ scoped = false, count: countOverride, interac
         index % Math.max(2, Math.round(count / LANTERN_MESSAGES.length)) === 0 &&
         messageIndex < LANTERN_MESSAGES.length;
 
+      const left = scoped
+        ? isHeroLeftAligned
+          ? Math.random() < 0.5
+            ? Math.random() * 3
+            : 55 + Math.random() * 41
+          : Math.random() < 0.5
+            ? Math.random() * 14
+            : 66 + Math.random() * 30
+        : Math.random() * 96;
+
       const lantern = {
         id: index,
-        left: Math.random() * 96,
+        left,
         bottom: -10 - Math.random() * 30,
         size: 22 + depth * 46,
         depth,

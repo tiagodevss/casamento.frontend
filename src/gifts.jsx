@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocation } from "react-router-dom";
 
@@ -8,6 +8,100 @@ import { parseBrlAmount } from "./contact";
 import { SectionHead } from "./SectionHead";
 
 const POLL_INTERVAL_MS = 5000;
+
+const GIFT_CATEGORIES = [
+  {
+    key: "cozinha",
+    label: "Cozinha",
+    icon: "CookingPot",
+    ids: [
+      "g-panela-ferro", "g-facas", "g-liquidificador", "g-panelas-antiaderentes",
+      "g-cafeteira", "g-temperos", "g-tacas", "g-jogo-jantar", "g-air-fryer",
+      "g-panela-pressao", "g-processador", "g-jarra-suco", "g-forminha-gelo",
+      "g-tabua-corte", "g-potes-mantimento", "g-panela-wok", "g-mixer-mao",
+    ],
+  },
+  {
+    key: "quarto",
+    label: "Quarto",
+    icon: "Bed",
+    ids: [
+      "g-edredom", "g-jogo-cama", "g-travesseiros", "g-luminaria-leitura",
+      "g-cortina-blackout", "g-cabide", "g-espelho-quarto", "g-tapete-quarto",
+      "g-organizador-guarda-roupa",
+    ],
+  },
+  {
+    key: "sala",
+    label: "Sala & Decoração",
+    icon: "Sofa",
+    ids: [
+      "g-sofa-cota", "g-aspirador-migalhas", "g-tv-cota", "g-manta-sofa",
+      "g-jogo-almofadas", "g-caixa-som", "g-rack-tv", "g-quadro-decorativo",
+      "g-vaso-planta", "g-jogo-velas", "g-porta-retrato", "g-tapete-sala",
+      "g-relogio-parede", "g-difusor-aromas", "g-luzinha-pisca", "g-kit-vinho",
+    ],
+  },
+  {
+    key: "banheiro",
+    label: "Banheiro & Área de Serviço",
+    icon: "ShowerHead",
+    ids: [
+      "g-toalhas", "g-tapete-banheiro", "g-kit-shampoo", "g-chuveiro",
+      "g-roupao", "g-organizador-banheiro", "g-varal-eletrico", "g-ferro-passar",
+      "g-tabua-passar", "g-vassoura-magica", "g-lixeira-cozinha", "g-kit-limpeza",
+      "g-furadeira",
+    ],
+  },
+  {
+    key: "lua-de-mel",
+    label: "Lua de Mel",
+    icon: "Heart",
+    ids: [
+      "g-lua", "g-jantar", "g-aventura", "g-cafe", "g-upgrade", "g-castelo",
+      "g-passeio-barco", "g-piquenique-praia",
+    ],
+  },
+  {
+    key: "diversao",
+    label: "Diversão a Dois",
+    icon: "Popcorn",
+    ids: [
+      "g-moletom-duplo", "g-jogo-tabuleiro", "g-kit-pipoca", "g-anti-briga-loucas",
+      "g-kit-sobrevivencia", "g-cofrinho", "g-camiseta-casal", "g-caneca-casal",
+      "g-jogo-cartas", "g-fone-bluetooth", "g-streaming", "g-fundo-emergencia",
+      "g-churrasco-fds",
+    ],
+  },
+  {
+    key: "eletros",
+    label: "Eletros Grandes",
+    icon: "Refrigerator",
+    ids: [
+      "g-microondas", "g-geladeira-cota", "g-maquina-lavar", "g-aspirador-robo",
+      "g-ar-condicionado",
+    ],
+  },
+];
+
+const CATEGORY_KEY_BY_GIFT_ID = new Map(
+  GIFT_CATEGORIES.flatMap((category) => category.ids.map((id) => [id, category.key])),
+);
+
+const OUTROS_CATEGORY = { key: "outros", label: "Outros", icon: "Gift" };
+
+function groupGiftsByCategory(gifts) {
+  const itemsByKey = new Map();
+  for (const gift of gifts) {
+    const key = CATEGORY_KEY_BY_GIFT_ID.get(gift.externalId) ?? OUTROS_CATEGORY.key;
+    if (!itemsByKey.has(key)) itemsByKey.set(key, []);
+    itemsByKey.get(key).push(gift);
+  }
+
+  return [...GIFT_CATEGORIES, OUTROS_CATEGORY]
+    .map((category) => ({ ...category, items: itemsByKey.get(category.key) ?? [] }))
+    .filter((category) => category.items.length > 0);
+}
 
 function pixQrImageSrc(brCodeBase64) {
   if (!brCodeBase64) return undefined;
@@ -218,7 +312,7 @@ function GiftModal({ gift, onClose }) {
                     </p>
                   )}
                 </div>
-              ) : loading ? (
+              ) : loading || (paymentMethod === "PIX" && !order) ? (
                 <p className="payment-state payment-state--muted">Gerando o Pix...</p>
               ) : error ? (
                 <div className="payment-state payment-state--error">
@@ -272,6 +366,13 @@ export function GiftSection({ standalone = false }) {
   const [customValue, setCustomValue] = useState("");
   const [customError, setCustomError] = useState("");
   const [returnMessage, setReturnMessage] = useState(null);
+  const [activeCategory, setActiveCategory] = useState("todos");
+
+  const giftCategories = useMemo(() => groupGiftsByCategory(gifts), [gifts]);
+  const visibleCategories =
+    activeCategory === "todos"
+      ? giftCategories
+      : giftCategories.filter((category) => category.key === activeCategory);
 
   const loadGifts = () => {
     setGiftsLoading(true);
@@ -283,6 +384,7 @@ export function GiftSection({ standalone = false }) {
         setGifts(
           list.map((gift) => ({
             id: gift.id,
+            externalId: gift.externalId,
             icon: gift.iconName,
             imagePath: gift.imagePath ?? null,
             title: gift.title,
@@ -418,33 +520,73 @@ export function GiftSection({ standalone = false }) {
         </div>
       )}
 
-      <div className="gift-grid">
-        {gifts.map((gift, index) => (
-          <div className={`gift-card reveal ${["", "d1", "d2", "d3"][index % 4]}`} key={gift.id}>
-            {gift.tag && <span className="gift-tag">{gift.tag}</span>}
-            <GiftVisual gift={gift} />
-            <h3>{gift.title}</h3>
-            <p className="gift-desc">{gift.desc}</p>
-            <div className="gift-foot">
-              <span className="gift-value">R$ {gift.value.toLocaleString("pt-BR")}</span>
-              <button className="gift-give" onClick={() => setModal(gift)}>
-                Escolher <span className="arr">→</span>
-              </button>
-            </div>
-          </div>
-        ))}
+      {gifts.length > 0 && (
+        <div className="gift-filter-bar reveal d1" aria-label="Filtrar presentes por categoria">
+          <button
+            type="button"
+            className={`gift-filter-chip ${activeCategory === "todos" ? "is-active" : ""}`}
+            onClick={() => setActiveCategory("todos")}
+            aria-pressed={activeCategory === "todos"}
+          >
+            <Icon name="LayoutGrid" size={16} />
+            Todos <span className="gift-filter-count">{gifts.length}</span>
+          </button>
+          {giftCategories.map((category) => (
+            <button
+              type="button"
+              key={category.key}
+              className={`gift-filter-chip ${activeCategory === category.key ? "is-active" : ""}`}
+              onClick={() => setActiveCategory(category.key)}
+              aria-pressed={activeCategory === category.key}
+            >
+              <Icon name={category.icon} size={16} />
+              {category.label} <span className="gift-filter-count">{category.items.length}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
+      {visibleCategories.map((category) => (
+        <div className="gift-category" key={category.key}>
+          <h3 className="gift-category__title">
+            {category.label}
+            <span className="gift-category__count">
+              {category.items.length} {category.items.length === 1 ? "item" : "itens"}
+            </span>
+          </h3>
+          <div className="gift-grid">
+            {category.items.map((gift, index) => (
+              <div className={`gift-card reveal ${["", "d1", "d2", "d3"][index % 4]}`} key={gift.id}>
+                {gift.tag && <span className="gift-tag">{gift.tag}</span>}
+                <GiftVisual gift={gift} />
+                <h3>{gift.title}</h3>
+                <p className="gift-desc">{gift.desc}</p>
+                <div className="gift-foot">
+                  <span className="gift-value">R$ {gift.value.toLocaleString("pt-BR")}</span>
+                  <button className="gift-give" onClick={() => setModal(gift)}>
+                    Escolher <span className="arr">→</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div className="gift-grid gift-grid--free">
         <div className="gift-card free reveal">
-          <span className="gift-emoji-wrap">
-            <Icon name="HandHeart" size={22} />
-          </span>
-          <h3>Contribuição livre</h3>
+          <h3 className="gift-card__free-title">
+            <Icon name="HandHeart" size={19} />
+            Contribuição livre
+          </h3>
           <p className="gift-desc">
             Se preferir, você também pode contribuir com o valor que quiser.
           </p>
           <div className="free-amount">
             <span className="cur">R$</span>
             <input
+              id="custom-amount"
+              name="customAmount"
               value={customValue}
               onChange={(event) => {
                 setCustomValue(event.target.value.replace(/[^\d.,]/g, ""));

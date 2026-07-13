@@ -6,7 +6,7 @@ export const WEDDING = {
   dateLabel: "14 de Novembro de 2026",
   timeLabel: "16h00",
   venue: "Igreja Universal Paulínia",
-  churchPhoto: "",
+  churchPhoto: "/photos/igreja.jpg",
   address: "Av. José Paulino, 610 — Centro, Paulínia / SP",
   dressCode: "Traje social / Esporte fino",
   mapsUrl:
@@ -19,10 +19,11 @@ export const PARTY = {
   title: "Celebração da Festa",
   timeLabel: "Após a cerimônia",
   venue: "Local será anunciado em breve",
-  address: "",
-  mapsUrl: "",
+  photo: "/photos/chacara.jpg",
+  address: "Rua Praxiteles F. Neves, 63 - Patropi - Paulínia/SP (Cerca de 10min de carro da igreja)",
+  mapsUrl: "https://maps.app.goo.gl/xCx15d8vKrzTXubV8",
   description:
-    "Alguns convidados também celebrarão conosco na festa em um segundo local. Se este convite incluir a festa, confirme sua presença abaixo para nos ajudar na organização.",
+    "Gostariamos de te convidar também para nossa festa!",
 };
 
 export const LANTERN_MESSAGES = [
@@ -65,11 +66,11 @@ export const STORY = [
 ];
 
 export const GALLERY = [
-  { src: "/photos/ensaio-1.jpg", cls: "g1", caption: "Tardes de sol, só nós dois" },
-  { src: "/photos/ensaio-3.jpg", cls: "g2", caption: "Boas conversas, sempre" },
-  { src: "/photos/ensaio-2.jpg", cls: "g3", caption: "Em boa companhia" },
-  { src: "/photos/ensaio-4.jpg", cls: "g4", caption: "O anel, finalmente" },
-  { src: "/photos/ensaio-6.jpg", cls: "g5", caption: "Ainda sem acreditar" },
-  { src: "/photos/ensaio-5.jpg", cls: "g6", caption: "Selado com um beijo" },
-  { src: "/photos/ensaio-7.jpg", cls: "g7", caption: "Prontos pro que vem" },
+  { src: "/photos/ensaio-1.jpg", cls: "g1" },
+  { src: "/photos/ensaio-3.jpg", cls: "g2" },
+  { src: "/photos/ensaio-2.jpg", cls: "g3" },
+  { src: "/photos/ensaio-4.jpg", cls: "g4" },
+  { src: "/photos/ensaio-6.jpg", cls: "g5" },
+  { src: "/photos/ensaio-5.jpg", cls: "g6" },
+  { src: "/photos/ensaio-7.jpg", cls: "g7" },
 ];

@@ -76,17 +76,10 @@ export function Navbar() {
     <>
       {/* Fora da home o fundo é claro; o estado "scrolled" (barra escura) garante contraste do logo e dos links */}
       <nav className={`navbar ${scrolled || !onHome ? "scrolled" : ""}`}>
-        {onHome ? (
-          <a href="#inicio" className="nav-brand" onClick={(event) => goToSection(event, "#inicio")}>
-            <Icon name="Sparkles" size={18} style={{ color: "var(--blush-400)" }} />
-            T <span className="amp">&amp;</span> G
-          </a>
-        ) : (
-          <Link to="/" className="nav-brand">
-            <Icon name="Sparkles" size={18} style={{ color: "var(--blush-400)" }} />
-            T <span className="amp">&amp;</span> G
-          </Link>
-        )}
+
+        <Link to="/" className="nav-brand">
+          T <span className="amp">&amp;</span> G
+        </Link>
         <ul className="nav-links">
           {NAV_ITEMS.map((item) => (
             <li key={item.href ?? item.to}>
@@ -105,7 +98,7 @@ export function Navbar() {
         </button>
       </nav>
 
-      <div className={`mobile-menu ${open ? "open" : ""}`}>
+      <div className={`mobile-menu ${open ? "open" : ""}`} {...(open ? {} : { inert: "" })}>
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.href ?? item.to}
@@ -129,7 +122,7 @@ export function HeroScene() {
 
   return (
     <header className="hero lantern-zone" id="inicio">
-      <FloatingLanterns scoped interactive={false} count={4} />
+      <FloatingLanterns scoped interactive={false} count={4} textColumn="left" />
       <div className="hero-grid">
         <div className={`hero-content hero-stagger ${ready ? "ready" : ""}`}>
           <p className="hero-kicker">Convite de casamento</p>

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Icon, MiniLantern, fireConfetti } from "./effects";
+import { Icon, MiniLantern, PhotoFrame, fireConfetti } from "./effects";
 import { api } from "./api";
 import { ContactHelp } from "./ContactHelp";
 import { SectionHead } from "./SectionHead";
-import { PARTY } from "./data";
+import { PARTY, WEDDING } from "./data";
 
 const emptyForm = {
   attending: "",
@@ -12,6 +12,58 @@ const emptyForm = {
   diet: "",
   message: "",
 };
+
+function VenueConfirmationCard({
+  eyebrow,
+  title,
+  description,
+  imageSrc,
+  imageAlt,
+  placeholderLabel,
+  facts,
+  ctaLabel,
+  ctaHref,
+}) {
+  return (
+    <section className="rsvp-venue-card">
+      <div className="rsvp-venue-card__media">
+        <span className="rsvp-venue-card__tag">{eyebrow}</span>
+        <PhotoFrame
+          src={imageSrc}
+          label={placeholderLabel}
+          caption={imageAlt}
+          className="rsvp-venue-card__frame"
+        />
+      </div>
+
+      <div className="rsvp-venue-card__body">
+        <span className="rsvp-venue-card__eyebrow">{eyebrow}</span>
+        <h3 className="rsvp-venue-card__title">{title}</h3>
+        {description ? <p className="rsvp-venue-card__description">{description}</p> : null}
+
+        <div className="rsvp-venue-card__facts">
+          {facts.map((fact) => (
+            <div className="rsvp-venue-card__fact" key={`${fact.label}-${fact.value}`}>
+              <span className="rsvp-venue-card__fact-label">{fact.label}</span>
+              <span className="rsvp-venue-card__fact-value">{fact.value}</span>
+            </div>
+          ))}
+        </div>
+
+        {ctaHref ? (
+          <a
+            className="btn btn-ghost rsvp-venue-card__cta"
+            href={ctaHref}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Icon name="Navigation" size={16} /> {ctaLabel}
+          </a>
+        ) : null}
+      </div>
+    </section>
+  );
+}
 
 function GuestSearch({ onSelect }) {
   const [query, setQuery] = useState("");
@@ -48,10 +100,12 @@ function GuestSearch({ onSelect }) {
       noValidate
     >
       <div className="field full">
-        <label>
+        <label htmlFor="rsvp-search-name">
           <Icon name="Search" size={14} /> Como devemos te encontrar?
         </label>
         <input
+          id="rsvp-search-name"
+          name="guestName"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Digite seu nome ou o nome da sua família"
@@ -186,7 +240,7 @@ export function RSVPForm({ standalone = false }) {
               maxWidth: "34ch",
             }}
           >
-            Sua presença foi enviada para o nosso céu de lanternas.
+            Sua presença foi registrada.
           </p>
           {form.attending === "yes" && (
             <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>Você está confirmado(a).</p>
@@ -263,49 +317,43 @@ export function RSVPForm({ standalone = false }) {
             </p>
           )}
 
+          <VenueConfirmationCard
+            eyebrow="Cerimônia"
+            title={WEDDING.venue}
+            description="Antes de confirmar sua presença, veja o local da cerimônia e os detalhes principais do grande dia."
+            imageSrc={WEDDING.churchPhoto}
+            imageAlt={`Foto da ${WEDDING.venue}`}
+            placeholderLabel="Foto da igreja"
+            facts={[
+              { label: "Horário", value: WEDDING.timeLabel },
+              { label: "Endereço", value: WEDDING.address },
+            ]}
+            ctaLabel="Ver rota da cerimônia"
+            ctaHref={WEDDING.mapsUrl}
+          />
+
           {group.invitedToParty && (
-            <div
-              style={{
-                marginBottom: "1.4rem",
-                padding: "1rem 1.1rem",
-                border: "1px solid rgba(120, 86, 48, 0.18)",
-                borderRadius: "1.1rem",
-                background: "rgba(255, 248, 239, 0.72)",
-              }}
-            >
-              <p style={{ margin: 0, color: "var(--ink)", fontWeight: 600 }}>{PARTY.title}</p>
-              <p style={{ margin: ".35rem 0 0", color: "var(--ink-soft)", lineHeight: 1.6 }}>{PARTY.description}</p>
-              <div style={{ display: "grid", gap: ".25rem", marginTop: ".8rem", color: "var(--ink-soft)", fontSize: ".94rem" }}>
-                <span>
-                  <strong style={{ color: "var(--ink)" }}>Horário:</strong> {PARTY.timeLabel}
-                </span>
-                <span>
-                  <strong style={{ color: "var(--ink)" }}>Local:</strong> {PARTY.venue}
-                </span>
-                {PARTY.address && (
-                  <span>
-                    <strong style={{ color: "var(--ink)" }}>Endereço:</strong> {PARTY.address}
-                  </span>
-                )}
-              </div>
-              {PARTY.mapsUrl && (
-                <a
-                  className="btn btn-ghost"
-                  href={PARTY.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ marginTop: ".9rem", display: "inline-flex" }}
-                >
-                  <Icon name="Navigation" size={16} /> Ver rota da festa
-                </a>
-              )}
-            </div>
+            <VenueConfirmationCard
+              eyebrow="Festa na chácara"
+              title={PARTY.venue}
+              description={PARTY.description}
+              imageSrc={PARTY.photo}
+              imageAlt={`Foto do local da festa: ${PARTY.venue}`}
+              placeholderLabel="Foto da chácara"
+              facts={[
+                { label: "Horário", value: PARTY.timeLabel },
+                { label: "Local", value: PARTY.venue },
+                ...(PARTY.address ? [{ label: "Endereço", value: PARTY.address }] : []),
+              ]}
+              ctaLabel="Ver rota da festa"
+              ctaHref={PARTY.mapsUrl}
+            />
           )}
 
           <div className="form-grid">
             <div className={`field full ${errors.attending ? "error" : ""}`}>
               <label>
-                <Icon name="Heart" size={14} /> Você poderá vir?
+                <Icon name="Heart" size={14} /> Você poderá vir na cerimônia na igreja?
               </label>
               <div className="choice-row">
                 <label className="choice yes">
@@ -359,12 +407,14 @@ export function RSVPForm({ standalone = false }) {
               </div>
             )}
 
-            {form.attending === "yes" && (
+            {form.partyAttending === "yes" && (
               <div className="field">
-                <label>
+                <label htmlFor="rsvp-diet">
                   <Icon name="Utensils" size={14} /> Restrições alimentares
                 </label>
                 <input
+                  id="rsvp-diet"
+                  name="diet"
                   value={form.diet}
                   onChange={(event) => updateField("diet", event.target.value)}
                   placeholder="Vegetariano, alergias..."
@@ -373,13 +423,15 @@ export function RSVPForm({ standalone = false }) {
             )}
 
             <div className="field full">
-              <label>
+              <label htmlFor="rsvp-message">
                 <Icon name="MessageCircleHeart" size={14} /> Mensagem para os noivos
               </label>
               <textarea
+                id="rsvp-message"
+                name="message"
                 value={form.message}
                 onChange={(event) => updateField("message", event.target.value.slice(0, 500))}
-                placeholder="Deixe um recado cheio de luz (opcional)"
+                placeholder="Deixe um recado para os noivos (opcional)"
                 maxLength={500}
                 aria-describedby="rsvp-message-count"
               />
@@ -397,7 +449,7 @@ export function RSVPForm({ standalone = false }) {
 
           <div style={{ textAlign: "center", marginTop: "1.8rem" }}>
             <button type="submit" className="btn btn-ink" style={{ padding: "1rem 2.6rem" }} disabled={submitting}>
-              <Icon name="Send" size={18} /> {submitting ? "Enviando..." : "Enviar para o céu de lanternas"}
+              <Icon name="Send" size={18} /> {submitting ? "Enviando..." : "Enviar!"}
             </button>
           </div>
 
