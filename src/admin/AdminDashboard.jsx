@@ -141,9 +141,9 @@ export function AdminDashboard() {
         />
         <StatCard
           icon="CheckCircle2"
-          label="RSVPs"
+          label="Confirmações"
           value={groups.responded}
-          hint={`${groups.pendingResponse} pendentes`}
+          hint={`${groups.pendingResponse} aguardando resposta`}
         />
       </StatSection>
 
