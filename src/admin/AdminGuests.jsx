@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Icon } from "../effects";
 import { api } from "../api";
-import { copyInviteMessageWithImage, prefetchInviteImage } from "./copyInviteClipboard";
 import {
   DEFAULT_INVITE_MESSAGE_TEMPLATE,
   fillInviteMessage,
@@ -429,7 +428,6 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
 
   useEffect(() => {
     load();
-    prefetchInviteImage();
   }, []);
 
   useEffect(() => {
@@ -530,23 +528,8 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
     copyText(inviteLink(group.id), { id: group.id, kind: "link" });
   };
 
-  const copyMessage = async (group) => {
-    const text = buildInviteMessage(group, messageTemplate);
-    try {
-      setError("");
-      const result = await copyInviteMessageWithImage(text);
-      setCopied({
-        id: group.id,
-        kind: "message",
-        withImage: result.withImage,
-      });
-      if (!result.withImage) {
-        setError("Texto copiado. A imagem não pôde ser incluída neste navegador.");
-      }
-    } catch {
-      setError("Não foi possível copiar. Tente selecionar o texto manualmente.");
-      window.prompt("Copie o texto:", text);
-    }
+  const copyMessage = (group) => {
+    copyText(buildInviteMessage(group, messageTemplate), { id: group.id, kind: "message" });
   };
 
   const openWhatsApp = (group) => {
@@ -782,7 +765,6 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
                         const isExpanded = expandedId === group.id;
                         const copiedMessage =
                           copied?.id === group.id && copied?.kind === "message";
-                        const copiedMessageWithImage = copiedMessage && copied?.withImage;
                         const copiedLink = copied?.id === group.id && copied?.kind === "link";
 
                         return (
@@ -886,13 +868,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
                             <td className="adm-col-actions">
                               <div className="adm-quick-actions" role="group" aria-label={`Ações de ${group.displayName}`}>
                                 <QuickAction
-                                  label={
-                                    copiedMessageWithImage
-                                      ? "Imagem e mensagem copiadas"
-                                      : copiedMessage
-                                        ? "Mensagem copiada"
-                                        : "Copiar mensagem e imagem"
-                                  }
+                                  label={copiedMessage ? "Mensagem copiada" : "Copiar mensagem"}
                                   labelText={copiedMessage ? "Copiada" : "Mensagem"}
                                   icon={copiedMessage ? "Check" : "MessageCircleHeart"}
                                   tone="secondary"
