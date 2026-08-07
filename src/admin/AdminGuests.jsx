@@ -5,6 +5,7 @@ import { api } from "../api";
 import {
   DEFAULT_INVITE_MESSAGE_TEMPLATE,
   fillInviteMessage,
+  giftListLink,
   inviteConfirmLink,
 } from "./inviteMessage";
 
@@ -352,6 +353,7 @@ export function AdminGuests() {
       displayName: group.displayName,
       members: group.members ?? [],
       link,
+      giftLink: giftListLink(),
     });
     copyText(message, { id: group.id, kind: "message" });
   };

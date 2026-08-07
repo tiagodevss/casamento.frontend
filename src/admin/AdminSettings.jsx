@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Icon } from "../effects";
 import { api } from "../api";
-import { DEFAULT_INVITE_MESSAGE_TEMPLATE, fillInviteMessage } from "./inviteMessage";
+import { DEFAULT_INVITE_MESSAGE_TEMPLATE, fillInviteMessage, giftListLink } from "./inviteMessage";
 
 const PREVIEW = {
   displayName: "Família Silva",
   members: [{ name: "Maria" }, { name: "João" }],
   link: `${typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"}/?convite=exemplo`,
+  giftLink: giftListLink(typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"),
 };
 
 export function AdminSettings() {
@@ -74,8 +75,8 @@ export function AdminSettings() {
           placeholder="Olá, {{nome}}! Confirmem aqui: {{link}}"
         />
         <span className="adm-hint">
-          Variáveis: <code>{"{{nome}}"}</code>, <code>{"{{link}}"}</code>, <code>{"{{pessoas}}"}</code>.
-          A mensagem precisa incluir <code>{"{{link}}"}</code>.
+          Variáveis: <code>{"{{nome}}"}</code>, <code>{"{{link}}"}</code>, <code>{"{{presentes}}"}</code>,{" "}
+          <code>{"{{pessoas}}"}</code>. A mensagem precisa incluir <code>{"{{link}}"}</code>.
         </span>
       </div>
 
