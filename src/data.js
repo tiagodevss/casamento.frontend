@@ -16,12 +16,10 @@ export const WEDDING = {
 export const EXTERNAL_GIFT_LIST_URL =
   "https://noivos.casar.com/tiago-e-gabriela-2026-11-14";
 
-// Enquanto o local da festa não estiver definido, deixe address e mapsUrl
-// vazios — o convite esconde esses campos automaticamente.
 export const PARTY = {
   title: "Celebração da Festa",
   timeLabel: "Após a cerimônia",
-  venue: "Local será anunciado em breve",
+  venue: "Chácara",
   photo: "/photos/chacara.jpg",
   address: "Rua Praxiteles F. Neves, 63 - Patropi - Paulínia/SP (Cerca de 10min de carro da igreja)",
   mapsUrl: "https://maps.app.goo.gl/xCx15d8vKrzTXubV8",
