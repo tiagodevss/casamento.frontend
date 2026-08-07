@@ -40,6 +40,6 @@ export function inviteConfirmLink(groupId, origin = window.location.origin) {
   return `${origin}/?convite=${groupId}`;
 }
 
-export function giftListLink(origin = window.location.origin) {
-  return `${origin}/presentes`;
+export function giftListLink(groupId, origin = window.location.origin) {
+  return `${origin}/presentes?convite=${groupId}`;
 }

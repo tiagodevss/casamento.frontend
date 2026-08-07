@@ -353,7 +353,7 @@ export function AdminGuests() {
       displayName: group.displayName,
       members: group.members ?? [],
       link,
-      giftLink: giftListLink(),
+      giftLink: giftListLink(group.id),
     });
     copyText(message, { id: group.id, kind: "message" });
   };

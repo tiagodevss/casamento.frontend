@@ -8,7 +8,10 @@ const PREVIEW = {
   displayName: "Família Silva",
   members: [{ name: "Maria" }, { name: "João" }],
   link: `${typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"}/?convite=exemplo`,
-  giftLink: giftListLink(typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"),
+  giftLink: giftListLink(
+    "exemplo",
+    typeof window !== "undefined" ? window.location.origin : "https://exemplo.com",
+  ),
 };
 
 export function AdminSettings() {
