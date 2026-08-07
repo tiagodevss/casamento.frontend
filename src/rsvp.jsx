@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import { Icon, MiniLantern, PhotoFrame, fireConfetti } from "./effects";
 import { api } from "./api";
@@ -6,12 +7,30 @@ import { ContactHelp } from "./ContactHelp";
 import { SectionHead } from "./SectionHead";
 import { PARTY, WEDDING } from "./data";
 
+const INVITE_PARAM = "convite";
+
 const emptyForm = {
-  attending: "",
+  memberAttending: {},
   partyAttending: "",
   diet: "",
   message: "",
 };
+
+function formFromInvite(invite) {
+  const memberAttending = {};
+  for (const member of invite.members ?? []) {
+    if (member.attending === true) memberAttending[member.id] = "yes";
+    else if (member.attending === false) memberAttending[member.id] = "no";
+    else memberAttending[member.id] = "";
+  }
+  return {
+    memberAttending,
+    partyAttending:
+      invite.partyAttending === true ? "yes" : invite.partyAttending === false ? "no" : "",
+    diet: invite.diet ?? "",
+    message: invite.message ?? "",
+  };
+}
 
 function VenueConfirmationCard({
   eyebrow,
@@ -65,11 +84,16 @@ function VenueConfirmationCard({
   );
 }
 
-function GuestSearch({ onSelect }) {
+function GuestSearch({ onSelect, initialError = "" }) {
   const [query, setQuery] = useState("");
   const [candidates, setCandidates] = useState(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [loading, setLoading] = useState(false);
+  const [selectingId, setSelectingId] = useState(null);
+
+  useEffect(() => {
+    if (initialError) setError(initialError);
+  }, [initialError]);
 
   const search = async (event) => {
     event.preventDefault();
@@ -89,6 +113,19 @@ function GuestSearch({ onSelect }) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const selectCandidate = async (candidate) => {
+    setSelectingId(candidate.id);
+    setError("");
+    try {
+      const invite = await api.getRsvpInvite(candidate.id);
+      onSelect(invite);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSelectingId(null);
     }
   };
 
@@ -114,7 +151,7 @@ function GuestSearch({ onSelect }) {
           aria-describedby="rsvp-search-hint rsvp-search-error"
         />
         <span id="rsvp-search-hint" className="field-hint">
-          Use pelo menos 3 letras. Se não aparecer, tente outro sobrenome da família.
+          Use pelo menos 3 letras. Pode ser o nome de qualquer pessoa do convite ou o sobrenome da família.
         </span>
         <span id="rsvp-search-error" className="err-msg" role="alert">
           {error}
@@ -143,13 +180,25 @@ function GuestSearch({ onSelect }) {
               key={candidate.id}
               type="button"
               className="btn btn-ghost"
-              style={{ justifyContent: "space-between", width: "100%" }}
-              onClick={() => onSelect(candidate)}
+              style={{ justifyContent: "space-between", width: "100%", flexWrap: "wrap", gap: ".35rem" }}
+              onClick={() => selectCandidate(candidate)}
+              disabled={Boolean(selectingId)}
             >
-              <span>{candidate.displayName}</span>
-              {candidate.hasResponded && (
-                <span style={{ fontSize: ".75rem", color: "var(--ink-soft)" }}>já confirmado</span>
-              )}
+              <span style={{ textAlign: "left" }}>
+                <strong style={{ display: "block" }}>{candidate.displayName}</strong>
+                {candidate.memberNames?.length > 0 && (
+                  <span style={{ fontSize: ".78rem", color: "var(--ink-soft)" }}>
+                    {candidate.memberNames.join(", ")}
+                  </span>
+                )}
+              </span>
+              <span style={{ fontSize: ".75rem", color: "var(--ink-soft)" }}>
+                {selectingId === candidate.id
+                  ? "Abrindo..."
+                  : candidate.hasResponded
+                    ? "já confirmado"
+                    : `${candidate.memberCount ?? 0} ${(candidate.memberCount ?? 0) === 1 ? "pessoa" : "pessoas"}`}
+              </span>
             </button>
           ))}
         </div>
@@ -161,15 +210,34 @@ function GuestSearch({ onSelect }) {
 }
 
 export function RSVPForm({ standalone = false }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const inviteParam = searchParams.get(INVITE_PARAM)?.trim() || "";
   const [group, setGroup] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [deepLinkLoading, setDeepLinkLoading] = useState(Boolean(inviteParam));
+  const [deepLinkError, setDeepLinkError] = useState("");
   const formRef = useRef(null);
+  const loadedInviteRef = useRef(null);
 
-  // Roda depois que o React já re-renderizou os campos com a classe .error,
-  // então o foco encontra o elemento certo mesmo na primeira tentativa de envio.
+  const clearInviteParam = () => {
+    if (!searchParams.has(INVITE_PARAM)) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete(INVITE_PARAM);
+    setSearchParams(next, { replace: true });
+  };
+
+  const resetToSearch = () => {
+    setSent(false);
+    setGroup(null);
+    setForm(emptyForm);
+    setErrors({});
+    loadedInviteRef.current = null;
+    clearInviteParam();
+  };
+
   useEffect(() => {
     if (Object.keys(errors).length === 0) return;
     formRef.current
@@ -177,16 +245,77 @@ export function RSVPForm({ standalone = false }) {
       ?.focus();
   }, [errors]);
 
+  useEffect(() => {
+    if (!inviteParam) {
+      setDeepLinkLoading(false);
+      return;
+    }
+    if (loadedInviteRef.current === inviteParam) return;
+
+    let cancelled = false;
+    setDeepLinkLoading(true);
+    setDeepLinkError("");
+
+    (async () => {
+      try {
+        const invite = await api.getRsvpInvite(inviteParam);
+        if (cancelled) return;
+        loadedInviteRef.current = inviteParam;
+        setGroup(invite);
+        setForm(formFromInvite(invite));
+        setErrors({});
+        setDeepLinkError("");
+      } catch (err) {
+        if (cancelled) return;
+        loadedInviteRef.current = null;
+        setGroup(null);
+        setForm(emptyForm);
+        setDeepLinkError(
+          err.message || "Não encontramos este convite. Busque pelo nome da família.",
+        );
+        clearInviteParam();
+      } finally {
+        if (!cancelled) setDeepLinkLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to inviteParam changes
+  }, [inviteParam]);
+
+  const selectGroup = (invite) => {
+    setGroup(invite);
+    setForm(formFromInvite(invite));
+    setErrors({});
+    setDeepLinkError("");
+  };
+
   const updateField = (key, value) => {
     setForm((current) => ({ ...current, [key]: value }));
     if (errors[key]) setErrors((current) => ({ ...current, [key]: null }));
   };
 
+  const updateMemberAttending = (memberId, value) => {
+    setForm((current) => ({
+      ...current,
+      memberAttending: { ...current.memberAttending, [memberId]: value },
+    }));
+    if (errors[`member-${memberId}`]) {
+      setErrors((current) => ({ ...current, [`member-${memberId}`]: null }));
+    }
+  };
+
   const validate = () => {
     const nextErrors = {};
-    if (!form.attending) nextErrors.attending = "Escolha uma opção";
+    for (const member of group?.members ?? []) {
+      if (!form.memberAttending[member.id]) {
+        nextErrors[`member-${member.id}`] = "Escolha uma opção";
+      }
+    }
     if (group?.invitedToParty && !form.partyAttending) {
-      nextErrors.partyAttending = "Confirme também sua presença na festa";
+      nextErrors.partyAttending = "Confirme também a presença na festa";
     }
     return nextErrors;
   };
@@ -201,12 +330,17 @@ export function RSVPForm({ standalone = false }) {
 
     setSubmitting(true);
     try {
-      await api.confirmRsvp(group.id, {
-        attending: form.attending === "yes",
+      const updated = await api.confirmRsvp(group.id, {
+        members: group.members.map((member) => ({
+          id: member.id,
+          attending: form.memberAttending[member.id] === "yes",
+        })),
         partyAttending: group.invitedToParty ? form.partyAttending === "yes" : undefined,
         diet: form.diet || undefined,
         message: form.message || undefined,
       });
+      setGroup(updated);
+      setForm(formFromInvite(updated));
       setSent(true);
       setTimeout(() => fireConfetti(), 250);
     } catch (err) {
@@ -217,6 +351,13 @@ export function RSVPForm({ standalone = false }) {
   };
 
   const sectionClass = `section-band section-band--light${standalone ? " action-page-form" : ""}`;
+  const attendingMembers = (group?.members ?? []).filter(
+    (member) => form.memberAttending[member.id] === "yes",
+  );
+  const decliningMembers = (group?.members ?? []).filter(
+    (member) => form.memberAttending[member.id] === "no",
+  );
+  const anyAttending = attendingMembers.length > 0;
 
   if (sent) {
     return (
@@ -228,7 +369,7 @@ export function RSVPForm({ standalone = false }) {
           </div>
           <span className="eyebrow">Recebido com carinho</span>
           <h2 className="section-title" style={{ fontSize: "clamp(1.6rem, 4vw, 2.6rem)", marginTop: ".6rem" }}>
-            {form.attending === "yes" ? "Que alegria ter você conosco!" : "Vamos sentir sua falta"}
+            {anyAttending ? "Que alegria ter vocês conosco!" : "Vamos sentir a falta de vocês"}
           </h2>
           <p
             style={{
@@ -240,14 +381,21 @@ export function RSVPForm({ standalone = false }) {
               maxWidth: "34ch",
             }}
           >
-            Sua presença foi registrada.
+            A presença da família foi registrada.
           </p>
-          {form.attending === "yes" && (
-            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>Você está confirmado(a).</p>
+          {attendingMembers.length > 0 && (
+            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>
+              Confirmados: {attendingMembers.map((member) => member.name).join(", ")}.
+            </p>
+          )}
+          {decliningMembers.length > 0 && (
+            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
+              Não poderão ir: {decliningMembers.map((member) => member.name).join(", ")}.
+            </p>
           )}
           {group?.invitedToParty && form.partyAttending === "yes" && (
             <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
-              Sua presença na festa também foi confirmada.
+              Presença na festa também confirmada.
             </p>
           )}
           {group?.invitedToParty && form.partyAttending === "no" && (
@@ -261,13 +409,9 @@ export function RSVPForm({ standalone = false }) {
             </button>
             <button
               className="btn btn-ghost"
-              onClick={() => {
-                setSent(false);
-                setGroup(null);
-                setForm(emptyForm);
-              }}
+              onClick={resetToSearch}
             >
-              <Icon name="RotateCcw" size={16} /> Confirmar para outra pessoa
+              <Icon name="RotateCcw" size={16} /> Confirmar para outra família
             </button>
           </div>
         </div>
@@ -285,8 +429,17 @@ export function RSVPForm({ standalone = false }) {
         description="Preencha com carinho e faça parte do nosso céu de luzes."
       />
 
-      {!group ? (
-        <GuestSearch onSelect={setGroup} />
+      {!group && deepLinkLoading ? (
+        <div
+          className="panel reveal d1"
+          style={{ maxWidth: 620, margin: "0 auto", padding: "clamp(1.6rem, 4vw, 2.6rem)", textAlign: "center" }}
+          role="status"
+          aria-live="polite"
+        >
+          <p style={{ color: "var(--ink-soft)", margin: 0 }}>Abrindo seu convite...</p>
+        </div>
+      ) : !group ? (
+        <GuestSearch onSelect={selectGroup} initialError={deepLinkError} />
       ) : (
         <form
           ref={formRef}
@@ -299,11 +452,7 @@ export function RSVPForm({ standalone = false }) {
             Confirmando para: <strong style={{ color: "var(--ink)" }}>{group.displayName}</strong>{" "}
             <button
               type="button"
-              onClick={() => {
-                setGroup(null);
-                setForm(emptyForm);
-                setErrors({});
-              }}
+              onClick={resetToSearch}
               style={{ background: "none", border: "none", color: "var(--sage-600)", cursor: "pointer" }}
             >
               (trocar)
@@ -320,7 +469,7 @@ export function RSVPForm({ standalone = false }) {
           <VenueConfirmationCard
             eyebrow="Cerimônia"
             title={WEDDING.venue}
-            description="Antes de confirmar sua presença, veja o local da cerimônia e os detalhes principais do grande dia."
+            description="Antes de confirmar a presença, veja o local da cerimônia e os detalhes principais do grande dia."
             imageSrc={WEDDING.churchPhoto}
             imageAlt={`Foto da ${WEDDING.venue}`}
             placeholderLabel="Foto da igreja"
@@ -351,37 +500,50 @@ export function RSVPForm({ standalone = false }) {
           )}
 
           <div className="form-grid">
-            <div className={`field full ${errors.attending ? "error" : ""}`}>
+            <div className="field full">
               <label>
-                <Icon name="Heart" size={14} /> Você poderá vir na cerimônia na igreja?
+                <Icon name="Heart" size={14} /> Quem poderá vir na cerimônia?
               </label>
-              <div className="choice-row">
-                <label className="choice yes">
-                  <input
-                    type="radio"
-                    name="attending"
-                    checked={form.attending === "yes"}
-                    onChange={() => updateField("attending", "yes")}
-                  />
-                  <span className="radio" /> <span>Sim, eu vou! <span aria-hidden="true">✨</span></span>
-                </label>
-                <label className="choice no">
-                  <input
-                    type="radio"
-                    name="attending"
-                    checked={form.attending === "no"}
-                    onChange={() => updateField("attending", "no")}
-                  />
-                  <span className="radio" /> <span>Não poderei ir</span>
-                </label>
+              <p className="field-hint" style={{ marginBottom: ".8rem" }}>
+                Marque pessoa a pessoa. Só entram no convite as pessoas já cadastradas.
+              </p>
+              <div className="rsvp-members-list">
+                {group.members.map((member) => (
+                  <div
+                    key={member.id}
+                    className={`rsvp-member-card ${errors[`member-${member.id}`] ? "field error" : "field"}`}
+                  >
+                    <span className="rsvp-member-card__name">{member.name}</span>
+                    <div className="choice-row">
+                      <label className="choice yes">
+                        <input
+                          type="radio"
+                          name={`attending-${member.id}`}
+                          checked={form.memberAttending[member.id] === "yes"}
+                          onChange={() => updateMemberAttending(member.id, "yes")}
+                        />
+                        <span className="radio" /> <span>Sim, vai</span>
+                      </label>
+                      <label className="choice no">
+                        <input
+                          type="radio"
+                          name={`attending-${member.id}`}
+                          checked={form.memberAttending[member.id] === "no"}
+                          onChange={() => updateMemberAttending(member.id, "no")}
+                        />
+                        <span className="radio" /> <span>Não poderá ir</span>
+                      </label>
+                    </div>
+                    <span className="err-msg">{errors[`member-${member.id}`]}</span>
+                  </div>
+                ))}
               </div>
-              <span className="err-msg">{errors.attending}</span>
             </div>
 
             {group.invitedToParty && (
               <div className={`field full ${errors.partyAttending ? "error" : ""}`}>
                 <label>
-                  <Icon name="PartyPopper" size={14} /> Você irá para a festa?
+                  <Icon name="PartyPopper" size={14} /> A família irá para a festa?
                 </label>
                 <div className="choice-row">
                   <label className="choice yes">
@@ -391,7 +553,7 @@ export function RSVPForm({ standalone = false }) {
                       checked={form.partyAttending === "yes"}
                       onChange={() => updateField("partyAttending", "yes")}
                     />
-                    <span className="radio" /> <span>Sim, estarei na festa</span>
+                    <span className="radio" /> <span>Sim, estaremos na festa</span>
                   </label>
                   <label className="choice no">
                     <input
@@ -400,7 +562,7 @@ export function RSVPForm({ standalone = false }) {
                       checked={form.partyAttending === "no"}
                       onChange={() => updateField("partyAttending", "no")}
                     />
-                    <span className="radio" /> <span>Não irei para a festa</span>
+                    <span className="radio" /> <span>Não iremos para a festa</span>
                   </label>
                 </div>
                 <span className="err-msg">{errors.partyAttending}</span>

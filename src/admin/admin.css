@@ -416,6 +416,185 @@
   font-size: 0.78rem;
 }
 
+.adm-members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.adm-member-row {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.adm-member-row .adm-input {
+  flex: 1;
+}
+
+.adm-message-preview {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-neutral-tint);
+  color: var(--adm-text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.adm-invite-link-row {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  margin-top: 0.55rem;
+  max-width: 100%;
+}
+
+.adm-invite-link-row .adm-input {
+  font-size: 0.78rem;
+  color: var(--adm-text-muted);
+}
+
+/* ---------- Filters ---------- */
+
+.adm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.adm-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 140px;
+}
+
+.adm-filter span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+}
+
+.adm-invite-sent-toggle {
+  margin-top: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--adm-text);
+  font-weight: 500;
+}
+
+/* ---------- Dashboard stats ---------- */
+
+.adm-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.adm-dashboard-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.adm-stat-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.adm-stat-section-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--adm-text);
+}
+
+.adm-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.adm-stat-card {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  background: var(--adm-surface);
+  border: 1px solid var(--adm-border);
+  border-radius: var(--adm-radius);
+  box-shadow: var(--adm-shadow);
+}
+
+.adm-stat-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--adm-radius-sm);
+  background: var(--adm-primary-tint);
+  color: var(--adm-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.adm-stat-card-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--adm-text-muted);
+}
+
+.adm-stat-card-value {
+  margin: 0.15rem 0 0;
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--adm-text);
+}
+
+.adm-stat-card-hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.74rem;
+  color: var(--adm-text-subtle);
+}
+
+.adm-side-table-wrap {
+  overflow-x: auto;
+}
+
+.adm-side-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.adm-side-table th,
+.adm-side-table td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--adm-border);
+}
+
+.adm-side-table th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--adm-text-muted);
+  background: var(--adm-neutral-tint);
+}
+
+.adm-side-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
 /* ---------- Login page ---------- */
 
 .adm-auth {
@@ -490,5 +669,9 @@
 
   .adm-form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .adm-stat-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }

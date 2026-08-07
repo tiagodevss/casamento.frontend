@@ -2,19 +2,28 @@ import { useState } from "react";
 
 import { Icon } from "../effects";
 import { useAuth } from "./AuthContext";
+import { AdminDashboard } from "./AdminDashboard";
 import { AdminGuests } from "./AdminGuests";
-import { AdminGifts } from "./AdminGifts";
+import { AdminSettings } from "./AdminSettings";
 import "./admin.css";
 
 const TABS = [
+  { id: "dashboard", label: "Dashboard", icon: "LayoutGrid" },
   { id: "guests", label: "Convidados", icon: "Users" },
-  { id: "gifts", label: "Presentes", icon: "Gift" },
+  { id: "settings", label: "Configurações", icon: "Settings" },
 ];
+
+const TAB_CONTENT = {
+  dashboard: AdminDashboard,
+  guests: AdminGuests,
+  settings: AdminSettings,
+};
 
 export function AdminShell() {
   const { session, logout } = useAuth();
-  const [tab, setTab] = useState("guests");
+  const [tab, setTab] = useState("dashboard");
   const activeTab = TABS.find((item) => item.id === tab);
+  const Content = TAB_CONTENT[tab] ?? AdminDashboard;
 
   return (
     <div className="adm">
@@ -57,7 +66,9 @@ export function AdminShell() {
             </span>
           </header>
 
-          <div className="adm-content">{tab === "guests" ? <AdminGuests /> : <AdminGifts />}</div>
+          <div className="adm-content">
+            <Content />
+          </div>
         </div>
       </div>
     </div>

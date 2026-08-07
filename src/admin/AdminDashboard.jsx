@@ -2,140 +2,97 @@ import { useEffect, useState } from "react";
 
 import { Icon } from "../effects";
 import { api } from "../api";
-import { useAuth } from "./AuthContext";
+import { GUEST_SIDES } from "./AdminGuests";
 
-const emptyForm = {
-  displayName: "",
-  searchNames: "",
-  invitedToParty: false,
-  phone: "",
-  notes: "",
-};
-
-function toForm(group) {
-  return {
-    displayName: group.displayName,
-    searchNames: group.searchNames.join(", "),
-    invitedToParty: Boolean(group.invitedToParty),
-    phone: group.phone ?? "",
-    notes: group.notes ?? "",
-  };
+function StatCard({ icon, label, value, hint }) {
+  return (
+    <div className="adm-stat-card">
+      <div className="adm-stat-card-icon" aria-hidden="true">
+        <Icon name={icon} size={18} />
+      </div>
+      <div className="adm-stat-card-body">
+        <p className="adm-stat-card-label">{label}</p>
+        <p className="adm-stat-card-value">{value}</p>
+        {hint ? <p className="adm-stat-card-hint">{hint}</p> : null}
+      </div>
+    </div>
+  );
 }
 
-function toPayload(form) {
-  return {
-    displayName: form.displayName.trim(),
-    searchNames: form.searchNames
-      .split(",")
-      .map((name) => name.trim())
-      .filter(Boolean),
-    invitedToParty: Boolean(form.invitedToParty),
-    phone: form.phone.trim() || undefined,
-    notes: form.notes.trim() || undefined,
-  };
+function StatSection({ title, children }) {
+  return (
+    <section className="adm-stat-section">
+      <h2 className="adm-stat-section-title">{title}</h2>
+      <div className="adm-stat-grid">{children}</div>
+    </section>
+  );
 }
 
-function GuestGroupForm({ initial, onCancel, onSaved }) {
-  const [form, setForm] = useState(initial ? toForm(initial) : emptyForm);
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const updateField = (key, value) => setForm((current) => ({ ...current, [key]: value }));
-
-  const submit = async (event) => {
-    event.preventDefault();
-    setError("");
-    if (!form.displayName.trim() || !form.searchNames.trim()) {
-      setError("Preencha nome de exibição e ao menos um nome de busca");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = toPayload(form);
-      const saved = initial
-        ? await api.updateGuestGroup(initial.id, payload)
-        : await api.createGuestGroup(payload);
-      onSaved(saved);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
+function SideBreakdown({ bySide }) {
+  if (!bySide) return null;
 
   return (
-    <form className="glass" style={{ padding: "1.6rem", marginBottom: "1.6rem" }} onSubmit={submit} noValidate>
-      <div className="form-grid">
-        <div className="field full">
-          <label>Nome de exibição</label>
-          <input
-            value={form.displayName}
-            onChange={(event) => updateField("displayName", event.target.value)}
-            placeholder="Família Silva"
-          />
-        </div>
-        <div className="field full">
-          <label>Nomes de busca (separados por vírgula)</label>
-          <input
-            value={form.searchNames}
-            onChange={(event) => updateField("searchNames", event.target.value)}
-            placeholder="Maria Silva, João Silva"
-          />
-        </div>
-        <div className="field">
-          <label>Telefone</label>
-          <input
-            value={form.phone}
-            onChange={(event) => updateField("phone", event.target.value)}
-            placeholder="(19) 99999-9999"
-          />
-        </div>
-        <div className="field">
-          <label style={{ marginBottom: ".5rem" }}>Convite extra</label>
-          <label style={{ display: "flex", alignItems: "center", gap: ".6rem", color: "var(--text-dim)" }}>
-            <input
-              type="checkbox"
-              checked={form.invitedToParty}
-              onChange={(event) => updateField("invitedToParty", event.target.checked)}
-            />
-            Convidado para a festa
-          </label>
-        </div>
-        <div className="field full">
-          <label>Notas</label>
-          <input
-            value={form.notes}
-            onChange={(event) => updateField("notes", event.target.value)}
-            placeholder="Observações internas"
-          />
-        </div>
+    <div className="adm-card adm-card-pad">
+      <h2 className="adm-stat-section-title" style={{ marginBottom: "1rem" }}>
+        Por lado
+      </h2>
+      <div className="adm-side-table-wrap">
+        <table className="adm-side-table">
+          <thead>
+            <tr>
+              <th scope="col">Lado</th>
+              <th scope="col">Convites</th>
+              <th scope="col">Pessoas</th>
+              <th scope="col">Respondidos</th>
+              <th scope="col">Vão</th>
+              <th scope="col">Não vão</th>
+              <th scope="col">Pendentes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {GUEST_SIDES.map(({ value, label }) => {
+              const row = bySide[value] ?? {
+                groups: 0,
+                members: 0,
+                responded: 0,
+                attending: 0,
+                notAttending: 0,
+                pending: 0,
+              };
+              return (
+                <tr key={value}>
+                  <td>{label}</td>
+                  <td>{row.groups}</td>
+                  <td>{row.members}</td>
+                  <td>{row.responded}</td>
+                  <td>{row.attending}</td>
+                  <td>{row.notAttending}</td>
+                  <td>{row.pending}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
-      <span className="err-msg">{error}</span>
-      <div style={{ display: "flex", gap: ".8rem", marginTop: "1.2rem" }}>
-        <button type="submit" className="btn btn-gold" disabled={saving}>
-          <Icon name="Check" size={16} /> {saving ? "Salvando..." : "Salvar"}
-        </button>
-        <button type="button" className="btn btn-ghost" onClick={onCancel}>
-          Cancelar
-        </button>
-      </div>
-    </form>
+    </div>
   );
 }
 
 export function AdminDashboard() {
-  const { session, logout } = useAuth();
-  const [groups, setGroups] = useState(null);
+  const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
-  const [editing, setEditing] = useState(null);
-  const [creating, setCreating] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
+    setLoading(true);
+    setError("");
     try {
-      const data = await api.listGuestGroups();
-      setGroups(data);
+      const data = await api.getGuestStats();
+      setStats(data);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,135 +100,67 @@ export function AdminDashboard() {
     load();
   }, []);
 
-  const remove = async (group) => {
-    if (!confirm(`Remover o convite de "${group.displayName}"?`)) return;
-    try {
-      await api.deleteGuestGroup(group.id);
-      setGroups((current) => current.filter((item) => item.id !== group.id));
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  if (loading && !stats) {
+    return <p className="adm-hint">Carregando estatísticas...</p>;
+  }
 
-  const handleSaved = (saved) => {
-    setGroups((current) => {
-      if (!current) return [saved];
-      const exists = current.some((item) => item.id === saved.id);
-      return exists ? current.map((item) => (item.id === saved.id ? { ...item, ...saved } : item)) : [...current, saved];
-    });
-    setEditing(null);
-    setCreating(false);
-  };
+  if (error && !stats) {
+    return (
+      <div>
+        <p className="adm-error">{error}</p>
+        <button type="button" className="adm-btn adm-btn-secondary" onClick={load}>
+          <Icon name="RotateCcw" size={14} /> Tentar de novo
+        </button>
+      </div>
+    );
+  }
+
+  const { groups, members, party, bySide } = stats;
 
   return (
-    <div style={{ minHeight: "100vh", padding: "clamp(1.4rem, 4vw, 3rem)" }}>
-      <div className="sky-backdrop" />
-      <div style={{ maxWidth: 960, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.6rem" }}>
-          <div>
-            <span className="eyebrow">Painel administrativo</span>
-            <h1 className="section-title" style={{ fontSize: "clamp(1.4rem, 4vw, 2rem)", marginTop: ".3rem" }}>
-              Convidados{session?.name ? ` — ${session.name}` : ""}
-            </h1>
-          </div>
-          <button className="btn btn-ghost" onClick={logout}>
-            <Icon name="LogOut" size={16} /> Sair
-          </button>
-        </div>
-
-        {!creating && !editing && (
-          <button className="btn btn-gold" style={{ marginBottom: "1.6rem" }} onClick={() => setCreating(true)}>
-            <Icon name="Plus" size={16} /> Novo convidado
-          </button>
-        )}
-
-        {creating && (
-          <GuestGroupForm onCancel={() => setCreating(false)} onSaved={handleSaved} />
-        )}
-
-        {error && <p className="err-msg">{error}</p>}
-
-        {groups === null && !error && <p style={{ color: "var(--text-dim)" }}>Carregando...</p>}
-
-        {groups && (
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {groups.map((group) =>
-              editing?.id === group.id ? (
-                <GuestGroupForm
-                  key={group.id}
-                  initial={group}
-                  onCancel={() => setEditing(null)}
-                  onSaved={handleSaved}
-                />
-              ) : (
-                <div key={group.id} className="glass" style={{ padding: "1.2rem 1.6rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: ".8rem" }}>
-                    <div>
-                      <strong style={{ color: "var(--cream)", fontSize: "1.05rem" }}>{group.displayName}</strong>
-                      <p style={{ color: "var(--text-dim)", margin: ".3rem 0 0", fontSize: ".85rem" }}>
-                        {group.searchNames.join(", ")}
-                      </p>
-                      <p style={{ color: "var(--text-dim)", margin: ".2rem 0 0", fontSize: ".8rem" }}>
-                        {group.phone ?? ""}
-                      </p>
-                      <p style={{ color: "var(--text-dim)", margin: ".25rem 0 0", fontSize: ".78rem" }}>
-                        {group.invitedToParty ? "Inclui convite para a festa" : "Somente cerimônia"}
-                      </p>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".5rem" }}>
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: ".3rem" }}>
-                        <span
-                          style={{
-                            fontSize: ".75rem",
-                            color: group.rsvpResponse
-                              ? group.rsvpResponse.attending
-                                ? "var(--gold-400)"
-                                : "var(--rose)"
-                              : "var(--text-dim)",
-                          }}
-                        >
-                          {group.rsvpResponse
-                            ? group.rsvpResponse.attending
-                              ? "Cerimônia confirmada"
-                              : "Cerimônia: não vai"
-                            : "Cerimônia: sem resposta"}
-                        </span>
-                        {group.invitedToParty && (
-                          <span
-                            style={{
-                              fontSize: ".72rem",
-                              color:
-                                group.rsvpResponse?.partyAttending === true
-                                  ? "var(--gold-400)"
-                                  : group.rsvpResponse?.partyAttending === false
-                                    ? "var(--rose)"
-                                    : "var(--text-dim)",
-                            }}
-                          >
-                            {group.rsvpResponse?.partyAttending === true
-                              ? "Festa confirmada"
-                              : group.rsvpResponse?.partyAttending === false
-                                ? "Festa: não vai"
-                                : "Festa: sem resposta"}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ display: "flex", gap: ".5rem" }}>
-                        <button className="btn btn-ghost" onClick={() => setEditing(group)}>
-                          <Icon name="Pencil" size={14} /> Editar
-                        </button>
-                        <button className="btn btn-ghost" onClick={() => remove(group)}>
-                          <Icon name="Trash2" size={14} /> Remover
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-        )}
+    <div className="adm-dashboard">
+      <div className="adm-dashboard-toolbar">
+        <p className="adm-hint" style={{ margin: 0 }}>
+          Resumo dos convites e confirmações
+        </p>
+        <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" onClick={load} disabled={loading}>
+          <Icon name="RotateCcw" size={13} /> Atualizar
+        </button>
       </div>
+
+      {error && <p className="adm-error">{error}</p>}
+
+      <StatSection title="Visão geral">
+        <StatCard icon="Users" label="Convidados" value={members.total} hint="Pessoas no total" />
+        <StatCard icon="Mail" label="Convites" value={groups.total} hint="Grupos cadastrados" />
+        <StatCard
+          icon="Send"
+          label="Enviados"
+          value={groups.inviteSent}
+          hint={`${groups.inviteNotSent} ainda não enviados`}
+        />
+        <StatCard
+          icon="CheckCircle2"
+          label="RSVPs"
+          value={groups.responded}
+          hint={`${groups.pendingResponse} pendentes`}
+        />
+      </StatSection>
+
+      <StatSection title="Presença (pessoas)">
+        <StatCard icon="Check" label="Vão" value={members.attending} />
+        <StatCard icon="X" label="Não vão" value={members.notAttending} />
+        <StatCard icon="Clock" label="Pendentes" value={members.pending} />
+      </StatSection>
+
+      <StatSection title="Festa">
+        <StatCard icon="Wine" label="Convidados" value={party.invited} hint="Convites com festa" />
+        <StatCard icon="Check" label="Confirmados" value={party.attending} />
+        <StatCard icon="X" label="Não vão" value={party.notAttending} />
+        <StatCard icon="Clock" label="Pendentes" value={party.pending} />
+      </StatSection>
+
+      <SideBreakdown bySide={bySide} />
     </div>
   );
 }

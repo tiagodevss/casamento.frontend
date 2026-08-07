@@ -61,9 +61,9 @@ async function request(path, options = {}) {
 
 export const api = {
   searchGuests: (query) => request(`/rsvp/search?q=${encodeURIComponent(query)}`),
+  getRsvpInvite: (guestGroupId) => request(`/rsvp/${guestGroupId}`),
   confirmRsvp: (guestGroupId, payload) =>
     request(`/rsvp/${guestGroupId}/confirm`, { method: "POST", body: JSON.stringify(payload) }),
-  listGifts: () => request("/gifts"),
   createPaymentOrder: (payload) =>
     request("/payments/orders", { method: "POST", body: JSON.stringify(payload) }),
   getPaymentStatus: (orderId) => request(`/payments/orders/${orderId}/status`),
@@ -72,22 +72,14 @@ export const api = {
     request("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) }),
 
   listGuestGroups: () => request("/guests"),
+  getGuestStats: () => request("/guests/stats"),
   getGuestGroup: (id) => request(`/guests/${id}`),
   createGuestGroup: (payload) => request("/guests", { method: "POST", body: JSON.stringify(payload) }),
   updateGuestGroup: (id, payload) =>
     request(`/guests/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteGuestGroup: (id) => request(`/guests/${id}`, { method: "DELETE" }),
 
-  listAdminGifts: () => request("/admin/gifts"),
-  createGift: (payload) => request("/admin/gifts", { method: "POST", body: JSON.stringify(payload) }),
-  updateGift: (id, payload) =>
-    request(`/admin/gifts/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
-  setGiftActive: (id, active) =>
-    request(`/admin/gifts/${id}/active`, { method: "PATCH", body: JSON.stringify({ active }) }),
-  uploadGiftImage: (id, file) => {
-    const form = new FormData();
-    form.append("file", file);
-    return request(`/admin/gifts/${id}/image`, { method: "POST", body: form });
-  },
-  deleteGiftImage: (id) => request(`/admin/gifts/${id}/image`, { method: "DELETE" }),
+  getSettings: () => request("/admin/settings"),
+  updateSettings: (payload) =>
+    request("/admin/settings", { method: "PATCH", body: JSON.stringify(payload) }),
 };

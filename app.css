@@ -2496,6 +2496,26 @@ h3 {
   color: var(--ink-soft);
 }
 
+.rsvp-members-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.rsvp-member-card {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line-light);
+  border-radius: 14px;
+  background: var(--paper-muted);
+}
+
+.rsvp-member-card__name {
+  display: block;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.65rem;
+}
+
 .rsvp-venue-card {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
