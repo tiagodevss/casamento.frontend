@@ -274,8 +274,8 @@ export function FloatingLanterns({ scoped = false, count: countOverride, interac
     const count = countOverride ?? (reduce ? 3 : defaultCount);
     let messageIndex = 0;
 
-    // Scoped fields (hero, mural, footer) sit behind readable copy, so lanterns are
-    // kept out of the text column and drift past the margins instead. Mural/footer
+    // Scoped fields (hero, footer) sit behind readable copy, so lanterns are
+    // kept out of the text column and drift past the margins instead. Footer
     // copy is centered (roughly the 14%-66% band), but on desktop the hero uses a
     // left-aligned two-column layout where .hero-content spans roughly 11%-49% of
     // the viewport (grid starts ~160px in on a 1440px screen, column ~545px wide) —
@@ -290,21 +290,29 @@ export function FloatingLanterns({ scoped = false, count: countOverride, interac
         index % Math.max(2, Math.round(count / LANTERN_MESSAGES.length)) === 0 &&
         messageIndex < LANTERN_MESSAGES.length;
 
+      // No mobile o conteúdo do hero/rodapé ocupa quase a largura toda (coluna
+      // única), então as faixas "de margem" usadas no desktop (14%/66%-96%)
+      // caem em cima do texto. Nesse caso as lanternas ficam coladas nas
+      // bordas reais da tela, dentro do padding da seção.
       const left = scoped
-        ? isHeroLeftAligned
+        ? isMobile
           ? Math.random() < 0.5
-            ? Math.random() * 3
-            : 55 + Math.random() * 41
-          : Math.random() < 0.5
-            ? Math.random() * 14
-            : 66 + Math.random() * 30
+            ? Math.random() * 4
+            : 96 + Math.random() * 4
+          : isHeroLeftAligned
+            ? Math.random() < 0.5
+              ? Math.random() * 3
+              : 55 + Math.random() * 41
+            : Math.random() < 0.5
+              ? Math.random() * 14
+              : 66 + Math.random() * 30
         : Math.random() * 96;
 
       const lantern = {
         id: index,
         left,
         bottom: -10 - Math.random() * 30,
-        size: 22 + depth * 46,
+        size: (scoped && isMobile ? 12 : 22) + depth * (scoped && isMobile ? 18 : 46),
         depth,
         opacity: scoped ? 0.18 + depth * 0.32 : 0.28 + depth * 0.45,
         riseDur: 35 - depth * 13 + Math.random() * 11,

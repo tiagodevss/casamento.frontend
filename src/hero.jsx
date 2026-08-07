@@ -165,8 +165,8 @@ export function HeroScene() {
             <div className="hero-photo-frame hero-photo-frame--main">
               <img
                 className="hero-photo-main"
-                src="/photos/ensaio-1.jpg"
-                alt="Tiago e Gabriela à beira do lago"
+                src="/photos/1.jpg"
+                alt="Tiago e Gabriela com a placa Da FJU para a vida"
                 onError={(event) => {
                   event.currentTarget.parentElement.style.display = "none";
                 }}
@@ -175,8 +175,8 @@ export function HeroScene() {
             <div className="hero-photo-frame hero-photo-frame--accent">
               <img
                 className="hero-photo-accent"
-                src="/photos/ensaio-4.jpg"
-                alt="Tiago e Gabriela mostrando o anel de noivado"
+                src="/photos/2.jpg"
+                alt="Tiago e Gabriela em um abraço"
                 onError={(event) => {
                   event.currentTarget.parentElement.style.display = "none";
                 }}

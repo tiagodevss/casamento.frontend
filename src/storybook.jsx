@@ -1,48 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-
 import { STORY, WEDDING } from "./data";
-import { Icon, MiniLantern } from "./effects";
+import { Icon, PhotoFrame } from "./effects";
 import { SectionHead } from "./SectionHead";
 
-function IlluPlate({ chapter }) {
-  return (
-    <div className="illu-plate">
-      <img
-        src={chapter.photo}
-        alt={`Ilustração: ${chapter.title}`}
-        onError={(event) => {
-          event.target.style.opacity = 0;
-        }}
-      />
-    </div>
-  );
-}
+function StoryItem({ chapter, index }) {
+  const fromRight = index % 2 === 0;
+  const paragraphs = chapter.text.split("\n").filter(Boolean);
 
-function PageIllu({ chapter, pageNo, hot }) {
   return (
-    <div className="book-face verso">
-      <div className="page-inner page-illu">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
-        <IlluPlate chapter={chapter} />
-        <div className="illu-cap">{chapter.title}</div>
-        {pageNo && <div className="page-num">{pageNo}</div>}
+    <div className={`story-item ${fromRight ? "from-right" : "from-left"}`}>
+      <div className="story-item-photo reveal reveal-side">
+        <PhotoFrame src={chapter.photo} label={chapter.title} caption={chapter.title} />
       </div>
-      {hot}
-    </div>
-  );
-}
-
-function PageText({ chapter, pageNo, face = "recto", hot }) {
-  return (
-    <div className={`book-face ${face}`}>
-      <div className="page-inner page-text">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
+      <div className="story-item-text reveal d1">
         <div className="ch-kicker">{chapter.no}</div>
         <h3>{chapter.title}</h3>
         <div className="ch-date">{chapter.date}</div>
@@ -51,267 +20,17 @@ function PageText({ chapter, pageNo, face = "recto", hot }) {
           <span className="d" />
           <span className="l r" />
         </div>
-        <p className="body">{chapter.text}</p>
-        {pageNo && <div className="page-num">{pageNo}</div>}
-      </div>
-      {hot}
-    </div>
-  );
-}
-
-function PageCover({ face = "recto", hot }) {
-  return (
-    <div className={`book-face ${face}`}>
-      <div className="page-inner page-cover">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
-        <div className="pc-eyebrow">Nossa história</div>
-        <div className="page-medallion">
-          <Icon name="Sparkles" size={28} />
-        </div>
-        <h2>
-          Nossa
-          <br />
-          História
-        </h2>
-        <div className="pc-amp">
-          {WEDDING.groom} &amp; {WEDDING.bride}
-        </div>
-        <p className="pc-sub">Quatro momentos que nos trouxeram até aqui.</p>
-      </div>
-      {hot}
-    </div>
-  );
-}
-
-function PageInsideCover({ base }) {
-  return (
-    <div className={`book-face ${base ? "" : "verso"}`}>
-      <div className="page-inner page-cover">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
-        <div className="page-medallion">
-          <Icon name="BookHeart" size={26} />
-        </div>
-        <p className="pc-sub" style={{ fontSize: "clamp(1rem,2.4vw,1.4rem)" }}>
-          Alguns encontros mudam o rumo de tudo.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function PageEnd({ face = "verso", hot }) {
-  return (
-    <div className={`book-face ${face}`}>
-      <div className="page-inner page-end">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
-        <h2>Fim?</h2>
-        <p className="pe-sub">Na verdade, o começo.</p>
-        <div className="page-medallion" style={{ margin: "0.6rem auto" }}>
-          <Icon name="Heart" size={26} />
-        </div>
-        <p className="pe-sub">O próximo capítulo acontece no nosso casamento.</p>
-      </div>
-      {hot}
-    </div>
-  );
-}
-
-function PageBackInside() {
-  return (
-    <div className="book-face">
-      <div className="page-inner page-cover">
-        <span className="page-corner tl" />
-        <span className="page-corner tr" />
-        <span className="page-corner bl" />
-        <span className="page-corner br" />
-        <div style={{ transform: "scale(0.8)" }}>
-          <MiniLantern size={64} />
-        </div>
-        <p className="pc-sub" style={{ marginTop: "1rem" }}>
-          Obrigado por chegar até aqui.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function BookDesktop({ story }) {
-  const totalLeaves = story.length + 1;
-  const [page, setPage] = useState(0);
-  const [flip, setFlip] = useState(null);
-  const timer = useRef(null);
-
-  const goTo = (nextPage) => {
-    const target = Math.max(0, Math.min(totalLeaves, nextPage));
-    if (target === page) return;
-    setFlip(target > page ? page : target);
-    setPage(target);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => setFlip(null), 1100);
-  };
-
-  const label = page === 0 ? "A capa" : page <= story.length ? story[page - 1].no : "Fim";
-
-  const nextHot = <div className="turn-hot next" onClick={() => goTo(page + 1)} title="Virar página" />;
-  const prevHot = (
-    <div className="turn-hot prev" onClick={() => goTo(page - 1)} title="Voltar página" style={{ left: 0, right: "auto" }} />
-  );
-
-  const faces = [
-    { front: <PageCover hot={nextHot} />, back: <PageIllu chapter={story[0]} pageNo={1} hot={prevHot} /> },
-    { front: <PageText chapter={story[0]} pageNo={2} hot={nextHot} />, back: <PageIllu chapter={story[1]} pageNo={3} hot={prevHot} /> },
-    { front: <PageText chapter={story[1]} pageNo={4} hot={nextHot} />, back: <PageIllu chapter={story[2]} pageNo={5} hot={prevHot} /> },
-    { front: <PageText chapter={story[2]} pageNo={6} hot={nextHot} />, back: <PageIllu chapter={story[3]} pageNo={7} hot={prevHot} /> },
-    { front: <PageText chapter={story[3]} pageNo={8} hot={nextHot} />, back: <PageEnd hot={prevHot} /> },
-  ];
-
-  return (
-    <div className="storybook-wrap">
-      <div className="book">
-        <div className="book-board" />
-        <div className="book-base-left">
-          <PageInsideCover base />
-        </div>
-        <div
-          className="book-base-left"
-          style={{ left: "auto", right: 0, borderRadius: "2px 8px 8px 2px" }}
-        >
-          <PageBackInside />
-        </div>
-
-        {faces.map((face, index) => {
-          const turned = index < page;
-          const zIndex = flip === index ? 999 : turned ? 10 + index : 10 + (totalLeaves - index);
-          return (
-            <div key={index} className={`leaf ${turned ? "turned" : ""}`} style={{ zIndex }}>
-              {face.front}
-              {face.back}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="book-controls">
-        <button className="book-btn" onClick={() => goTo(page - 1)} disabled={page === 0} aria-label="Página anterior">
-          <Icon name="ChevronLeft" size={24} />
-        </button>
-        <div className="book-progress">
-          <span className="bp-label">{label}</span>
-          <div className="book-dots">
-            {Array.from({ length: totalLeaves + 1 }).map((_, index) => (
-              <span key={index} className={index === page ? "on" : ""} onClick={() => goTo(index)} />
-            ))}
-          </div>
-        </div>
-        <button className="book-btn" onClick={() => goTo(page + 1)} disabled={page === totalLeaves} aria-label="Próxima página">
-          <Icon name="ChevronRight" size={24} />
-        </button>
-      </div>
-      <div className="book-hint">
-        <Icon name="MousePointerClick" size={15} /> Use as setas para navegar pelas páginas
-      </div>
-    </div>
-  );
-}
-
-function BookMobile({ story }) {
-  const [index, setIndex] = useState(0);
-  const [flipping, setFlipping] = useState(false);
-  const timer = useRef(null);
-
-  const goTo = (nextIndex) => {
-    const target = (nextIndex + story.length) % story.length;
-    if (target === index) return;
-    setFlipping(true);
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      setIndex(target);
-      setFlipping(false);
-    }, 280);
-  };
-
-  const chapter = story[index];
-
-  return (
-    <div className="storybook-wrap">
-      <div className="book-mobile">
-        <div className={`mpage ${flipping ? "flipping" : ""}`}>
-          <div className="book-face">
-            <div className="page-inner page-text" style={{ position: "absolute" }}>
-              <span className="page-corner tl" />
-              <span className="page-corner tr" />
-              <span className="page-corner bl" />
-              <span className="page-corner br" />
-              <div className="mp-illu">
-                <img
-                  src={chapter.photo}
-                  alt={`Ilustração: ${chapter.title}`}
-                  onError={(event) => {
-                    event.target.style.opacity = 0;
-                  }}
-                />
-              </div>
-              <div className="ch-kicker">{chapter.no}</div>
-              <h3>{chapter.title}</h3>
-              <div className="ch-date">{chapter.date}</div>
-              <div className="page-rule">
-                <span className="l" />
-                <span className="d" />
-                <span className="l r" />
-              </div>
-              <p className="body">{chapter.text}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div className="book-controls">
-        <button className="book-btn" onClick={() => goTo(index - 1)} aria-label="Anterior">
-          <Icon name="ChevronLeft" size={22} />
-        </button>
-        <div className="book-progress">
-          <span className="bp-label">{chapter.no}</span>
-          <div className="book-dots">
-            {story.map((_, dotIndex) => (
-              <span
-                key={dotIndex}
-                className={dotIndex === index ? "on" : ""}
-                onClick={() => goTo(dotIndex)}
-              />
-            ))}
-          </div>
-        </div>
-        <button className="book-btn" onClick={() => goTo(index + 1)} aria-label="Próximo">
-          <Icon name="ChevronRight" size={22} />
-        </button>
+        {paragraphs.map((paragraph, pIndex) => (
+          <p className="story-item-p" key={pIndex}>
+            {paragraph}
+          </p>
+        ))}
       </div>
     </div>
   );
 }
 
 export function StorySection() {
-  const [narrow, setNarrow] = useState(() => window.matchMedia("(max-width: 760px)").matches);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 760px)");
-    const onChange = (event) => setNarrow(event.matches);
-    if (mq.addEventListener) mq.addEventListener("change", onChange);
-    else mq.addListener(onChange);
-
-    return () => {
-      if (mq.removeEventListener) mq.removeEventListener("change", onChange);
-      else mq.removeListener(onChange);
-    };
-  }, []);
-
   return (
     <section className="section" id="historia">
       <SectionHead
@@ -319,7 +38,21 @@ export function StorySection() {
         title="Nossa História"
         description="Um resumo dos momentos que marcaram a nossa caminhada até o casamento."
       />
-      {narrow ? <BookMobile story={STORY} /> : <BookDesktop story={STORY} />}
+
+      <div className="story-timeline">
+        <div className="story-timeline-line" aria-hidden="true" />
+        {STORY.map((chapter, index) => (
+          <StoryItem chapter={chapter} index={index} key={chapter.no} />
+        ))}
+        <div className="story-item story-item-end">
+          <div className="story-end-medallion reveal">
+            <Icon name="Heart" size={26} />
+          </div>
+          <p className="story-end-text reveal d1">
+            O próximo capítulo acontece no nosso casamento — {WEDDING.dateLabel}.
+          </p>
+        </div>
+      </div>
     </section>
   );
 }

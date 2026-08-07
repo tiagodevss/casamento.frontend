@@ -25,9 +25,7 @@ export function contactWhatsAppUrl(context = "geral") {
   const message =
     context === "rsvp"
       ? "Olá! Não encontrei meu convite no site do casamento. Pode me ajudar?"
-      : context === "mural"
-        ? "Olá! Tive dificuldade com o mural de mensagens no site do casamento."
-        : "Olá! Tenho uma dúvida sobre o casamento.";
+      : "Olá! Tenho uma dúvida sobre o casamento.";
 
   return `https://wa.me/${CONTACT.whatsapp}?text=${encodeURIComponent(message)}`;
 }

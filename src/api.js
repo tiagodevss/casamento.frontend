@@ -64,8 +64,6 @@ export const api = {
   confirmRsvp: (guestGroupId, payload) =>
     request(`/rsvp/${guestGroupId}/confirm`, { method: "POST", body: JSON.stringify(payload) }),
   listGifts: () => request("/gifts"),
-  listMessages: () => request("/messages"),
-  postMessage: (payload) => request("/messages", { method: "POST", body: JSON.stringify(payload) }),
   createPaymentOrder: (payload) =>
     request("/payments/orders", { method: "POST", body: JSON.stringify(payload) }),
   getPaymentStatus: (orderId) => request(`/payments/orders/${orderId}/status`),

@@ -6,7 +6,6 @@ export const NAV_ITEMS = [
   { type: "section", href: "#contagem", label: "Contagem" },
   { type: "route", to: "/confirmar", label: "Confirmar Presença", cta: true },
   { type: "route", to: "/presentes", label: "Presentes" },
-  { type: "section", href: "#mural", label: "Mensagens" },
 ];
 
 export const NAV_OFFSET = 70;

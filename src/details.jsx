@@ -5,13 +5,10 @@ import { Icon } from "./effects";
 import { SectionHead } from "./SectionHead";
 
 export function EventDetails() {
-  const primaryFacts = [
+  const facts = [
     { icon: "Calendar", label: "Data", value: WEDDING.dateLabel },
     { icon: "Clock", label: "Horário", value: WEDDING.timeLabel },
     { icon: "MapPin", label: "Local", value: WEDDING.venue },
-  ];
-
-  const secondaryFacts = [
     { icon: "Shirt", label: "Traje", value: WEDDING.dressCode },
     { icon: "Map", label: "Endereço", value: WEDDING.address },
   ];
@@ -20,90 +17,87 @@ export function EventDetails() {
     <section className="section-band section-band--light" id="detalhes">
       <div className="section-band__inner">
         <SectionHead variant="logistics" title="O Grande Dia" />
-        <div className="parchment reveal d1" style={{ maxWidth: 1180, margin: "0 auto" }}>
-          <div className="day-highlight">
-            <div className="day-highlight__intro">
-              <h2 className="day-highlight__title">Esperamos você nesse dia tão importante para nós</h2>
-              <p className="day-highlight__lead">
-                Reunimos aqui o que você precisa para se programar e celebrar conosco com
+
+        <div className="day-details reveal d1">
+          <div className="day-details__info">
+            <header className="day-details__intro">
+              <p className="day-details__eyebrow">Cerimônia religiosa</p>
+              <h3 className="day-details__names">{WEDDING.namesDisplay}</h3>
+              <p className="day-details__lead">
+                Esperamos você nesse dia tão importante para nós. Reunimos aqui o
+                que você precisa para se programar e celebrar conosco com
                 tranquilidade.
               </p>
-            </div>
+              <p className="day-details__quote">
+                Sua presença vai deixar esse momento ainda mais especial.
+              </p>
+            </header>
 
-            <div className="day-highlight__layout">
-              <div className="day-highlight__panel">
-                <div className="day-highlight__header">
-                  <span className="day-highlight__badge">Cerimônia religiosa</span>
-                  <h3 className="invite-intro__names">{WEDDING.namesDisplay}</h3>
-                  <p className="invite-intro__quote">
-                    Sua presença vai deixar esse momento ainda mais especial.
-                  </p>
-                </div>
+            <ul className="day-facts">
+              {facts.map((item) => (
+                <li className="day-fact" key={item.label}>
+                  <Icon name={item.icon} size={16} className="day-fact__icon" />
+                  <span className="day-fact__label">{item.label}</span>
+                  <span className="day-fact__value">{item.value}</span>
+                </li>
+              ))}
+            </ul>
 
-                <ul className="invite-facts">
-                  {primaryFacts.map((item) => (
-                    <li className="invite-fact" key={item.label}>
-                      <Icon name={item.icon} size={16} className="invite-fact__icon" />
-                      <span className="invite-fact__label">{item.label}</span>
-                      <span className="invite-fact__value">{item.value}</span>
-                    </li>
-                  ))}
-                </ul>
+            <a
+              className="btn btn-ink day-details__cta"
+              href={WEDDING.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Icon name="Navigation" size={18} /> Como chegar
+            </a>
 
-                <div className="invite-secondary">
-                  {secondaryFacts.map((item) => (
-                    <div className="invite-secondary__item" key={item.label}>
-                      <Icon name={item.icon} size={15} className="invite-secondary__icon" />
-                      <span className="invite-secondary__label">{item.label}</span>
-                      <span className="invite-secondary__value">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <a
-                  className="btn btn-ink invite-stub__cta"
-                  href={WEDDING.mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Icon name="Navigation" size={18} /> Como chegar
-                </a>
-              </div>
-
-              <div className="church-photo-card">
-                <div className="church-photo-card__frame">
-                  <span className="church-photo-card__tag">Local da cerimônia</span>
-                  {WEDDING.churchPhoto ? (
-                    <img
-                      className="church-photo-card__image"
-                      src={WEDDING.churchPhoto}
-                      alt={`Fachada da ${WEDDING.venue}`}
-                      onError={(event) => {
-                        event.currentTarget.style.display = "none";
-                        const placeholder = event.currentTarget.nextElementSibling;
-                        if (placeholder) placeholder.hidden = false;
-                      }}
-                    />
-                  ) : null}
-                  <div
-                    className="church-photo-card__placeholder"
-                    hidden={Boolean(WEDDING.churchPhoto)}
-                  />
-                </div>
-
-                <div className="church-photo-card__caption">
-                  <span className="church-photo-card__label">Cerimônia</span>
-                  <strong>{WEDDING.venue}</strong>
-                  <p>{WEDDING.address}</p>
-                </div>
-              </div>
-            </div>
+            <p className="day-details__note">
+              Se puder, confirme sua presença com antecedência para nos ajudar na
+              organização.
+            </p>
           </div>
 
-          <p className="invite-note">
-            Se puder, confirme sua presença com antecedência para nos ajudar na organização.
-          </p>
+          <figure className="day-photo">
+            {WEDDING.churchPhoto ? (
+              <img
+                className="day-photo__image"
+                src={WEDDING.churchPhoto}
+                alt={`Fachada da ${WEDDING.venue}`}
+                onError={(event) => {
+                  event.currentTarget.style.display = "none";
+                  const placeholder = event.currentTarget.nextElementSibling;
+                  if (placeholder) placeholder.hidden = false;
+                }}
+              />
+            ) : null}
+
+            <figcaption className="day-photo__caption">
+              <span className="day-photo__label">Local da cerimônia</span>
+              <strong>{WEDDING.venue}</strong>
+              <span>{WEDDING.address}</span>
+            </figcaption>
+          </figure>
         </div>
+      </div>
+    </section>
+  );
+}
+
+export function LodgingSection() {
+  return (
+    <section className="section-band section-band--light lodging" id="hospedagem">
+      <div className="section-band__inner lodging__inner">
+        <SectionHead
+          variant="logistics"
+          title="Hospedagem"
+          description="Se você vem de outra cidade e precisa de indicação de hotel ou pousada por perto, é só falar com a gente."
+        />
+        <p className="lodging__note reveal d2">
+          Mande uma mensagem para o <strong>{WEDDING.groom}</strong> ou para a{" "}
+          <strong>{WEDDING.bride}</strong> — temos algumas recomendações e
+          ajudamos a encontrar a melhor opção para você.
+        </p>
       </div>
     </section>
   );
