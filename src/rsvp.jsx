@@ -538,7 +538,12 @@ export function RSVPForm({ standalone = false }) {
                     key={member.id}
                     className={`rsvp-member-card ${errors[`member-${member.id}`] ? "field error" : "field"}`}
                   >
-                    <span className="rsvp-member-card__name">{member.name}</span>
+                    <span className="rsvp-member-card__name">
+                      {member.name}
+                      {member.isChild ? (
+                        <span className="rsvp-member-card__tag">Criança</span>
+                      ) : null}
+                    </span>
                     <div className="choice-row">
                       <label className="choice yes">
                         <input

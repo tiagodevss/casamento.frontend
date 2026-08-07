@@ -2510,10 +2510,24 @@ h3 {
 }
 
 .rsvp-member-card__name {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 0.65rem;
+}
+
+.rsvp-member-card__tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink-soft);
 }
 
 .rsvp-venue-card {

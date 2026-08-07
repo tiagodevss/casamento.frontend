@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Icon } from "../effects";
 import { useAuth } from "./AuthContext";
@@ -13,17 +13,27 @@ const TABS = [
   { id: "settings", label: "Configurações", icon: "Settings" },
 ];
 
-const TAB_CONTENT = {
-  dashboard: AdminDashboard,
-  guests: AdminGuests,
-  settings: AdminSettings,
-};
-
 export function AdminShell() {
   const { session, logout } = useAuth();
   const [tab, setTab] = useState("dashboard");
+  const [guestsFilter, setGuestsFilter] = useState(null);
   const activeTab = TABS.find((item) => item.id === tab);
-  const Content = TAB_CONTENT[tab] ?? AdminDashboard;
+
+  const navigateToGuests = useCallback((filter = null) => {
+    setGuestsFilter(filter);
+    setTab("guests");
+  }, []);
+
+  const consumeGuestsFilter = useCallback(() => {
+    setGuestsFilter(null);
+  }, []);
+
+  const handleTabChange = (nextTab) => {
+    if (nextTab !== "guests") {
+      setGuestsFilter(null);
+    }
+    setTab(nextTab);
+  };
 
   return (
     <div className="adm">
@@ -42,7 +52,7 @@ export function AdminShell() {
                 key={item.id}
                 type="button"
                 className={`adm-nav-item ${tab === item.id ? "is-active" : ""}`}
-                onClick={() => setTab(item.id)}
+                onClick={() => handleTabChange(item.id)}
                 aria-current={tab === item.id ? "page" : undefined}
               >
                 <Icon name={item.icon} size={16} />
@@ -67,7 +77,11 @@ export function AdminShell() {
           </header>
 
           <div className="adm-content">
-            <Content />
+            {tab === "dashboard" ? <AdminDashboard onNavigateToGuests={navigateToGuests} /> : null}
+            {tab === "guests" ? (
+              <AdminGuests initialFilter={guestsFilter} onFilterConsumed={consumeGuestsFilter} />
+            ) : null}
+            {tab === "settings" ? <AdminSettings /> : null}
           </div>
         </div>
       </div>
