@@ -1,14 +1,28 @@
-export const DEFAULT_INVITE_MESSAGE_TEMPLATE = `Olá, {{nome}}! 😊
-Com muito carinho, viemos convidar vocês para celebrar o nosso casamento!
-Confirmem a presença por aqui: {{link}}
-Se quiserem nos presentear, preparamos uma listinha especial: {{presentes}}
-Estamos ansiosos para celebrar esse dia inesquecível junto com vocês!`;
+export const DEFAULT_INVITE_MESSAGE_TEMPLATE = `Queridos {{nome}},🤍
 
-export const DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE = `Olá, {{nome}}! 💛
-Com muito carinho, viemos te convidar para celebrar o nosso casamento!
-Confirme a presença por aqui: {{link}}
-Se quiser nos presentear, preparamos uma listinha especial: {{presentes}}
-Estamos ansiosos para celebrar esse dia inesquecível junto com você!`;
+Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com vocês.
+
+Nosso site do casamento já está disponível! Nele, vocês encontrarão todas as informações sobre a cerimônia e a recepção, além de poderem confirmar sua presença.
+
+Pedimos, com carinho, que realizem a confirmação para nos ajudar na organização desse dia tão sonhado até 01/10/2026✨
+
+✨ Acesse nosso site:
+{{link}}
+
+Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por vocês! 🤍`;
+
+export const DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE = `Querido(a) {{nome}},🤍
+
+Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com você.
+
+Nosso site do casamento já está disponível! Nele, você encontrará todas as informações sobre a cerimônia e a recepção, além de poder confirmar sua presença.
+
+Pedimos, com carinho, que realize a confirmação para nos ajudar na organização desse dia tão sonhado até 01/10/2026✨
+
+✨ Acesse nosso site:
+{{link}}
+
+Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por você! 🤍`;
 
 function resolveTemplate(template, memberCount) {
   const trimmed = (template ?? "").trim();
