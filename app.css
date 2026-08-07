@@ -3006,6 +3006,21 @@ h3 {
   margin-top: 0.15rem;
 }
 
+.rsvp-success__gifts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+}
+
+.rsvp-success__gifts-text {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
 .rsvp-success__actions {
   display: flex;
   gap: 0.8rem;

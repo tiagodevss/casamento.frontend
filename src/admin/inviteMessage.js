@@ -1,4 +1,39 @@
-export const DEFAULT_INVITE_MESSAGE_TEMPLATE = `Querido(a) convidado,🤍
+export const DEFAULT_INVITE_MESSAGE_TEMPLATE = `Querido(a) convidado(a), 🤍
+{{nome}}
+
+Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com vocês.
+
+Nosso site do casamento já está disponível! Nele, vocês encontrarão todas as informações sobre a cerimônia e a recepção, poderão confirmar sua presença e, caso desejem nos presentear, também encontrarão nossa lista de presentes.
+
+Pedimos, com carinho, que realizem a confirmação da sua presença até 01/10/2026, para nos ajudar na organização desse dia tão sonhado. ✨
+
+✨ Acesse nosso site:
+{{link}}
+
+"Para que todos saibam, compreendam e juntamente considerem que a mão do Senhor fez isso."
+Isaías 41:20
+
+Será uma alegria imensa celebrar esse momento ao lado de vocês. Esperamos por vocês! 🤍`;
+
+export const DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE = `Querido(a) convidado(a), 🤍
+{{nome}}
+
+Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com você.
+
+Nosso site do casamento já está disponível! Nele, você encontrará todas as informações sobre a cerimônia e a recepção, poderá confirmar sua presença e, caso deseje nos presentear, também encontrará nossa lista de presentes.
+
+Pedimos, com carinho, que realize a confirmação da sua presença até 01/10/2026, para nos ajudar na organização desse dia tão sonhado. ✨
+
+✨ Acesse nosso site:
+{{link}}
+
+"Para que todos saibam, compreendam e juntamente considerem que a mão do Senhor fez isso."
+Isaías 41:20
+
+Será uma alegria imensa celebrar esse momento ao seu lado. Esperamos por você! 🤍`;
+
+const LEGACY_DEFAULT_TEMPLATES = [
+  `Querido(a) convidado,🤍
 {{nome}}
 
 Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com vocês.
@@ -10,9 +45,8 @@ Pedimos, com carinho, que realizem a confirmação para nos ajudar na organizaç
 ✨ Acesse nosso site:
 {{link}}
 
-Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por vocês! 🤍`;
-
-export const DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE = `Querido(a) convidado,🤍
+Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por vocês! 🤍`,
+  `Querido(a) convidado,🤍
 {{nome}}
 
 Nosso grande dia está cada vez mais próximo, e estamos muito felizes por poder compartilhar esse momento tão especial com você.
@@ -24,14 +58,16 @@ Pedimos, com carinho, que realize a confirmação para nos ajudar na organizaç�
 ✨ Acesse nosso site:
 {{link}}
 
-Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por você! 🤍`;
+Será uma alegria imensa celebrar esse momento ao lado de pessoas tão especiais. Esperamos por você! 🤍`,
+];
 
 function resolveTemplate(template, memberCount) {
   const trimmed = (template ?? "").trim();
   const isSingle = memberCount === 1;
   const isDefault =
     trimmed === DEFAULT_INVITE_MESSAGE_TEMPLATE.trim() ||
-    trimmed === DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE.trim();
+    trimmed === DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE.trim() ||
+    LEGACY_DEFAULT_TEMPLATES.some((legacy) => trimmed === legacy.trim());
   if (!trimmed || isDefault) {
     return isSingle ? DEFAULT_INVITE_MESSAGE_TEMPLATE_SINGLE : DEFAULT_INVITE_MESSAGE_TEMPLATE;
   }

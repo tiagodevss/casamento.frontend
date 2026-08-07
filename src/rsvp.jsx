@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { Icon, MiniLantern, PhotoFrame, fireConfetti } from "./effects";
 import { api } from "./api";
@@ -425,6 +426,17 @@ export function RSVPForm({ standalone = false }) {
                 <strong>{WEDDING.dateLabel} · {WEDDING.timeLabel}</strong>
                 <span>{WEDDING.venue}</span>
               </div>
+            </div>
+          )}
+
+          {anyAttending && (
+            <div className="rsvp-success__gifts">
+              <p className="rsvp-success__gifts-text">
+                Se quiser, também temos uma lista de presentes.
+              </p>
+              <Link to="/presentes" className="btn btn-ink">
+                <Icon name="Gift" size={18} /> Ver lista de presentes
+              </Link>
             </div>
           )}
 
