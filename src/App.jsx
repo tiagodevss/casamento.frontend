@@ -1,4 +1,5 @@
 import { Countdown, EventDetails, LodgingSection } from "./details";
+import { GiftListSection } from "./gifts";
 import { HeroScene } from "./hero";
 import { SiteShell } from "./SiteShell";
 import { GallerySection } from "./story";
@@ -12,6 +13,7 @@ export default function App() {
       <GallerySection />
       <EventDetails />
       <LodgingSection />
+      <GiftListSection />
       <Countdown />
     </SiteShell>
   );

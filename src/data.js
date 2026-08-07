@@ -64,7 +64,7 @@ export const STORY = [
     title: "O grande dia",
     date: "14 de Novembro de 2026",
     text: "Toda grande história tem um momento especial reservado para o seu capítulo mais esperado.\nDepois de tantos encontros, sonhos compartilhados e da resposta que mudou tudo, chegou o tempo dos preparativos, da contagem regressiva e da expectativa por um novo começo.\nAgora, cercados pelo amor de suas famílias e amigos, eles aguardam o dia em que finalmente dirão “sim” diante de Deus e darão início a uma nova jornada.\nE assim, a história continua…\nO próximo capítulo será escrito em 14 de novembro de 2026.",
-    photo: "/photos/7.jpg",
+    photo: "/photos/6.jpg",
   },
 ];
 
@@ -76,4 +76,5 @@ export const GALLERY = [
   { src: "/photos/7.jpg", cls: "g5" },
   { src: "/photos/ensaio-4.jpg", cls: "g6" },
   { src: "/photos/ensaio-6.jpg", cls: "g7" },
+  { src: "/photos/8.jpeg", cls: "g8" },
 ];

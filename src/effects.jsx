@@ -163,28 +163,51 @@ export function Icon({ name, size = 22, stroke = 1.8, className, style }) {
   );
 }
 
-export function PhotoFrame({ src, label, ornate = true, className = "", caption }) {
+export function PhotoFrame({
+  src,
+  label,
+  ornate = true,
+  className = "",
+  caption,
+  fit = "cover",
+}) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const isContain = fit === "contain";
 
   return (
-    <div className={`photo-frame ${ornate ? "ornate" : ""} ${className}`}>
+    <div
+      className={`photo-frame ${ornate ? "ornate" : ""} ${isContain ? "photo-frame--contain" : ""} ${className}`}
+    >
       {src && !failed && (
         <img
           src={src}
           alt={caption || label || "Foto do casal"}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            opacity: loaded ? 1 : 0,
-            transition: "opacity .6s",
-            zIndex: 1,
-          }}
+          style={
+            isContain
+              ? {
+                  display: "block",
+                  width: "auto",
+                  height: "auto",
+                  objectFit: "contain",
+                  opacity: loaded ? 1 : 0,
+                  transition: "opacity .6s",
+                  position: "relative",
+                  zIndex: 1,
+                }
+              : {
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  opacity: loaded ? 1 : 0,
+                  transition: "opacity .6s",
+                  zIndex: 1,
+                }
+          }
         />
       )}
       {!loaded && (

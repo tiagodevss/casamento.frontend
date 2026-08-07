@@ -3,9 +3,9 @@ export const NAV_ITEMS = [
   { type: "section", href: "#historia", label: "Nossa História" },
   { type: "section", href: "#galeria", label: "Fotos" },
   { type: "section", href: "#detalhes", label: "O Grande Dia" },
+  { type: "section", href: "#presentes", label: "Presentes" },
   { type: "section", href: "#contagem", label: "Contagem" },
   { type: "route", to: "/confirmar", label: "Confirmar Presença", cta: true },
-  { type: "route", to: "/presentes", label: "Presentes" },
 ];
 
 export const NAV_OFFSET = 70;

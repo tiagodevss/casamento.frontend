@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { GALLERY } from "./data";
 import { Icon, PhotoFrame } from "./effects";
@@ -23,9 +24,16 @@ export function GallerySection() {
       if (event.key === "ArrowLeft") move(-1);
     };
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
   }, [active]);
+
+  const activeItem = active !== null ? GALLERY[active] : null;
 
   return (
     <section className="section" id="galeria">
@@ -49,43 +57,47 @@ export function GallerySection() {
         ))}
       </div>
 
-      {active !== null && (
-        <div className="lightbox" onClick={close}>
-          <button className="lb-close" onClick={close} aria-label="Fechar">
-            <Icon name="X" size={22} />
-          </button>
-          <button
-            className="lb-nav prev"
-            onClick={(event) => {
-              event.stopPropagation();
-              move(-1);
-            }}
-            aria-label="Anterior"
-          >
-            <Icon name="ChevronLeft" size={24} />
-          </button>
-          <div className="lb-frame" onClick={(event) => event.stopPropagation()}>
-            <PhotoFrame
-              src={GALLERY[active].src}
-              label={GALLERY[active].caption}
-              caption={GALLERY[active].caption}
-            />
-          </div>
-          <button
-            className="lb-nav next"
-            onClick={(event) => {
-              event.stopPropagation();
-              move(1);
-            }}
-            aria-label="Próxima"
-          >
-            <Icon name="ChevronRight" size={24} />
-          </button>
-          <div className="lb-caption">
-            {GALLERY[active].caption} · {active + 1}/{GALLERY.length}
-          </div>
-        </div>
-      )}
+      {activeItem &&
+        createPortal(
+          <div className="lightbox" onClick={close} role="dialog" aria-modal="true" aria-label="Foto ampliada">
+            <button className="lb-close" onClick={close} aria-label="Fechar">
+              <Icon name="X" size={22} />
+            </button>
+            <button
+              className="lb-nav prev"
+              onClick={(event) => {
+                event.stopPropagation();
+                move(-1);
+              }}
+              aria-label="Anterior"
+            >
+              <Icon name="ChevronLeft" size={24} />
+            </button>
+            <div className="lb-frame" onClick={(event) => event.stopPropagation()}>
+              <PhotoFrame
+                src={activeItem.src}
+                label={activeItem.caption}
+                caption={activeItem.caption}
+                fit="contain"
+              />
+            </div>
+            <button
+              className="lb-nav next"
+              onClick={(event) => {
+                event.stopPropagation();
+                move(1);
+              }}
+              aria-label="Próxima"
+            >
+              <Icon name="ChevronRight" size={24} />
+            </button>
+            <div className="lb-caption">
+              {activeItem.caption ? `${activeItem.caption} · ` : ""}
+              {active + 1}/{GALLERY.length}
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
