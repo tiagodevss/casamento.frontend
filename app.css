@@ -2855,9 +2855,149 @@ h3 {
 
 /* RSVP success */
 .rsvp-success {
+  position: relative;
   text-align: center;
-  padding: 2rem 1rem;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 3.5rem) clamp(1.5rem, 5vw, 2.75rem);
+  overflow: hidden;
   animation: success-pop 0.6s both;
+}
+
+.rsvp-success--regret {
+  --success-accent: var(--sage-500);
+}
+
+.rsvp-success__glow {
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  width: 320px;
+  height: 320px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, oklch(0.86 0.12 88 / 0.16), transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.rsvp-success--regret .rsvp-success__glow {
+  background: radial-gradient(circle, oklch(0.62 0.06 155 / 0.14), transparent 70%);
+}
+
+.rsvp-success > * {
+  position: relative;
+  z-index: 1;
+}
+
+.rsvp-success__title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  margin-top: 0.6rem;
+}
+
+.rsvp-success__script {
+  color: var(--ink-soft);
+  font-family: var(--font-script);
+  font-size: clamp(1.7rem, 3.6vw, 2.15rem);
+  line-height: 1.05;
+  margin: 0.6rem auto 0;
+  max-width: 34ch;
+}
+
+.rsvp-success .divider-flourish {
+  margin-top: 1.6rem;
+}
+
+.rsvp-success__list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.rsvp-success__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.9rem 0.45rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: var(--paper-muted);
+  border: 1px solid var(--line-light);
+  color: var(--ink);
+}
+
+.rsvp-success__row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rsvp-success__row--yes .rsvp-success__row-icon {
+  background: var(--sage-400);
+  color: var(--paper-white);
+}
+
+.rsvp-success__row--no {
+  color: var(--ink-soft);
+}
+
+.rsvp-success__row--no .rsvp-success__row-icon {
+  background: var(--line-light);
+  color: var(--ink-soft);
+}
+
+.rsvp-success__note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  color: var(--ink-soft);
+  margin-top: 1rem;
+  font-size: 0.92rem;
+}
+
+.rsvp-success__reminder {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: left;
+  margin: 1.75rem auto 0;
+  padding: 0.9rem 1.25rem;
+  max-width: 420px;
+  border-radius: 14px;
+  background: var(--paper-muted);
+  border: 1px solid var(--line-light);
+  color: var(--amber-600);
+}
+
+.rsvp-success__reminder strong {
+  display: block;
+  color: var(--ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.rsvp-success__reminder span {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  margin-top: 0.15rem;
+}
+
+.rsvp-success__actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
 @keyframes success-pop {
@@ -2873,9 +3013,9 @@ h3 {
 }
 
 .rsvp-success .rising-lantern {
-  width: 70px;
-  height: 92px;
-  margin: 0 auto 1.5rem;
+  width: 64px;
+  height: 84px;
+  margin: 0 auto 1.25rem;
   position: relative;
   animation: success-rise 3s ease-out infinite;
 }

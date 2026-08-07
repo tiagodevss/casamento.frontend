@@ -7,7 +7,7 @@ import { DEFAULT_INVITE_MESSAGE_TEMPLATE, fillInviteMessage } from "./inviteMess
 const PREVIEW = {
   displayName: "Família Silva",
   members: [{ name: "Maria" }, { name: "João" }],
-  link: `${typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"}/confirmar?convite=exemplo`,
+  link: `${typeof window !== "undefined" ? window.location.origin : "https://exemplo.com"}/?convite=exemplo`,
 };
 
 export function AdminSettings() {

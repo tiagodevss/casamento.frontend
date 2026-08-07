@@ -23,7 +23,7 @@ const emptyForm = {
   invitedToParty: false,
   phone: "",
   notes: "",
-  members: [emptyMember()],
+  members: [],
 };
 
 function normalizeForCompare(value) {
@@ -56,20 +56,26 @@ function toForm(group) {
     members:
       group.members?.length > 0
         ? group.members.map((member) => ({ id: member.id, name: member.name }))
-        : [emptyMember()],
+        : [],
   };
 }
 
 function toPayload(form) {
-  const members = form.members
+  const displayName = form.displayName.trim();
+  let members = form.members
     .map((member) => ({
       ...(member.id ? { id: member.id } : {}),
       name: member.name.trim(),
     }))
     .filter((member) => member.name);
 
+  // Só nome de exibição → convite de uma pessoa
+  if (members.length === 0 && displayName) {
+    members = [{ name: displayName }];
+  }
+
   return {
-    displayName: form.displayName.trim(),
+    displayName,
     searchNames: form.searchNames
       .split(",")
       .map((name) => name.trim())
@@ -121,10 +127,10 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
   };
 
   const removeMember = (index) => {
-    setForm((current) => {
-      if (current.members.length <= 1) return current;
-      return { ...current, members: current.members.filter((_, i) => i !== index) };
-    });
+    setForm((current) => ({
+      ...current,
+      members: current.members.filter((_, i) => i !== index),
+    }));
   };
 
   const submit = async (event) => {
@@ -137,10 +143,6 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
     }
     if (!payload.side) {
       setError("Selecione o lado do convite (noivo, noiva ou ambos)");
-      return;
-    }
-    if (payload.members.length < 1) {
-      setError("Inclua ao menos uma pessoa no convite");
       return;
     }
     setSaving(true);
@@ -166,7 +168,7 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
             className="adm-input"
             value={form.displayName}
             onChange={(event) => updateField("displayName", event.target.value)}
-            placeholder="Família Silva"
+            placeholder="Maria Silva"
           />
         </div>
 
@@ -186,7 +188,6 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
                   type="button"
                   className="adm-btn adm-btn-ghost adm-btn-sm"
                   onClick={() => removeMember(index)}
-                  disabled={form.members.length <= 1}
                   aria-label={`Remover pessoa ${index + 1}`}
                 >
                   <Icon name="Trash2" size={13} />
@@ -197,6 +198,9 @@ function GuestGroupForm({ initial, onCancel, onSaved }) {
           <button type="button" className="adm-btn adm-btn-secondary adm-btn-sm" onClick={addMember}>
             <Icon name="Plus" size={13} /> Adicionar pessoa
           </button>
+          <span className="adm-hint">
+            Opcional. Se não adicionar ninguém, o convite será de uma pessoa com o nome de exibição.
+          </span>
         </div>
 
         <div className="adm-field adm-field-full">

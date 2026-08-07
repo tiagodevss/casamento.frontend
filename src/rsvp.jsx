@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 
 import { Icon, MiniLantern, PhotoFrame, fireConfetti } from "./effects";
 import { api } from "./api";
 import { ContactHelp } from "./ContactHelp";
+import {
+  clearStoredInviteId,
+  getStoredInviteId,
+  setStoredInviteId,
+} from "./inviteStorage";
 import { SectionHead } from "./SectionHead";
 import { PARTY, WEDDING } from "./data";
-
-const INVITE_PARAM = "convite";
 
 const emptyForm = {
   memberAttending: {},
@@ -210,24 +212,16 @@ function GuestSearch({ onSelect, initialError = "" }) {
 }
 
 export function RSVPForm({ standalone = false }) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const inviteParam = searchParams.get(INVITE_PARAM)?.trim() || "";
+  const storedInviteId = getStoredInviteId();
   const [group, setGroup] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [deepLinkLoading, setDeepLinkLoading] = useState(Boolean(inviteParam));
+  const [deepLinkLoading, setDeepLinkLoading] = useState(Boolean(storedInviteId));
   const [deepLinkError, setDeepLinkError] = useState("");
   const formRef = useRef(null);
   const loadedInviteRef = useRef(null);
-
-  const clearInviteParam = () => {
-    if (!searchParams.has(INVITE_PARAM)) return;
-    const next = new URLSearchParams(searchParams);
-    next.delete(INVITE_PARAM);
-    setSearchParams(next, { replace: true });
-  };
 
   const resetToSearch = () => {
     setSent(false);
@@ -235,7 +229,7 @@ export function RSVPForm({ standalone = false }) {
     setForm(emptyForm);
     setErrors({});
     loadedInviteRef.current = null;
-    clearInviteParam();
+    clearStoredInviteId();
   };
 
   useEffect(() => {
@@ -246,11 +240,12 @@ export function RSVPForm({ standalone = false }) {
   }, [errors]);
 
   useEffect(() => {
-    if (!inviteParam) {
+    const inviteId = getStoredInviteId();
+    if (!inviteId) {
       setDeepLinkLoading(false);
       return;
     }
-    if (loadedInviteRef.current === inviteParam) return;
+    if (loadedInviteRef.current === inviteId) return;
 
     let cancelled = false;
     setDeepLinkLoading(true);
@@ -258,9 +253,9 @@ export function RSVPForm({ standalone = false }) {
 
     (async () => {
       try {
-        const invite = await api.getRsvpInvite(inviteParam);
+        const invite = await api.getRsvpInvite(inviteId);
         if (cancelled) return;
-        loadedInviteRef.current = inviteParam;
+        loadedInviteRef.current = inviteId;
         setGroup(invite);
         setForm(formFromInvite(invite));
         setErrors({});
@@ -268,12 +263,12 @@ export function RSVPForm({ standalone = false }) {
       } catch (err) {
         if (cancelled) return;
         loadedInviteRef.current = null;
+        clearStoredInviteId();
         setGroup(null);
         setForm(emptyForm);
         setDeepLinkError(
           err.message || "Não encontramos este convite. Busque pelo nome da família.",
         );
-        clearInviteParam();
       } finally {
         if (!cancelled) setDeepLinkLoading(false);
       }
@@ -282,10 +277,11 @@ export function RSVPForm({ standalone = false }) {
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to inviteParam changes
-  }, [inviteParam]);
+  }, []);
 
   const selectGroup = (invite) => {
+    setStoredInviteId(invite.id);
+    loadedInviteRef.current = invite.id;
     setGroup(invite);
     setForm(formFromInvite(invite));
     setErrors({});
@@ -358,52 +354,81 @@ export function RSVPForm({ standalone = false }) {
     (member) => form.memberAttending[member.id] === "no",
   );
   const anyAttending = attendingMembers.length > 0;
+  const isSingleGuest = (group?.members ?? []).length === 1;
 
   if (sent) {
     return (
       <section className={sectionClass} id={standalone ? undefined : "rsvp"}>
         <div className="section-band__inner">
-        <div className="panel rsvp-success" style={{ maxWidth: 620, margin: "0 auto", padding: "3rem 2rem" }}>
+        <div className={`panel rsvp-success${anyAttending ? "" : " rsvp-success--regret"}`}>
+          <div className="rsvp-success__glow" aria-hidden="true" />
           <div className="rising-lantern">
-            <MiniLantern size={70} />
+            <MiniLantern size={64} />
           </div>
           <span className="eyebrow">Recebido com carinho</span>
-          <h2 className="section-title" style={{ fontSize: "clamp(1.6rem, 4vw, 2.6rem)", marginTop: ".6rem" }}>
-            {anyAttending ? "Que alegria ter vocês conosco!" : "Vamos sentir a falta de vocês"}
+          <h2 className="section-title rsvp-success__title">
+            {anyAttending
+              ? isSingleGuest
+                ? "Que alegria ter você conosco!"
+                : "Que alegria ter vocês conosco!"
+              : isSingleGuest
+                ? "Vamos sentir a falta de você"
+                : "Vamos sentir a falta de vocês"}
           </h2>
-          <p
-            style={{
-              color: "var(--ink-soft)",
-              fontFamily: "var(--font-script)",
-              fontSize: "clamp(1.8rem, 4vw, 2.45rem)",
-              lineHeight: 1.02,
-              margin: "1rem auto 0",
-              maxWidth: "34ch",
-            }}
-          >
-            A presença da família foi registrada.
+          <p className="rsvp-success__script">
+            {isSingleGuest ? "A presença foi registrada." : "A presença da família foi registrada."}
           </p>
-          {attendingMembers.length > 0 && (
-            <p style={{ color: "var(--ink-soft)", marginTop: "1rem" }}>
-              Confirmados: {attendingMembers.map((member) => member.name).join(", ")}.
-            </p>
+
+          {(attendingMembers.length > 0 || decliningMembers.length > 0) && (
+            <>
+              <div className="divider-flourish" aria-hidden="true">
+                <span className="line" />
+                <span className="dot" />
+                <span className="line right" />
+              </div>
+              <ul className="rsvp-success__list">
+                {attendingMembers.map((member) => (
+                  <li key={member.id} className="rsvp-success__row rsvp-success__row--yes">
+                    <span className="rsvp-success__row-icon">
+                      <Icon name="Check" size={14} />
+                    </span>
+                    {member.name}
+                  </li>
+                ))}
+                {decliningMembers.map((member) => (
+                  <li key={member.id} className="rsvp-success__row rsvp-success__row--no">
+                    <span className="rsvp-success__row-icon">
+                      <Icon name="X" size={14} />
+                    </span>
+                    {member.name}
+                  </li>
+                ))}
+              </ul>
+            </>
           )}
-          {decliningMembers.length > 0 && (
-            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
-              Não poderão ir: {decliningMembers.map((member) => member.name).join(", ")}.
-            </p>
-          )}
+
           {group?.invitedToParty && form.partyAttending === "yes" && (
-            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
-              Presença na festa também confirmada.
+            <p className="rsvp-success__note">
+              <Icon name="PartyPopper" size={15} /> Presença na festa também confirmada.
             </p>
           )}
           {group?.invitedToParty && form.partyAttending === "no" && (
-            <p style={{ color: "var(--ink-soft)", marginTop: ".6rem" }}>
-              Obrigado por nos avisar sobre a festa.
+            <p className="rsvp-success__note">
+              <Icon name="Info" size={15} /> Obrigado por nos avisar sobre a festa.
             </p>
           )}
-          <div style={{ display: "flex", gap: ".8rem", flexWrap: "wrap", justifyContent: "center", marginTop: "1.8rem" }}>
+
+          {anyAttending && (
+            <div className="rsvp-success__reminder">
+              <Icon name="CalendarHeart" size={20} />
+              <div>
+                <strong>{WEDDING.dateLabel} · {WEDDING.timeLabel}</strong>
+                <span>{WEDDING.venue}</span>
+              </div>
+            </div>
+          )}
+
+          <div className="rsvp-success__actions">
             <button className="btn btn-ghost" onClick={() => setSent(false)}>
               <Icon name="PenLine" size={16} /> Corrigir minha resposta
             </button>
