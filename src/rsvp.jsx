@@ -585,7 +585,8 @@ export function RSVPForm({ standalone = false }) {
             {group.invitedToParty && (
               <div className={`field full ${errors.partyAttending ? "error" : ""}`}>
                 <label>
-                  <Icon name="PartyPopper" size={14} /> A família irá para a festa?
+                  <Icon name="PartyPopper" size={14} />{" "}
+                  {isSingleGuest ? "Você virá para a festa?" : "Vocês virão para a festa?"}
                 </label>
                 <div className="choice-row">
                   <label className="choice yes">

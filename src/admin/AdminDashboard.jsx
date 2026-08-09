@@ -294,7 +294,27 @@ function DashboardSkeleton() {
   );
 }
 
-export function AdminDashboard({ onNavigateToGuests }) {
+function ClickableStatCard({ icon, label, value, hint, tone = "info", onClick }) {
+  if (!onClick) {
+    return <StatCard icon={icon} label={label} value={value} hint={hint} tone={tone} />;
+  }
+
+  return (
+    <button type="button" className="adm-stat-card adm-stat-card-button" onClick={onClick}>
+      <div className={`adm-stat-card-icon adm-stat-card-icon--${tone}`} aria-hidden="true">
+        <Icon name={icon} size={18} />
+      </div>
+      <div className="adm-stat-card-body">
+        <p className="adm-stat-card-label">{label}</p>
+        <p className="adm-stat-card-value">{value}</p>
+        {hint ? <p className="adm-stat-card-hint">{hint}</p> : null}
+      </div>
+      <Icon name="ChevronRight" size={16} className="adm-stat-card-chevron" />
+    </button>
+  );
+}
+
+export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -331,9 +351,11 @@ export function AdminDashboard({ onNavigateToGuests }) {
     );
   }
 
-  const { groups, members, party, bySide } = stats;
+  const { groups, members, party, bySide, messages, diets } = stats;
   const responseRate = pct(groups.responded, groups.total);
   const attendingRate = pct(members.attending, members.total);
+  const messagesCount = messages?.withText ?? 0;
+  const dietsCount = diets?.withText ?? 0;
 
   return (
     <div className="adm-dashboard">
@@ -396,6 +418,25 @@ export function AdminDashboard({ onNavigateToGuests }) {
           <StatCard icon="Clock" label="Pendentes" value={party.pending} tone="warning" />
         </StatSection>
       ) : null}
+
+      <StatSection title="Recados e restrições">
+        <ClickableStatCard
+          icon="MessageCircleHeart"
+          label="Recados"
+          value={messagesCount}
+          hint={messagesCount === 1 ? "mensagem na confirmação" : "mensagens na confirmação"}
+          tone="info"
+          onClick={onNavigateToTab ? () => onNavigateToTab("messages") : undefined}
+        />
+        <ClickableStatCard
+          icon="UtensilsCrossed"
+          label="Restrições"
+          value={dietsCount}
+          hint={dietsCount === 1 ? "restrição alimentar" : "restrições alimentares"}
+          tone="warning"
+          onClick={onNavigateToTab ? () => onNavigateToTab("diets") : undefined}
+        />
+      </StatSection>
 
       <Insights groups={groups} onNavigateToGuests={onNavigateToGuests} />
 

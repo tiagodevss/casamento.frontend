@@ -789,13 +789,31 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
 
                               {isExpanded && (
                                 <div className="adm-guest-details">
-                                  <p className="adm-row-meta">
-                                    {(group.members ?? [])
-                                      .map((member) =>
-                                        member.isChild ? `${member.name} (criança)` : member.name,
-                                      )
-                                      .join(", ") || "Sem pessoas listadas"}
-                                  </p>
+                                  {(group.members ?? []).length === 0 ? (
+                                    <p className="adm-row-meta">Sem pessoas listadas</p>
+                                  ) : (
+                                    <ul className="adm-member-rsvp-list">
+                                      {(group.members ?? []).map((member) => {
+                                        const status =
+                                          member.attending === true
+                                            ? { label: "Vai", state: "success" }
+                                            : member.attending === false
+                                              ? { label: "Não vai", state: "danger" }
+                                              : { label: "Pendente", state: "neutral" };
+                                        return (
+                                          <li key={member.id} className="adm-member-rsvp-item">
+                                            <span>
+                                              {member.name}
+                                              {member.isChild ? (
+                                                <span className="adm-row-meta"> (criança)</span>
+                                              ) : null}
+                                            </span>
+                                            <RsvpBadge label={status.label} state={status.state} />
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+                                  )}
                                   {group.notes && <p className="adm-row-meta">Nota: {group.notes}</p>}
                                   <div className="adm-invite-link-row">
                                     <input

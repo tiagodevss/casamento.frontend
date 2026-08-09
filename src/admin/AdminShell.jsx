@@ -3,13 +3,17 @@ import { useCallback, useState } from "react";
 import { Icon } from "../effects";
 import { useAuth } from "./AuthContext";
 import { AdminDashboard } from "./AdminDashboard";
+import { AdminDiets } from "./AdminDiets";
 import { AdminGuests } from "./AdminGuests";
+import { AdminMessages } from "./AdminMessages";
 import { AdminSettings } from "./AdminSettings";
 import "./admin.css";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: "LayoutGrid" },
   { id: "guests", label: "Convidados", icon: "Users" },
+  { id: "messages", label: "Recados", icon: "MessageCircleHeart" },
+  { id: "diets", label: "Restrições", icon: "UtensilsCrossed" },
   { id: "settings", label: "Configurações", icon: "Settings" },
 ];
 
@@ -24,15 +28,19 @@ export function AdminShell() {
     setTab("guests");
   }, []);
 
+  const navigateToTab = useCallback((nextTab) => {
+    if (nextTab !== "guests") {
+      setGuestsFilter(null);
+    }
+    setTab(nextTab);
+  }, []);
+
   const consumeGuestsFilter = useCallback(() => {
     setGuestsFilter(null);
   }, []);
 
   const handleTabChange = (nextTab) => {
-    if (nextTab !== "guests") {
-      setGuestsFilter(null);
-    }
-    setTab(nextTab);
+    navigateToTab(nextTab);
   };
 
   return (
@@ -77,10 +85,17 @@ export function AdminShell() {
           </header>
 
           <div className="adm-content">
-            {tab === "dashboard" ? <AdminDashboard onNavigateToGuests={navigateToGuests} /> : null}
+            {tab === "dashboard" ? (
+              <AdminDashboard
+                onNavigateToGuests={navigateToGuests}
+                onNavigateToTab={navigateToTab}
+              />
+            ) : null}
             {tab === "guests" ? (
               <AdminGuests initialFilter={guestsFilter} onFilterConsumed={consumeGuestsFilter} />
             ) : null}
+            {tab === "messages" ? <AdminMessages /> : null}
+            {tab === "diets" ? <AdminDiets /> : null}
             {tab === "settings" ? <AdminSettings /> : null}
           </div>
         </div>
