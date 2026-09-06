@@ -77,6 +77,8 @@ export const api = {
   createGuestGroup: (payload) => request("/guests", { method: "POST", body: JSON.stringify(payload) }),
   updateGuestGroup: (id, payload) =>
     request(`/guests/${id}`, { method: "PATCH", body: JSON.stringify(payload) }),
+  updateGuestRsvp: (id, payload) =>
+    request(`/guests/${id}/rsvp`, { method: "PATCH", body: JSON.stringify(payload) }),
   deleteGuestGroup: (id) => request(`/guests/${id}`, { method: "DELETE" }),
 
   getSettings: () => request("/admin/settings"),

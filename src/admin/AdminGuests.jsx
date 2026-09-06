@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Icon } from "../effects";
 import { api } from "../api";
+import { GuestRsvpEditor } from "./GuestRsvpEditor";
 import {
   DEFAULT_INVITE_MESSAGE_TEMPLATE,
   fillInviteMessage,
@@ -861,6 +862,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
                               <div className="adm-rsvp-cell">
                                 <RsvpBadge label={rsvp.label} state={rsvp.state} />
                                 {party && <RsvpBadge label={party.label} state={party.state} />}
+                                <GuestRsvpEditor group={group} onSaved={handleSaved} />
                               </div>
                             </td>
 
