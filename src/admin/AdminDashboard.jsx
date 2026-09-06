@@ -354,6 +354,8 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
   const { groups, members, party, bySide, messages, diets } = stats;
   const responseRate = pct(members.responded, members.total);
   const attendingRate = pct(members.attending, members.total);
+  const ceremonyOnlyConfirmed = members.ceremonyOnlyConfirmed ?? 0;
+  const ceremonyAndPartyConfirmed = members.ceremonyAndPartyConfirmed ?? party?.attending ?? 0;
   const messagesCount = messages?.withText ?? 0;
   const dietsCount = diets?.withText ?? 0;
 
@@ -401,15 +403,29 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
           icon="CalendarHeart"
           label="Somente cerimônia"
           value={members.ceremonyOnly}
-          hint="pessoas convidadas apenas para a cerimônia"
+          hint="pessoas convidadas"
           tone="info"
+        />
+        <StatCard
+          icon="CheckCircle2"
+          label="Confirmados · só cerimônia"
+          value={ceremonyOnlyConfirmed}
+          hint={`${pct(ceremonyOnlyConfirmed, members.ceremonyOnly)}% dos convidados deste tipo`}
+          tone="success"
         />
         <StatCard
           icon="PartyPopper"
           label="Cerimônia + festa"
           value={members.ceremonyAndParty}
-          hint="pessoas convidadas para os dois momentos"
+          hint="pessoas convidadas"
           tone="info"
+        />
+        <StatCard
+          icon="CheckCircle2"
+          label="Confirmados · cerimônia + festa"
+          value={ceremonyAndPartyConfirmed}
+          hint={`${pct(ceremonyAndPartyConfirmed, members.ceremonyAndParty)}% dos convidados deste tipo`}
+          tone="success"
         />
       </StatSection>
 
