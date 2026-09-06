@@ -452,19 +452,29 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
 
   const summary = useMemo(() => {
     if (!groups) return null;
+    let total = 0;
     let notSent = 0;
     let sent = 0;
     let pending = 0;
     let responded = 0;
-    let party = 0;
+    let ceremonyOnly = 0;
+    let ceremonyAndParty = 0;
+
     for (const group of groups) {
-      if (group.inviteSent) sent += 1;
-      else notSent += 1;
-      if (group.rsvpResponse) responded += 1;
-      else pending += 1;
-      if (group.invitedToParty) party += 1;
+      const memberCount = group.members?.length ?? 0;
+      total += memberCount;
+
+      if (group.inviteSent) sent += memberCount;
+      else notSent += memberCount;
+
+      if (group.rsvpResponse) responded += memberCount;
+      else pending += memberCount;
+
+      if (group.invitedToParty) ceremonyAndParty += memberCount;
+      else ceremonyOnly += memberCount;
     }
-    return { total: groups.length, notSent, sent, pending, responded, party };
+
+    return { total, notSent, sent, pending, responded, ceremonyOnly, ceremonyAndParty };
   }, [groups]);
 
   const filteredGroups = useMemo(() => {
@@ -478,6 +488,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
       if (statusFilter === "sent" && !group.inviteSent) return false;
       if (statusFilter === "pending" && group.rsvpResponse) return false;
       if (statusFilter === "responded" && !group.rsvpResponse) return false;
+      if (statusFilter === "ceremony_only" && group.invitedToParty) return false;
       if (statusFilter === "party" && !group.invitedToParty) return false;
 
       if (!needle) return true;
@@ -614,7 +625,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
       <div className="adm-guests-toolbar">
         <div className="adm-guests-toolbar-copy">
           <p className="adm-guests-lead">
-            Busque, filtre e envie convites. Ações rápidas ficam na linha — WhatsApp, mensagem e link.
+            Busque, filtre e envie convites. Os indicadores abaixo representam pessoas, não grupos.
           </p>
         </div>
         <button type="button" className="adm-btn adm-btn-primary" onClick={startCreate}>
@@ -647,23 +658,23 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
 
       {groups && groups.length > 0 && summary && (
         <>
-          <div className="adm-summary-row" role="group" aria-label="Resumo e filtros rápidos">
+          <div className="adm-summary-row" role="group" aria-label="Resumo de pessoas e filtros rápidos">
             <SummaryChip
               count={summary.total}
-              label="Todos"
+              label="Convidados"
               active={statusFilter === "all"}
               onClick={() => setStatusFilter("all")}
             />
             <SummaryChip
               count={summary.notSent}
-              label="Não enviados"
+              label="Com convite não enviado"
               tone="warn"
               active={statusFilter === "not_sent"}
               onClick={() => setStatusFilter("not_sent")}
             />
             <SummaryChip
               count={summary.sent}
-              label="Enviados"
+              label="Com convite enviado"
               tone="success"
               active={statusFilter === "sent"}
               onClick={() => setStatusFilter("sent")}
@@ -683,8 +694,14 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
               onClick={() => setStatusFilter("responded")}
             />
             <SummaryChip
-              count={summary.party}
-              label="Com festa"
+              count={summary.ceremonyOnly}
+              label="Somente cerimônia"
+              active={statusFilter === "ceremony_only"}
+              onClick={() => setStatusFilter("ceremony_only")}
+            />
+            <SummaryChip
+              count={summary.ceremonyAndParty}
+              label="Cerimônia + festa"
               active={statusFilter === "party"}
               onClick={() => setStatusFilter("party")}
             />

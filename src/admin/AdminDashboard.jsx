@@ -69,17 +69,17 @@ function PresenceBar({ attending, notAttending, pending, total }) {
   );
 }
 
-function Funnel({ groups }) {
+function Funnel({ members }) {
   const steps = [
-    { key: "total", label: "Cadastrados", value: groups.total, icon: "Mail" },
-    { key: "sent", label: "Enviados", value: groups.inviteSent, icon: "Send" },
-    { key: "responded", label: "Respondidos", value: groups.responded, icon: "CheckCircle2" },
+    { key: "total", label: "Cadastrados", value: members.total, icon: "Mail" },
+    { key: "sent", label: "Enviados", value: members.inviteSent, icon: "Send" },
+    { key: "responded", label: "Respondidos", value: members.responded, icon: "CheckCircle2" },
   ];
-  const max = Math.max(groups.total, 1);
+  const max = Math.max(members.total, 1);
 
   return (
     <section className="adm-stat-section">
-      <h2 className="adm-stat-section-title">Funil de convites</h2>
+      <h2 className="adm-stat-section-title">Funil de convidados</h2>
       <div className="adm-funnel adm-card adm-card-pad">
         {steps.map((step, index) => (
           <div key={step.key} className="adm-funnel-step">
@@ -96,7 +96,7 @@ function Funnel({ groups }) {
                 <span className="adm-funnel-label">{step.label}</span>
               </div>
               <p className="adm-funnel-value">{step.value}</p>
-              <p className="adm-funnel-pct">{pct(step.value, max)}% dos convites</p>
+              <p className="adm-funnel-pct">{pct(step.value, max)}% dos convidados</p>
               <div className="adm-funnel-bar" aria-hidden="true">
                 <div className="adm-funnel-bar-fill" style={{ width: `${(step.value / max) * 100}%` }} />
               </div>
@@ -352,7 +352,7 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
   }
 
   const { groups, members, party, bySide, messages, diets } = stats;
-  const responseRate = pct(groups.responded, groups.total);
+  const responseRate = pct(members.responded, members.total);
   const attendingRate = pct(members.attending, members.total);
   const messagesCount = messages?.withText ?? 0;
   const dietsCount = diets?.withText ?? 0;
@@ -361,7 +361,7 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
     <div className="adm-dashboard">
       <div className="adm-dashboard-toolbar">
         <p className="adm-hint" style={{ margin: 0 }}>
-          Resumo dos convites e confirmações
+          Resumo de convidados, convites e confirmações
         </p>
         <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" onClick={load} disabled={loading}>
           <Icon name="RotateCcw" size={13} /> Atualizar
@@ -383,18 +383,35 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
             <span className="adm-dash-hero-metric-label">Taxa de confirmação</span>
             <span className="adm-dash-hero-metric-value">{responseRate}%</span>
             <span className="adm-hint">
-              {groups.responded} de {groups.total} convites
+              {members.responded} de {members.total} pessoas
             </span>
           </div>
           <div className="adm-dash-hero-metric">
             <span className="adm-dash-hero-metric-label">Aguardando</span>
-            <span className="adm-dash-hero-metric-value">{members.pending}</span>
+            <span className="adm-dash-hero-metric-value">{members.pendingResponse}</span>
             <span className="adm-hint">pessoas sem resposta</span>
           </div>
         </div>
       </section>
 
-      <Funnel groups={groups} />
+      <Funnel members={members} />
+
+      <StatSection title="Tipos de convite">
+        <StatCard
+          icon="CalendarHeart"
+          label="Somente cerimônia"
+          value={members.ceremonyOnly}
+          hint="pessoas convidadas apenas para a cerimônia"
+          tone="info"
+        />
+        <StatCard
+          icon="PartyPopper"
+          label="Cerimônia + festa"
+          value={members.ceremonyAndParty}
+          hint="pessoas convidadas para os dois momentos"
+          tone="info"
+        />
+      </StatSection>
 
       <section className="adm-stat-section">
         <h2 className="adm-stat-section-title">Presença (pessoas)</h2>
@@ -412,7 +429,13 @@ export function AdminDashboard({ onNavigateToGuests, onNavigateToTab }) {
       </section>
       {party.invited > 0 ? (
         <StatSection title="Festa">
-          <StatCard icon="Wine" label="Convidados" value={party.invited} hint="Convites com festa" tone="info" />
+          <StatCard
+            icon="Wine"
+            label="Convidados"
+            value={party.invited}
+            hint="pessoas convidadas para a festa"
+            tone="info"
+          />
           <StatCard icon="Check" label="Confirmados" value={party.attending} tone="success" />
           <StatCard icon="X" label="Não vão" value={party.notAttending} tone="danger" />
           <StatCard icon="Clock" label="Pendentes" value={party.pending} tone="warning" />
