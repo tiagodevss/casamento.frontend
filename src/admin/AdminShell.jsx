@@ -7,11 +7,13 @@ import { AdminDiets } from "./AdminDiets";
 import { AdminGuests } from "./AdminGuests";
 import { AdminMessages } from "./AdminMessages";
 import { AdminSettings } from "./AdminSettings";
+import { AdminCerimonialista } from "./AdminCerimonialista";
 import "./admin.css";
 
 const TABS = [
   { id: "dashboard", label: "Dashboard", icon: "LayoutGrid" },
   { id: "guests", label: "Convidados", icon: "Users" },
+  { id: "cerimonialista", label: "Cerimonialista", icon: "MessageCircleHeart" },
   { id: "messages", label: "Recados", icon: "MessageCircleHeart" },
   { id: "diets", label: "Restrições", icon: "UtensilsCrossed" },
   { id: "settings", label: "Configurações", icon: "Settings" },
@@ -94,6 +96,7 @@ export function AdminShell() {
             {tab === "guests" ? (
               <AdminGuests initialFilter={guestsFilter} onFilterConsumed={consumeGuestsFilter} />
             ) : null}
+            {tab === "cerimonialista" ? <AdminCerimonialista /> : null}
             {tab === "messages" ? <AdminMessages /> : null}
             {tab === "diets" ? <AdminDiets /> : null}
             {tab === "settings" ? <AdminSettings /> : null}
