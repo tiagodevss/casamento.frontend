@@ -339,6 +339,22 @@
   width: 205px;
 }
 
+.cer-inline-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  color: var(--adm-text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.cer-inline-field .adm-input {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--adm-text);
+}
+
+
 .cer-campaign-finished {
   color: var(--adm-text-muted);
   justify-content: space-between;
