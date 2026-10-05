@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api";
 import { Icon } from "../effects";
+import { groupPendingHumanThreads, isFutureSchedule } from "./cerimonialista.utils";
 import "./cerimonialista.css";
 
 const AUDIENCE_LABELS = {
@@ -150,7 +151,7 @@ export function AdminCerimonialista() {
       api.listCommunicationCampaigns(),
       api.listCommunicationTemplates(),
       api.listGuestGroups(),
-      api.listWhatsAppConversations(),
+      api.listWhatsAppConversations(true),
     ]);
     setStats(statsData);
     setCampaigns(campaignData);
@@ -163,6 +164,19 @@ export function AdminCerimonialista() {
     if (!selectedTemplateId && templateData[0]) {
       setSelectedTemplateId(templateData[0].id);
       setTemplateDraft({ ...templateData[0] });
+    }
+  };
+
+  const loadOperational = async () => {
+    try {
+      const [statsData, conversationData] = await Promise.all([
+        api.getCommunicationStats(),
+        api.listWhatsAppConversations(true),
+      ]);
+      setStats(statsData);
+      setConversations(conversationData);
+    } catch {
+      // O refresh manual continua exibindo erros; o polling não interrompe a edição do painel.
     }
   };
 
@@ -183,7 +197,10 @@ export function AdminCerimonialista() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setInterval(loadStatus, 15000);
+    const timer = window.setInterval(() => {
+      loadStatus();
+      loadOperational();
+    }, 15000);
     return () => window.clearInterval(timer);
   }, []);
 
@@ -192,9 +209,14 @@ export function AdminCerimonialista() {
     if (template) setTemplateDraft({ ...template });
   }, [selectedTemplateId, templates]);
 
-  const pendingHuman = useMemo(
-    () => conversations.filter((message) => message.needsHuman && !message.resolvedAt),
+  const pendingHumanThreads = useMemo(
+    () => groupPendingHumanThreads(conversations),
     [conversations],
+  );
+
+  const optedOutGuests = useMemo(
+    () => guests.filter((group) => group.whatsappOptOut),
+    [guests],
   );
 
   const connect = async () => {
@@ -251,6 +273,10 @@ export function AdminCerimonialista() {
       setError("Escolha a data e o horário da campanha.");
       return;
     }
+    if (!isFutureSchedule(local)) {
+      setError("Escolha uma data futura ou use “Enviar agora”.");
+      return;
+    }
     const result = await run(
       `schedule-${campaign.id}`,
       () => api.scheduleCommunicationCampaign(campaign.id, new Date(local).toISOString()),
@@ -265,6 +291,24 @@ export function AdminCerimonialista() {
       `send-${campaign.id}`,
       () => api.sendCommunicationCampaignNow(campaign.id),
       "Campanha colocada na fila de envio.",
+    );
+    if (result) await loadCore();
+  };
+
+  const retryFailedCampaign = async (campaign) => {
+    const result = await run(
+      `retry-${campaign.id}`,
+      () => api.retryCommunicationCampaignFailures(campaign.id),
+      "Entregas com falha conhecida voltaram para a fila. Resultados incertos continuam bloqueados.",
+    );
+    if (result) await loadCore();
+  };
+
+  const reactivateGuest = async (guest) => {
+    const result = await run(
+      `optin-${guest.id}`,
+      () => api.reactivateGuestWhatsApp(guest.id),
+      `${guest.displayName} voltou a receber comunicações automáticas.`,
     );
     if (result) await loadCore();
   };
@@ -299,6 +343,10 @@ export function AdminCerimonialista() {
 
   const createCampaign = async (event) => {
     event.preventDefault();
+    if (newCampaign.scheduledAt && !isFutureSchedule(newCampaign.scheduledAt)) {
+      setError("A data sugerida precisa estar no futuro.");
+      return;
+    }
     const payload = {
       name: newCampaign.name,
       templateId: newCampaign.templateId,
@@ -386,7 +434,7 @@ export function AdminCerimonialista() {
           ["overview", "Visão geral"],
           ["campaigns", "Campanhas"],
           ["templates", "Templates"],
-          ["conversations", `Atendimento${pendingHuman.length ? ` (${pendingHuman.length})` : ""}`],
+          ["conversations", `Atendimento${pendingHumanThreads.length ? ` (${pendingHumanThreads.length})` : ""}`],
         ].map(([id, label]) => (
           <button
             key={id}
@@ -474,6 +522,35 @@ export function AdminCerimonialista() {
               </div>
             </section>
           </div>
+
+          {optedOutGuests.length > 0 ? (
+            <section className="adm-card adm-card-pad">
+              <div className="cer-section-head">
+                <div>
+                  <h2>Opt-outs do WhatsApp</h2>
+                  <p className="adm-hint">Reative apenas quando o convidado pedir para voltar a receber lembretes.</p>
+                </div>
+              </div>
+              <div className="cer-conversations">
+                {optedOutGuests.map((guest) => (
+                  <div className="cer-conversation" key={guest.id}>
+                    <div>
+                      <strong>{guest.displayName}</strong>
+                      <p className="adm-hint">{guest.phoneNormalized ?? guest.phone ?? "Sem telefone"}</p>
+                    </div>
+                    <button
+                      type="button"
+                      className="adm-btn adm-btn-secondary adm-btn-sm"
+                      disabled={busy === `optin-${guest.id}`}
+                      onClick={() => reactivateGuest(guest)}
+                    >
+                      Reativar comunicações
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <form className="adm-card adm-card-pad" onSubmit={sendTest}>
             <div className="cer-section-head">
@@ -566,7 +643,7 @@ export function AdminCerimonialista() {
                     </div>
                     <div className="cer-campaign-count">
                       <strong>{campaign._count?.deliveries ?? 0}</strong>
-                      <span>envios registrados</span>
+                      <span>{editable ? "destinatários preparados" : "envios registrados"}</span>
                     </div>
                   </div>
 
@@ -604,6 +681,11 @@ export function AdminCerimonialista() {
                       {campaign.status === "PROCESSING" ? (
                         <button type="button" className="adm-btn adm-btn-danger adm-btn-sm" disabled={busy === `cancel-${campaign.id}`} onClick={() => cancelCampaign(campaign)}>
                           Interromper envios
+                        </button>
+                      ) : null}
+                      {campaign.status === "FAILED" ? (
+                        <button type="button" className="adm-btn adm-btn-secondary adm-btn-sm" disabled={busy === `retry-${campaign.id}`} onClick={() => retryFailedCampaign(campaign)}>
+                          Tentar falhas conhecidas novamente
                         </button>
                       ) : null}
                     </div>
@@ -672,15 +754,18 @@ export function AdminCerimonialista() {
             </div>
           </div>
           <div className="cer-conversations">
-            {pendingHuman.length === 0 ? (
+            {pendingHumanThreads.length === 0 ? (
               <div className="adm-card adm-card-pad"><p className="adm-hint">Nenhuma conversa aguardando atendimento humano.</p></div>
             ) : null}
-            {pendingHuman.map((message) => (
+            {pendingHumanThreads.map((message) => (
               <article className="adm-card adm-card-pad cer-conversation" key={message.id}>
                 <div className="cer-section-head">
                   <div>
                     <strong>{message.guestGroup?.displayName ?? message.phone}</strong>
-                    <p className="adm-hint">{message.phone} · {formatDateTime(message.createdAt)}</p>
+                    <p className="adm-hint">
+                      {message.phone} · {formatDateTime(message.createdAt)}
+                      {message.messageCount > 1 ? ` · ${message.messageCount} mensagens pendentes` : ""}
+                    </p>
                   </div>
                   <Badge tone="danger">Aguardando resposta</Badge>
                 </div>
@@ -733,7 +818,7 @@ export function AdminCerimonialista() {
             <div className="cer-section-head">
               <div>
                 <h2>Preview — {previewCampaign?.name}</h2>
-                <p className="adm-hint">Nenhum envio acontece nesta etapa.</p>
+                <p className="adm-hint">Nenhum envio acontece nesta etapa. O texto e o telefone exibidos aqui ficam congelados; elegibilidade/opt-out são revalidados antes do envio.</p>
               </div>
               <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setPreview(null)}>Fechar</button>
             </div>

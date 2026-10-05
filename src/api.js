@@ -121,6 +121,8 @@ export const api = {
     request(`/admin/communications/campaigns/${id}/send-now`, { method: "POST" }),
   cancelCommunicationCampaign: (id) =>
     request(`/admin/communications/campaigns/${id}/cancel`, { method: "POST" }),
+  retryCommunicationCampaignFailures: (id) =>
+    request(`/admin/communications/campaigns/${id}/retry-failed`, { method: "POST" }),
   listCommunicationDeliveries: (id) =>
     request(`/admin/communications/campaigns/${id}/deliveries`),
   sendGuestCommunication: (id, message) =>
@@ -128,6 +130,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ message }),
     }),
+  reactivateGuestWhatsApp: (id) =>
+    request(`/admin/communications/guests/${id}/whatsapp-opt-in`, { method: "POST" }),
   listWhatsAppConversations: (needsHuman = false) =>
     request(`/admin/communications/conversations?needsHuman=${needsHuman ? "true" : "false"}`),
   replyWhatsAppConversation: (id, message) =>
