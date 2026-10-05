@@ -3,24 +3,38 @@ export function groupPendingHumanThreads(messages) {
 
   for (const message of messages ?? []) {
     if (!message?.needsHuman || message.resolvedAt || !message.phone) continue;
-    const current = byPhone.get(message.phone);
-    if (!current) {
-      byPhone.set(message.phone, { ...message, messageCount: 1 });
-      continue;
-    }
-    current.messageCount += 1;
-    if (new Date(message.createdAt).getTime() > new Date(current.createdAt).getTime()) {
-      byPhone.set(message.phone, { ...message, messageCount: current.messageCount });
-    }
+    const current = byPhone.get(message.phone) ?? [];
+    current.push(message);
+    byPhone.set(message.phone, current);
   }
 
-  return [...byPhone.values()].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  return [...byPhone.entries()]
+    .map(([phone, threadMessages]) => {
+      const ordered = [...threadMessages].sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+      const newest = ordered[ordered.length - 1];
+      return {
+        ...newest,
+        phone,
+        messageCount: ordered.length,
+        messages: ordered,
+      };
+    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export function isFutureSchedule(value, now = Date.now()) {
   if (!value) return false;
   const timestamp = new Date(value).getTime();
   return Number.isFinite(timestamp) && timestamp > now;
+}
+
+export function isExpiryAfterSchedule(expiresAt, scheduledAt, now = Date.now()) {
+  if (!expiresAt) return false;
+  const expiry = new Date(expiresAt).getTime();
+  if (!Number.isFinite(expiry) || expiry <= now) return false;
+  if (!scheduledAt) return true;
+  const scheduled = new Date(scheduledAt).getTime();
+  return Number.isFinite(scheduled) && expiry > scheduled;
 }
