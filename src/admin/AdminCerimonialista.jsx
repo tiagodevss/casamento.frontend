@@ -828,7 +828,7 @@ export function AdminCerimonialista() {
             <div className="cer-section-head">
               <div>
                 <h2>Preview — {previewCampaign?.name}</h2>
-                <p className="adm-hint">Nenhum envio acontece nesta etapa. O texto e o telefone exibidos aqui ficam congelados; elegibilidade/opt-out são revalidados antes do envio.</p>
+                <p className="adm-hint">Nenhum envio acontece nesta etapa. Público, telefone e template ficam aprovados no preview; campos dinâmicos de RSVP e dias faltando são atualizados imediatamente antes do envio.</p>
               </div>
               <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setPreview(null)}>Fechar</button>
             </div>
