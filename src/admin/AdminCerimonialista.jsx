@@ -296,6 +296,7 @@ export function AdminCerimonialista() {
   };
 
   const retryFailedCampaign = async (campaign) => {
+    if (!window.confirm(`Tentar novamente apenas as falhas conhecidas da campanha “${campaign.name}”? Resultados incertos não serão reenviados.`)) return;
     const result = await run(
       `retry-${campaign.id}`,
       () => api.retryCommunicationCampaignFailures(campaign.id),
@@ -305,6 +306,7 @@ export function AdminCerimonialista() {
   };
 
   const reactivateGuest = async (guest) => {
+    if (!window.confirm(`Reativar comunicações automáticas para “${guest.displayName}”? Faça isso apenas se o convidado pediu para voltar a receber mensagens.`)) return;
     const result = await run(
       `optin-${guest.id}`,
       () => api.reactivateGuestWhatsApp(guest.id),
