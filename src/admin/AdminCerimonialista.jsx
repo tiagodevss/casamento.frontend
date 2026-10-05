@@ -424,7 +424,7 @@ export function AdminCerimonialista() {
   };
 
   const reply = async (message) => {
-    const text = (replyDrafts[message.id] ?? "").trim();
+    const text = (replyDrafts[message.phone] ?? "").trim();
     if (!text) return;
     const result = await run(
       `reply-${message.id}`,
@@ -432,7 +432,7 @@ export function AdminCerimonialista() {
       "Resposta enviada.",
     );
     if (!result) return;
-    setReplyDrafts((current) => ({ ...current, [message.id]: "" }));
+    setReplyDrafts((current) => ({ ...current, [message.phone]: "" }));
     await loadCore();
   };
 
@@ -614,7 +614,7 @@ export function AdminCerimonialista() {
           <div className="cer-toolbar">
             <div>
               <h2>Plano de comunicações</h2>
-              <p className="adm-hint">Toda campanha precisa de preview antes de poder ser agendada ou enviada.</p>
+              <p className="adm-hint">Toda campanha precisa de preview antes de poder ser agendada ou enviada. A janela padrão é 09h–20h e a validade impede mensagens atrasadas.</p>
             </div>
             <button type="button" className="adm-btn adm-btn-primary" onClick={() => setNewCampaignOpen((v) => !v)}>
               <Icon name="Plus" size={14} /> Nova comunicação
@@ -845,7 +845,7 @@ export function AdminCerimonialista() {
                     </div>
                   ))}
                 </div>
-                <textarea className="adm-textarea" rows={3} placeholder="Responder pelo WhatsApp..." value={replyDrafts[message.id] ?? ""} onChange={(e) => setReplyDrafts((current) => ({ ...current, [message.id]: e.target.value }))} />
+                <textarea className="adm-textarea" rows={3} placeholder="Responder pelo WhatsApp..." value={replyDrafts[message.phone] ?? ""} onChange={(e) => setReplyDrafts((current) => ({ ...current, [message.phone]: e.target.value }))} />
                 <div className="cer-actions">
                   <button type="button" className="adm-btn adm-btn-primary" disabled={busy === `reply-${message.id}`} onClick={() => reply(message)}>Responder</button>
                   <button type="button" className="adm-btn adm-btn-secondary" disabled={busy === `resolve-${message.id}`} onClick={() => resolve(message)}>Marcar resolvido</button>
