@@ -659,7 +659,7 @@ export function AdminCerimonialista() {
                         <Icon name="Eye" size={14} /> Ver público
                       </button>
                       <button type="button" className="adm-btn adm-btn-ghost" disabled={busy === `history-${campaign.id}`} onClick={() => openHistory(campaign)}>
-                        Histórico
+                        Destinatários
                       </button>
                       <button type="button" className="adm-btn adm-btn-secondary" disabled={!campaign.previewedAt || busy === `schedule-${campaign.id}`} onClick={() => scheduleCampaign(campaign)}>
                         <Icon name="Calendar" size={14} /> Agendar
@@ -786,8 +786,12 @@ export function AdminCerimonialista() {
           <div className="adm-card cer-preview-modal" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
             <div className="cer-section-head">
               <div>
-                <h2>Histórico — {deliveryCampaign.name}</h2>
-                <p className="adm-hint">Cada linha representa um convite/telefone, não uma pessoa.</p>
+                <h2>{deliveryCampaign.status === "DRAFT" ? "Destinatários preparados" : "Histórico"} — {deliveryCampaign.name}</h2>
+                <p className="adm-hint">
+                  {deliveryCampaign.status === "DRAFT"
+                    ? "Cada linha representa um destinatário aprovado no preview; ainda não houve envio."
+                    : "Cada linha representa um convite/telefone, não uma pessoa."}
+                </p>
               </div>
               <button type="button" className="adm-btn adm-btn-ghost" onClick={() => setDeliveryCampaign(null)}>Fechar</button>
             </div>
@@ -798,7 +802,13 @@ export function AdminCerimonialista() {
                   {deliveries.map((delivery) => (
                     <tr key={delivery.id}>
                       <td><strong>{delivery.guestGroup?.displayName ?? delivery.phone}</strong><br/><small>{delivery.phone}</small></td>
-                      <td><Badge tone={statusTone(delivery.status)}>{DELIVERY_LABELS[delivery.status] ?? delivery.status}</Badge></td>
+                      <td>
+                        <Badge tone={statusTone(delivery.status)}>
+                          {deliveryCampaign.status === "DRAFT" && delivery.status === "PENDING"
+                            ? "PREPARADO"
+                            : (DELIVERY_LABELS[delivery.status] ?? delivery.status)}
+                        </Badge>
+                      </td>
                       <td>{delivery.attempts}</td>
                       <td>{formatDateTime(delivery.sentAt)}</td>
                       <td><small>{delivery.skippedReason ?? delivery.lastError ?? "—"}</small></td>
