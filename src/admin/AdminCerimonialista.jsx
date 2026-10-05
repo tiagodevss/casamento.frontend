@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 
 import { api } from "../api";
 import { Icon } from "../effects";
-import { groupPendingHumanThreads, isFutureSchedule } from "./cerimonialista.utils";
+import {
+  groupPendingHumanThreads,
+  isExpiryAfterSchedule,
+  isFutureSchedule,
+} from "./cerimonialista.utils";
 import "./cerimonialista.css";
 
 const AUDIENCE_LABELS = {
@@ -21,6 +25,7 @@ const STATUS_LABELS = {
   COMPLETED: "Concluída",
   CANCELLED: "Cancelada",
   FAILED: "Falhou",
+  EXPIRED: "Expirada",
 };
 
 const DELIVERY_LABELS = {
@@ -50,7 +55,7 @@ function toDateTimeLocal(value) {
 
 function statusTone(status) {
   if (["COMPLETED", "DELIVERED", "READ", "SENT"].includes(status)) return "success";
-  if (["FAILED", "CANCELLED"].includes(status)) return "danger";
+  if (["FAILED", "CANCELLED", "EXPIRED"].includes(status)) return "danger";
   if (["SCHEDULED", "PROCESSING"].includes(status)) return "info";
   return "neutral";
 }
@@ -101,6 +106,7 @@ export function AdminCerimonialista() {
   const [deliveryCampaign, setDeliveryCampaign] = useState(null);
   const [deliveries, setDeliveries] = useState([]);
   const [scheduleValues, setScheduleValues] = useState({});
+  const [expiryValues, setExpiryValues] = useState({});
   const [qrCode, setQrCode] = useState("");
   const [busy, setBusy] = useState("");
   const [testPhone, setTestPhone] = useState("");
@@ -114,6 +120,7 @@ export function AdminCerimonialista() {
     templateId: "",
     audience: "RSVP_PENDING",
     scheduledAt: "",
+    expiresAt: "",
     includeGuestGroupIds: [],
   });
 
@@ -160,6 +167,9 @@ export function AdminCerimonialista() {
     setConversations(conversationData);
     setScheduleValues(
       Object.fromEntries(campaignData.map((item) => [item.id, toDateTimeLocal(item.scheduledAt)])),
+    );
+    setExpiryValues(
+      Object.fromEntries(campaignData.map((item) => [item.id, toDateTimeLocal(item.expiresAt)])),
     );
     if (!selectedTemplateId && templateData[0]) {
       setSelectedTemplateId(templateData[0].id);
@@ -277,19 +287,34 @@ export function AdminCerimonialista() {
       setError("Escolha uma data futura ou use “Enviar agora”.");
       return;
     }
+    const expiry = expiryValues[campaign.id];
+    if (!isExpiryAfterSchedule(expiry, local)) {
+      setError("Defina uma validade futura e posterior ao horário agendado.");
+      return;
+    }
     const result = await run(
       `schedule-${campaign.id}`,
-      () => api.scheduleCommunicationCampaign(campaign.id, new Date(local).toISOString()),
+      () =>
+        api.scheduleCommunicationCampaign(
+          campaign.id,
+          new Date(local).toISOString(),
+          new Date(expiry).toISOString(),
+        ),
       "Campanha agendada.",
     );
     if (result) await loadCore();
   };
 
   const sendNow = async (campaign) => {
+    const expiry = expiryValues[campaign.id];
+    if (!isExpiryAfterSchedule(expiry, null)) {
+      setError("Defina uma validade futura antes de enviar agora.");
+      return;
+    }
     if (!window.confirm(`Enviar agora a campanha “${campaign.name}”? O público será revalidado antes de cada mensagem.`)) return;
     const result = await run(
       `send-${campaign.id}`,
-      () => api.sendCommunicationCampaignNow(campaign.id),
+      () => api.sendCommunicationCampaignNow(campaign.id, new Date(expiry).toISOString()),
       "Campanha colocada na fila de envio.",
     );
     if (result) await loadCore();
@@ -336,6 +361,7 @@ export function AdminCerimonialista() {
           description: templateDraft.description ?? "",
           bodySingle: templateDraft.bodySingle,
           bodyGroup: templateDraft.bodyGroup,
+          scope: templateDraft.scope,
           active: templateDraft.active,
         }),
       "Template salvo. Campanhas relacionadas precisarão ser visualizadas novamente antes do envio.",
@@ -349,6 +375,13 @@ export function AdminCerimonialista() {
       setError("A data sugerida precisa estar no futuro.");
       return;
     }
+    if (
+      newCampaign.expiresAt &&
+      !isExpiryAfterSchedule(newCampaign.expiresAt, newCampaign.scheduledAt || null)
+    ) {
+      setError("A validade precisa estar no futuro e ser posterior ao horário sugerido.");
+      return;
+    }
     const payload = {
       name: newCampaign.name,
       templateId: newCampaign.templateId,
@@ -358,6 +391,9 @@ export function AdminCerimonialista() {
         newCampaign.audience === "CUSTOM" ? newCampaign.includeGuestGroupIds : [],
       ...(newCampaign.scheduledAt
         ? { scheduledAt: new Date(newCampaign.scheduledAt).toISOString() }
+        : {}),
+      ...(newCampaign.expiresAt
+        ? { expiresAt: new Date(newCampaign.expiresAt).toISOString() }
         : {}),
     };
     const result = await run(
@@ -372,6 +408,7 @@ export function AdminCerimonialista() {
       templateId: "",
       audience: "RSVP_PENDING",
       scheduledAt: "",
+      expiresAt: "",
       includeGuestGroupIds: [],
     });
     await loadCore();
@@ -609,6 +646,10 @@ export function AdminCerimonialista() {
                   Data sugerida
                   <input type="datetime-local" className="adm-input" value={newCampaign.scheduledAt} onChange={(e) => setNewCampaign((c) => ({ ...c, scheduledAt: e.target.value }))} />
                 </label>
+                <label>
+                  Validade
+                  <input type="datetime-local" className="adm-input" value={newCampaign.expiresAt} onChange={(e) => setNewCampaign((c) => ({ ...c, expiresAt: e.target.value }))} />
+                </label>
               </div>
               {newCampaign.audience === "CUSTOM" ? (
                 <div className="cer-guest-picker">
@@ -654,8 +695,18 @@ export function AdminCerimonialista() {
                       <input
                         type="datetime-local"
                         className="adm-input"
+                        aria-label={`Horário de envio de ${campaign.name}`}
+                        title="Horário de envio"
                         value={scheduleValues[campaign.id] ?? ""}
                         onChange={(e) => setScheduleValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
+                      />
+                      <input
+                        type="datetime-local"
+                        className="adm-input"
+                        aria-label={`Validade de ${campaign.name}`}
+                        title="Não enviar depois deste horário"
+                        value={expiryValues[campaign.id] ?? ""}
+                        onChange={(e) => setExpiryValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
                       />
                       <button type="button" className="adm-btn adm-btn-secondary" disabled={busy === `preview-${campaign.id}`} onClick={() => openPreview(campaign)}>
                         <Icon name="Eye" size={14} /> Ver público
@@ -676,6 +727,7 @@ export function AdminCerimonialista() {
                   ) : (
                     <div className="cer-campaign-finished">
                       <span>Agendada: {formatDateTime(campaign.scheduledAt)}</span>
+                      <span>Validade: {formatDateTime(campaign.expiresAt)}</span>
                       <span>{campaign.status === "PROCESSING" ? "Iniciada" : "Finalizada"}: {formatDateTime(campaign.status === "PROCESSING" ? campaign.startedAt : campaign.finishedAt)}</span>
                       <button type="button" className="adm-btn adm-btn-ghost adm-btn-sm" disabled={busy === `history-${campaign.id}`} onClick={() => openHistory(campaign)}>
                         Ver histórico
@@ -727,6 +779,17 @@ export function AdminCerimonialista() {
                   <input className="adm-input" value={templateDraft.description ?? ""} onChange={(e) => setTemplateDraft((c) => ({ ...c, description: e.target.value }))} />
                 </label>
                 <label>
+                  Escopo de privacidade
+                  <select
+                    className="adm-select"
+                    value={templateDraft.scope ?? "GENERAL"}
+                    onChange={(e) => setTemplateDraft((c) => ({ ...c, scope: e.target.value }))}
+                  >
+                    <option value="GENERAL">Geral — sem informações exclusivas da festa</option>
+                    <option value="PARTY">Festa — somente quem confirmou a recepção</option>
+                  </select>
+                </label>
+                <label>
                   Mensagem — convite individual
                   <textarea className="adm-textarea" rows={10} value={templateDraft.bodySingle} onChange={(e) => setTemplateDraft((c) => ({ ...c, bodySingle: e.target.value }))} />
                 </label>
@@ -735,7 +798,10 @@ export function AdminCerimonialista() {
                   <textarea className="adm-textarea" rows={10} value={templateDraft.bodyGroup} onChange={(e) => setTemplateDraft((c) => ({ ...c, bodyGroup: e.target.value }))} />
                 </label>
                 <p className="adm-hint">
-                  Variáveis: {"{{nome}}"}, {"{{pessoas}}"}, {"{{pendentes}}"}, {"{{confirmados}}"}, {"{{dias_faltando}}"}, {"{{link}}"}, {"{{presentes}}"}, {"{{site}}"}, {"{{maps_cerimonia}}"}, {"{{maps_festa}}"}.
+                  Variáveis gerais: {"{{nome}}"}, {"{{pessoas}}"}, {"{{pendentes}}"}, {"{{confirmados}}"}, {"{{dias_faltando}}"}, {"{{link}}"}, {"{{presentes}}"}, {"{{site}}"}, {"{{maps_cerimonia}}"}.
+                  {templateDraft.scope === "PARTY"
+                    ? <> Variáveis da festa: {"{{maps_festa}}"}, {"{{endereco_festa}}"}, {"{{local_festa}}"}, {"{{horario_festa}}"}.</>
+                    : <> Para usar informações da festa, altere primeiro o escopo para <strong>Festa</strong>.</>}
                 </p>
                 <label className="cer-checkbox">
                   <input type="checkbox" checked={templateDraft.active} onChange={(e) => setTemplateDraft((c) => ({ ...c, active: e.target.checked }))} /> Ativo
@@ -771,7 +837,14 @@ export function AdminCerimonialista() {
                   </div>
                   <Badge tone="danger">Aguardando resposta</Badge>
                 </div>
-                <blockquote>{message.body}</blockquote>
+                <div className="cer-thread-messages">
+                  {message.messages?.map((threadMessage) => (
+                    <div className="cer-thread-message" key={threadMessage.id}>
+                      <small>{formatDateTime(threadMessage.createdAt)}</small>
+                      <p>{threadMessage.body}</p>
+                    </div>
+                  ))}
+                </div>
                 <textarea className="adm-textarea" rows={3} placeholder="Responder pelo WhatsApp..." value={replyDrafts[message.id] ?? ""} onChange={(e) => setReplyDrafts((current) => ({ ...current, [message.id]: e.target.value }))} />
                 <div className="cer-actions">
                   <button type="button" className="adm-btn adm-btn-primary" disabled={busy === `reply-${message.id}`} onClick={() => reply(message)}>Responder</button>
