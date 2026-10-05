@@ -692,22 +692,27 @@ export function AdminCerimonialista() {
 
                   {editable ? (
                     <div className="cer-campaign-controls">
-                      <input
-                        type="datetime-local"
-                        className="adm-input"
-                        aria-label={`Horário de envio de ${campaign.name}`}
-                        title="Horário de envio"
-                        value={scheduleValues[campaign.id] ?? ""}
-                        onChange={(e) => setScheduleValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
-                      />
-                      <input
-                        type="datetime-local"
-                        className="adm-input"
-                        aria-label={`Validade de ${campaign.name}`}
-                        title="Não enviar depois deste horário"
-                        value={expiryValues[campaign.id] ?? ""}
-                        onChange={(e) => setExpiryValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
-                      />
+                      <label className="cer-inline-field">
+                        <span>Enviar em</span>
+                        <input
+                          type="datetime-local"
+                          className="adm-input"
+                          aria-label={`Horário de envio de ${campaign.name}`}
+                          value={scheduleValues[campaign.id] ?? ""}
+                          onChange={(e) => setScheduleValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
+                        />
+                      </label>
+                      <label className="cer-inline-field">
+                        <span>Validade</span>
+                        <input
+                          type="datetime-local"
+                          className="adm-input"
+                          aria-label={`Validade de ${campaign.name}`}
+                          title="Não enviar depois deste horário"
+                          value={expiryValues[campaign.id] ?? ""}
+                          onChange={(e) => setExpiryValues((current) => ({ ...current, [campaign.id]: e.target.value }))}
+                        />
+                      </label>
                       <button type="button" className="adm-btn adm-btn-secondary" disabled={busy === `preview-${campaign.id}`} onClick={() => openPreview(campaign)}>
                         <Icon name="Eye" size={14} /> Ver público
                       </button>
