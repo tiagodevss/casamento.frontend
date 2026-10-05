@@ -112,13 +112,16 @@ export const api = {
     }),
   previewCommunicationCampaign: (id) =>
     request(`/admin/communications/campaigns/${id}/preview`, { method: "POST" }),
-  scheduleCommunicationCampaign: (id, scheduledAt) =>
+  scheduleCommunicationCampaign: (id, scheduledAt, expiresAt) =>
     request(`/admin/communications/campaigns/${id}/schedule`, {
       method: "POST",
-      body: JSON.stringify({ scheduledAt }),
+      body: JSON.stringify({ scheduledAt, expiresAt }),
     }),
-  sendCommunicationCampaignNow: (id) =>
-    request(`/admin/communications/campaigns/${id}/send-now`, { method: "POST" }),
+  sendCommunicationCampaignNow: (id, expiresAt) =>
+    request(`/admin/communications/campaigns/${id}/send-now`, {
+      method: "POST",
+      body: JSON.stringify({ expiresAt }),
+    }),
   cancelCommunicationCampaign: (id) =>
     request(`/admin/communications/campaigns/${id}/cancel`, { method: "POST" }),
   retryCommunicationCampaignFailures: (id) =>
