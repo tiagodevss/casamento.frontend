@@ -407,6 +407,32 @@
   white-space: pre-wrap;
 }
 
+.cer-thread-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin: 0.75rem 0;
+}
+
+.cer-thread-message {
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--adm-primary);
+  border-radius: 0 var(--adm-radius) var(--adm-radius) 0;
+  background: var(--adm-neutral-tint);
+}
+
+.cer-thread-message small {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--adm-text-muted);
+}
+
+.cer-thread-message p {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .cer-modal-backdrop {
   position: fixed;
   z-index: 1200;
