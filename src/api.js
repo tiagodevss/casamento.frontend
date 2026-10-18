@@ -84,4 +84,64 @@ export const api = {
   getSettings: () => request("/admin/settings"),
   updateSettings: (payload) =>
     request("/admin/settings", { method: "PATCH", body: JSON.stringify(payload) }),
+
+  getWhatsAppStatus: () => request("/admin/whatsapp/status"),
+  connectWhatsApp: () => request("/admin/whatsapp/connect", { method: "POST" }),
+  getWhatsAppQrCode: () => request("/admin/whatsapp/qrcode"),
+  disconnectWhatsApp: () => request("/admin/whatsapp/disconnect", { method: "POST" }),
+  sendWhatsAppTest: (payload) =>
+    request("/admin/whatsapp/test", { method: "POST", body: JSON.stringify(payload) }),
+
+  getCommunicationStats: () => request("/admin/communications/stats"),
+  listCommunicationTemplates: () => request("/admin/communications/templates"),
+  updateCommunicationTemplate: (id, payload) =>
+    request(`/admin/communications/templates/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  listCommunicationCampaigns: () => request("/admin/communications/campaigns"),
+  createCommunicationCampaign: (payload) =>
+    request("/admin/communications/campaigns", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  updateCommunicationCampaign: (id, payload) =>
+    request(`/admin/communications/campaigns/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  previewCommunicationCampaign: (id) =>
+    request(`/admin/communications/campaigns/${id}/preview`, { method: "POST" }),
+  scheduleCommunicationCampaign: (id, scheduledAt, expiresAt) =>
+    request(`/admin/communications/campaigns/${id}/schedule`, {
+      method: "POST",
+      body: JSON.stringify({ scheduledAt, expiresAt }),
+    }),
+  sendCommunicationCampaignNow: (id, expiresAt) =>
+    request(`/admin/communications/campaigns/${id}/send-now`, {
+      method: "POST",
+      body: JSON.stringify({ expiresAt }),
+    }),
+  cancelCommunicationCampaign: (id) =>
+    request(`/admin/communications/campaigns/${id}/cancel`, { method: "POST" }),
+  retryCommunicationCampaignFailures: (id) =>
+    request(`/admin/communications/campaigns/${id}/retry-failed`, { method: "POST" }),
+  listCommunicationDeliveries: (id) =>
+    request(`/admin/communications/campaigns/${id}/deliveries`),
+  sendGuestCommunication: (id, message) =>
+    request(`/admin/communications/guests/${id}/send`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+  reactivateGuestWhatsApp: (id) =>
+    request(`/admin/communications/guests/${id}/whatsapp-opt-in`, { method: "POST" }),
+  listWhatsAppConversations: (needsHuman = false) =>
+    request(`/admin/communications/conversations?needsHuman=${needsHuman ? "true" : "false"}`),
+  replyWhatsAppConversation: (id, message) =>
+    request(`/admin/communications/conversations/${id}/reply`, {
+      method: "POST",
+      body: JSON.stringify({ message }),
+    }),
+  resolveWhatsAppConversation: (id) =>
+    request(`/admin/communications/conversations/${id}/resolve`, { method: "POST" }),
 };
