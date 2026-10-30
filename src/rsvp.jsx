@@ -311,7 +311,7 @@ export function RSVPForm({ standalone = false }) {
         nextErrors[`member-${member.id}`] = "Escolha uma opção";
       }
     }
-    if (group?.invitedToParty && !form.partyAttending) {
+    if (group?.invitedToParty && partyRsvpOpen && !form.partyAttending) {
       nextErrors.partyAttending = "Confirme também a presença na festa";
     }
     return nextErrors;
@@ -332,7 +332,8 @@ export function RSVPForm({ standalone = false }) {
           id: member.id,
           attending: form.memberAttending[member.id] === "yes",
         })),
-        partyAttending: group.invitedToParty ? form.partyAttending === "yes" : undefined,
+        partyAttending:
+          group.invitedToParty && partyRsvpOpen ? form.partyAttending === "yes" : undefined,
         diet: form.diet || undefined,
         message: form.message || undefined,
       });
@@ -356,6 +357,9 @@ export function RSVPForm({ standalone = false }) {
   );
   const anyAttending = attendingMembers.length > 0;
   const isSingleGuest = (group?.members ?? []).length === 1;
+  // A resposta sobre a festa foi encerrada pelo servidor; a da cerimônia continua aberta.
+  const partyRsvpOpen = group?.partyRsvpOpen !== false;
+  const partyConfirmed = group?.partyAttending === true;
 
   if (sent) {
     return (
@@ -411,6 +415,7 @@ export function RSVPForm({ standalone = false }) {
           {group?.invitedToParty && form.partyAttending === "yes" && (
             <p className="rsvp-success__note">
               <Icon name="PartyPopper" size={15} /> Presença na festa também confirmada.
+              {!partyRsvpOpen && " Antes do casamento enviaremos um QR Code que vale como a entrada."}
             </p>
           )}
           {group?.invitedToParty && form.partyAttending === "no" && (
@@ -518,7 +523,7 @@ export function RSVPForm({ standalone = false }) {
             ctaHref={WEDDING.mapsUrl}
           />
 
-          {group.invitedToParty && (
+          {group.invitedToParty && (partyRsvpOpen || partyConfirmed) && (
             <VenueConfirmationCard
               eyebrow="Festa na chácara"
               title={PARTY.venue}
@@ -582,7 +587,16 @@ export function RSVPForm({ standalone = false }) {
               </div>
             </div>
 
-            {group.invitedToParty && (
+            {group.invitedToParty && !partyRsvpOpen && (
+              <p className="rsvp-notice" role="status">
+                <Icon name="PartyPopper" size={14} />{" "}
+                {partyConfirmed
+                  ? `${isSingleGuest ? "Sua presença" : "A presença de vocês"} na festa já está confirmada. A festa tem número limitado de convidados e, antes do casamento, enviaremos um QR Code que vale como ${isSingleGuest ? "a sua entrada" : "a entrada de vocês"}.`
+                  : "As confirmações para a festa foram encerradas: ela tem número limitado de convidados. Você ainda pode confirmar a presença na cerimônia."}
+              </p>
+            )}
+
+            {group.invitedToParty && partyRsvpOpen && (
               <div className={`field full ${errors.partyAttending ? "error" : ""}`}>
                 <label>
                   <Icon name="PartyPopper" size={14} />{" "}

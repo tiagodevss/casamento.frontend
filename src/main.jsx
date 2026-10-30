@@ -6,6 +6,8 @@ import App from "./App";
 import ConfirmarPage from "./ConfirmarPage";
 import { InviteCapture } from "./InviteCapture";
 import PresentesPage from "./PresentesPage";
+import TicketPage from "./TicketPage";
+import AdminCheckin from "./admin/AdminCheckin";
 import { AdminShell } from "./admin/AdminShell";
 import { AdminLogin } from "./admin/AdminLogin";
 import { AuthProvider, RequireAuth } from "./admin/AuthContext";
@@ -20,7 +22,16 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/" element={<App />} />
             <Route path="/confirmar" element={<ConfirmarPage />} />
             <Route path="/presentes" element={<PresentesPage />} />
+            <Route path="/ingresso/:token" element={<TicketPage />} />
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/checkin/:token"
+              element={
+                <RequireAuth>
+                  <AdminCheckin />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/admin"
               element={

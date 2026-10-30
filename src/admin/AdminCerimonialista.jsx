@@ -803,9 +803,9 @@ export function AdminCerimonialista() {
                   <textarea className="adm-textarea" rows={10} value={templateDraft.bodyGroup} onChange={(e) => setTemplateDraft((c) => ({ ...c, bodyGroup: e.target.value }))} />
                 </label>
                 <p className="adm-hint">
-                  Variáveis gerais: {"{{nome}}"}, {"{{pessoas}}"}, {"{{pendentes}}"}, {"{{confirmados}}"}, {"{{dias_faltando}}"}, {"{{link}}"}, {"{{presentes}}"}, {"{{site}}"}, {"{{maps_cerimonia}}"}.
+                  Variáveis gerais: {"{{nome}}"}, {"{{pessoas}}"}, {"{{pendentes}}"}, {"{{confirmados}}"}, {"{{dias_faltando}}"}, {"{{link}}"}, {"{{presentes}}"}, {"{{pix}}"}, {"{{site}}"}, {"{{maps_cerimonia}}"}.
                   {templateDraft.scope === "PARTY"
-                    ? <> Variáveis da festa: {"{{maps_festa}}"}, {"{{endereco_festa}}"}, {"{{local_festa}}"}, {"{{horario_festa}}"}.</>
+                    ? <> Variáveis da festa: {"{{maps_festa}}"}, {"{{endereco_festa}}"}, {"{{local_festa}}"}, {"{{horario_festa}}"}, {"{{ingresso}}"} (link do QR Code de entrada).</>
                     : <> Para usar informações da festa, altere primeiro o escopo para <strong>Festa</strong>.</>}
                 </p>
                 <label className="cer-checkbox">

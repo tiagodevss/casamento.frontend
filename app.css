@@ -4460,3 +4460,171 @@ h3 {
 .mt-2 {
   margin-top: 2rem;
 }
+
+/* =========================================================================
+   INGRESSO DA FESTA (/ingresso/:token) E CHECK-IN DA PORTA
+   ========================================================================= */
+.ticket__inner {
+  padding-top: clamp(1.5rem, 4vw, 2.5rem);
+  padding-bottom: clamp(3rem, 8vw, 5rem);
+  text-align: center;
+  max-width: 28rem;
+  margin-inline: auto;
+}
+
+.ticket__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.5rem;
+}
+
+.ticket__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.25rem);
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 1.25rem;
+}
+
+.ticket__qr {
+  display: grid;
+  place-items: center;
+  width: min(100%, 20rem);
+  aspect-ratio: 1;
+  margin: 0 auto 1.25rem;
+  padding: 0.75rem;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 0.5rem 2rem oklch(0.28 0.028 84 / 0.14);
+}
+
+.ticket__qr img {
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.ticket__people,
+.ticket__text {
+  font-family: var(--font-body);
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 1rem;
+}
+
+.ticket__people strong {
+  color: var(--ink);
+}
+
+.ticket__facts {
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.ticket__facts li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+
+.checkin {
+  min-height: 100dvh;
+  padding: 1.25rem 1rem 2rem;
+  max-width: 28rem;
+  margin-inline: auto;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--cream);
+}
+
+.checkin__heading {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+  margin: 0 0 1rem;
+}
+
+.checkin__muted {
+  color: var(--ink-soft);
+}
+
+.checkin__card {
+  display: grid;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  border: 3px solid;
+  background: #fff;
+}
+
+.checkin__card--ok {
+  border-color: #1f8f4e;
+  background: #eaf8f0;
+}
+
+.checkin__card--warn {
+  border-color: #c77d00;
+  background: #fff4dc;
+}
+
+.checkin__card--bad {
+  border-color: #c0392b;
+  background: #fdecea;
+}
+
+.checkin__status {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.checkin__name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.checkin__people {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.checkin__btn {
+  min-height: 3.5rem;
+  margin-top: 0.4rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.checkin__btn--primary {
+  background: #1f8f4e;
+  border-color: #1f8f4e;
+  color: #fff;
+}
+
+.checkin__btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

@@ -62,6 +62,11 @@ async function request(path, options = {}) {
 export const api = {
   searchGuests: (query) => request(`/rsvp/search?q=${encodeURIComponent(query)}`),
   getRsvpInvite: (guestGroupId) => request(`/rsvp/${guestGroupId}`),
+  getTicket: (token) => request(`/tickets/${encodeURIComponent(token)}`),
+  lookupCheckin: (token) => request(`/admin/checkin/${encodeURIComponent(token)}`),
+  checkIn: (token) => request(`/admin/checkin/${encodeURIComponent(token)}`, { method: "POST" }),
+  undoCheckin: (token) =>
+    request(`/admin/checkin/${encodeURIComponent(token)}`, { method: "DELETE" }),
   confirmRsvp: (guestGroupId, payload) =>
     request(`/rsvp/${guestGroupId}/confirm`, { method: "POST", body: JSON.stringify(payload) }),
   createPaymentOrder: (payload) =>
