@@ -587,12 +587,10 @@ export function RSVPForm({ standalone = false }) {
               </div>
             </div>
 
-            {group.invitedToParty && !partyRsvpOpen && (
+            {group.invitedToParty && !partyRsvpOpen && partyConfirmed && (
               <p className="rsvp-notice" role="status">
                 <Icon name="PartyPopper" size={14} />{" "}
-                {partyConfirmed
-                  ? `${isSingleGuest ? "Sua presença" : "A presença de vocês"} na festa já está confirmada. A festa tem número limitado de convidados e, antes do casamento, enviaremos um QR Code que vale como ${isSingleGuest ? "a sua entrada" : "a entrada de vocês"}.`
-                  : "As confirmações para a festa foram encerradas: ela tem número limitado de convidados. Você ainda pode confirmar a presença na cerimônia."}
+                {`${isSingleGuest ? "Sua presença" : "A presença de vocês"} na festa já está confirmada. A festa tem número limitado de convidados e, antes do casamento, enviaremos um QR Code que vale como ${isSingleGuest ? "a sua entrada" : "a entrada de vocês"}.`}
               </p>
             )}
 
