@@ -66,6 +66,7 @@ import {
   Soup,
   Sparkle,
   Sparkles,
+  Ticket,
   Trash2,
   Tv,
   User,
@@ -76,6 +77,7 @@ import {
   Wine,
   Wrench,
   X,
+  ExternalLink,
 } from "lucide-react";
 
 import { LANTERN_MESSAGES } from "./data";
@@ -146,6 +148,7 @@ const icons = {
   Soup,
   Sparkle,
   Sparkles,
+  Ticket,
   Trash2,
   Tv,
   User,
@@ -156,6 +159,7 @@ const icons = {
   Wine,
   Wrench,
   X,
+  ExternalLink,
 };
 
 export function Icon({ name, size = 22, stroke = 1.8, className, style }) {
