@@ -108,6 +108,7 @@ export function AdminCerimonialista() {
   const [scheduleValues, setScheduleValues] = useState({});
   const [expiryValues, setExpiryValues] = useState({});
   const [qrCode, setQrCode] = useState("");
+  const [qrPolling, setQrPolling] = useState(false);
   const [busy, setBusy] = useState("");
   const [testPhone, setTestPhone] = useState("");
   const [testMessage, setTestMessage] = useState("Teste da cerimonialista digital 💛");
@@ -232,21 +233,51 @@ export function AdminCerimonialista() {
   const connect = async () => {
     const result = await run("connect", () => api.connectWhatsApp(), "Sessão iniciada. Leia o QR Code se necessário.");
     if (!result) return;
-    const nextStatus = await loadStatus();
-    if (!nextStatus?.connected) {
-      const qr = await run("qr", () => api.getWhatsAppQrCode());
-      if (qr?.qrCode) setQrCode(qr.qrCode);
-    }
+    setQrPolling(true);
   };
+
+  // O QR do WhatsApp gira a cada ~20 s: enquanto a sessão não conecta, busca um novo em
+  // intervalos curtos em vez de deixar na tela um QR já expirado.
+  useEffect(() => {
+    if (!qrPolling) return undefined;
+    if (status?.connected) {
+      setQrPolling(false);
+      setQrCode("");
+      return undefined;
+    }
+    let cancelled = false;
+    let attempts = 0;
+    const tick = async () => {
+      attempts += 1;
+      try {
+        const qr = await api.getWhatsAppQrCode();
+        if (!cancelled && qr?.qrCode) setQrCode(qr.qrCode);
+      } catch {
+        // O WPPConnect ainda inicializando responde erro; a próxima tentativa resolve.
+      }
+      if (!cancelled) {
+        await loadStatus();
+        if (attempts >= 60) setQrPolling(false);
+      }
+    };
+    tick();
+    const timer = window.setInterval(tick, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [qrPolling, status?.connected]);
 
   const reloadQr = async () => {
     const qr = await run("qr", () => api.getWhatsAppQrCode());
     if (qr?.qrCode) setQrCode(qr.qrCode);
+    setQrPolling(true);
   };
 
   const disconnect = async () => {
     const result = await run("disconnect", () => api.disconnectWhatsApp(), "WhatsApp desconectado.");
     if (result !== null) {
+      setQrPolling(false);
       setQrCode("");
       await loadStatus();
     }
