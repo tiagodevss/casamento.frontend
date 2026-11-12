@@ -113,6 +113,10 @@ function phoneDigits(phone) {
   return digits;
 }
 
+function hasPhone(group) {
+  return Boolean(group.phone?.trim());
+}
+
 function memberRsvpSummary(members) {
   const list = members ?? [];
   if (list.length === 0) return { label: "—", state: "neutral" };
@@ -459,10 +463,13 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
     let responded = 0;
     let ceremonyOnly = 0;
     let ceremonyAndParty = 0;
+    let noPhone = 0;
 
     for (const group of groups) {
       const memberCount = group.members?.length ?? 0;
       total += memberCount;
+
+      if (!hasPhone(group)) noPhone += memberCount;
 
       if (group.inviteSent) sent += memberCount;
       else notSent += memberCount;
@@ -474,7 +481,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
       else ceremonyOnly += memberCount;
     }
 
-    return { total, notSent, sent, pending, responded, ceremonyOnly, ceremonyAndParty };
+    return { total, notSent, sent, pending, responded, ceremonyOnly, ceremonyAndParty, noPhone };
   }, [groups]);
 
   const filteredGroups = useMemo(() => {
@@ -490,6 +497,7 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
       if (statusFilter === "responded" && !group.rsvpResponse) return false;
       if (statusFilter === "ceremony_only" && group.invitedToParty) return false;
       if (statusFilter === "party" && !group.invitedToParty) return false;
+      if (statusFilter === "no_phone" && hasPhone(group)) return false;
 
       if (!needle) return true;
 
@@ -704,6 +712,13 @@ export function AdminGuests({ initialFilter = null, onFilterConsumed }) {
               label="Cerimônia + festa"
               active={statusFilter === "party"}
               onClick={() => setStatusFilter("party")}
+            />
+            <SummaryChip
+              count={summary.noPhone}
+              label="Sem telefone"
+              tone="warn"
+              active={statusFilter === "no_phone"}
+              onClick={() => setStatusFilter("no_phone")}
             />
           </div>
 
